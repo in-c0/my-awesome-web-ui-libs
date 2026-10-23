@@ -6,7 +6,7 @@ A small independent, experimental library for surfaces that feel like paper and 
 
 **Status:** independent open-source alpha candidate. Source and interactive demo are public; **no npm release yet**. Mobile and browser interaction checks have passed, but real-device GPU, accessibility, and visual-fidelity audits are still required.
 
-**[Explore the interactive Studio →](https://paper-ui-react-lab.vercel.app/)** · [Source code](https://github.com/in-c0/paper-ui) · [Release readiness](docs/RELEASE_CHECKLIST.md)
+**[Explore the interactive Studio →](https://paper-ui-react-lab.vercel.app/)** · [Source code](https://github.com/in-c0/paper-ui) · [Release readiness](docs/RELEASE_CHECKLIST.md) · [npm alpha staging](docs/NPM_ALPHA_STAGING.md)
 
 ## Components
 

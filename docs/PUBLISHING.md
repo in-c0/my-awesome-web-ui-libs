@@ -11,11 +11,12 @@ Paper UI is developed in its own original GitHub repository: https://github.com/
 ## Alpha publishing gates
 1. Pass CI build, unit tests, Chromium, and **packed tarball installed into a clean React project**.
 2. Manually inspect desktop/mobile shaders, no-GPU fallbacks, Korean handwriting, focus rings, motion preferences, and long-running GPU behavior.
-3. Confirm npm scope ownership (`@in-c0`), add Trusted Publishing if desired, and create a prerelease tag `v0.1.0-alpha.1`.
-4. Publish with prerelease dist-tag `alpha`, not `latest`; verify installed package from the real registry in a new React app.
-5. Enable `latest` only when the separate production readiness checklist passes.
+3. Confirm npm scope ownership (`@in-c0`), npm 2FA, and a stage-only token in GitHub Secrets (never commit credentials).
+4. Follow the [first alpha staged-release procedure](NPM_ALPHA_STAGING.md). It is a manually dispatched GitHub Actions workflow, **not** an automatic public publish. Approve with npm 2FA only after inspecting the staged artifact.
+5. Confirm the public `alpha` dist-tag and installability, then create the git prerelease tag. Configure GitHub OIDC Trusted Publishing for later releases.
+6. Enable `latest` only when the separate production readiness checklist passes.
 
-There is no automatic publishing workflow or credential in this repository.
+There is no automatic publishing workflow or embedded credential. A gated manual **staging-only** workflow is available; publication still requires the npm scope owner to authenticate and approve.
 
 ## Stylesheet distribution
 

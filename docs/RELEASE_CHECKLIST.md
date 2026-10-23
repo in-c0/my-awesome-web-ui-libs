@@ -10,7 +10,10 @@
 - [x] Chromium interaction/mobile checks in independent repository CI
 - [x] Original MIT license and third-party notices provided
 - [x] Migrate into a NEW, non-fork GitHub repository with fresh history
-- [ ] Verify actual npm scope ownership; configure trusted publishing (OIDC)
+- [x] Manual npm alpha staging workflow and owner setup guide prepared (inactive without npm secret)
+- [ ] Verify actual npm `@in-c0` scope ownership and account 2FA; configure `NPM_STAGE_TOKEN` privately
+- [ ] Stage alpha and approve with npm 2FA; verify real registry installation
+- [ ] Configure OIDC Trusted Publishing for subsequent releases
 - [ ] Test installation from `npm pack` tarball in a clean consumer project
 - [ ] Visual review at 390, 768, 1280 and 1920px against reference storyboard
 - [ ] Keyboard/screen-reader audit, color-contrast audit, canvas context-loss behavior

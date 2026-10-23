@@ -25,6 +25,7 @@ jobs:
           test -f packages/paper-ui/dist/index.d.ts
           test -f packages/paper-ui/dist/index.js
           test -f packages/paper-ui/dist/paper.css
+          test -f packages/paper-ui/dist/paper.css.d.ts
 
   browser:
     needs: build-and-unit

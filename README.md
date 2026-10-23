@@ -31,6 +31,7 @@ npm install @in-c0/paper-ui react
 ## Usage (React)
 
 ```tsx
+import '@in-c0/paper-ui/styles.css';
 import { PaperSurface, PaperCard, PaperButton, PencilText, MaterialEffect } from '@in-c0/paper-ui';
 import korean from 'tegaki/fonts/nanum-pen-script';
 
@@ -48,6 +49,8 @@ function Journal() {
   );
 }
 ```
+
+**Stylesheet:** Import `@in-c0/paper-ui/styles.css` once in your application entry. This is required for predictable visual appearance across bundlers. The component code works without it but will look unstyled.
 
 **Rendering rule:** Do not mount a separate shader per thumbnail. Keep keyboard focus and interactive controls in the DOM, and use a single optional shader behind selected content.
 

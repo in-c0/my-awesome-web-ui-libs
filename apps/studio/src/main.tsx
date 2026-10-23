@@ -1,3 +1,4 @@
+import '@in-c0/paper-ui/styles.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { StudioApp } from './StudioApp.tsx';

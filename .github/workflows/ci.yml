@@ -73,6 +73,7 @@ jobs:
           HTML
           cat > src/main.tsx <<'TSX'
           import React from 'react';
+          import '@in-c0/paper-ui/styles.css';
           import { createRoot } from 'react-dom/client';
           import { PaperSurface, PaperCard, PaperButton, PencilText, MaterialEffect } from '@in-c0/paper-ui';
 
@@ -93,3 +94,4 @@ jobs:
           npx vite build
           test -f dist/index.html
           test -n "$(find dist/assets -name '*.css' -print -quit)"
+          grep -q 'pui-button' "$(find dist/assets -name '*.css' -print -quit)"

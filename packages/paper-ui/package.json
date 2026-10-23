@@ -21,7 +21,7 @@
     "THIRD_PARTY_NOTICES.md"
   ],
   "sideEffects": [
-    "./dist/paper.css"
+    "**/*.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",

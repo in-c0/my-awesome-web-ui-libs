@@ -16,3 +16,7 @@ Paper UI is developed in its own original GitHub repository: https://github.com/
 5. Enable `latest` only when the separate production readiness checklist passes.
 
 There is no automatic publishing workflow or credential in this repository.
+
+## Stylesheet distribution
+
+Consumer applications must import `@in-c0/paper-ui/styles.css` explicitly once. The clean consumer test checks that compiled CSS contains actual `.pui-button` rules. A successful JavaScript build without CSS is **not** a successful UI release.

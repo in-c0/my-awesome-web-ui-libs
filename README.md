@@ -4,7 +4,9 @@
 
 A small independent, experimental library for surfaces that feel like paper and handwriting that appears stroke by stroke. Built with normal accessible DOM controls, Paper Shaders for optional GPU materials, and Tegaki for handwriting.
 
-**Status:** pre-release source; not published to npm. The source is prepared for extraction to a standalone GitHub repository. The public interactive demo is an experimental preview, not production certification.
+**Status:** independent open-source alpha candidate. Source and interactive demo are public; **no npm release yet**. Mobile and browser interaction checks have passed, but real-device GPU, accessibility, and visual-fidelity audits are still required.
+
+**[Explore the interactive Studio →](https://paper-ui-react-lab.vercel.app/)** · [Source code](https://github.com/in-c0/paper-ui) · [Release readiness](docs/RELEASE_CHECKLIST.md)
 
 ## Components
 
@@ -18,7 +20,7 @@ A small independent, experimental library for surfaces that feel like paper and 
 
 Six material modes: **Paper Texture**, **Grain Gradient Sphere**, **Blob**, **Wave**, **Dithering**, and **Halftone Dots**. Presets preserve the creator-selected source values and expose optional tuning.
 
-## Install after the first npm release
+## Installation (once npm release is verified)
 
 ```bash
 npm install @in-c0/paper-ui react
@@ -58,7 +60,7 @@ bun run test
 bun run dev
 ```
 
-Open the Vite URL to explore materials and handwriting in the same live studio. For browser quality checks:
+Open the local Vite URL or try the [hosted interactive Studio](https://paper-ui-react-lab.vercel.app/) to explore materials and handwriting. For browser quality checks:
 
 ```bash
 bunx playwright install chromium
@@ -83,6 +85,12 @@ There are no automatic npm releases. Add trusted publishing, ownership verificat
 - Handwriting draws glyph strokes using Tegaki; this does **not** simulate graphite-particle deposition.
 - WebGL is optional; no-WebGL content remains readable.
 - The included demo should not be presented as fully production-hardened until actual mobile GPU, accessibility, security, and contrast audits are complete.
+
+## Repository layout
+
+- `packages/paper-ui` — React components, materials, design tokens and distributable ESM package
+- `apps/studio` — interactive shader/handwriting laboratory and browser tests
+- `docs/` — implementation architecture and pre-release QA gates
 
 ## Upstream projects
 

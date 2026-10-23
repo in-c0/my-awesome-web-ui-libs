@@ -54,5 +54,14 @@
     "react": "^19.3.0",
     "typescript": "^6.0.3",
     "@types/bun": "^1.4.2"
+  },
+  "homepage": "https://github.com/in-c0/paper-ui#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/in-c0/paper-ui.git",
+    "directory": "packages/paper-ui"
+  },
+  "bugs": {
+    "url": "https://github.com/in-c0/paper-ui/issues"
   }
 }

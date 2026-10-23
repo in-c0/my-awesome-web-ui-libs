@@ -2,7 +2,7 @@ name: Independent Paper UI CI
 
 on:
   push:
-    branches: [export/paper-ui, main]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -47,3 +47,49 @@ jobs:
             apps/studio/test-results/
             apps/studio/playwright-report/
           retention-days: 7
+
+  packed-consumer:
+    needs: build-and-unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install and build the package
+        run: |
+          bun install --frozen-lockfile
+          bun --filter @in-c0/paper-ui build
+      - name: Install the actual npm tarball into an empty React consumer
+        run: |
+          set -eu
+          mkdir -p "$RUNNER_TEMP/paper-ui-consumer/src"
+          cd packages/paper-ui
+          npm pack --pack-destination "$RUNNER_TEMP" --silent
+          cd "$RUNNER_TEMP/paper-ui-consumer"
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund "$RUNNER_TEMP"/in-c0-paper-ui-*.tgz react@19 react-dom@19 vite@8 @vitejs/plugin-react@6 typescript@6 @types/react@19 @types/react-dom@19
+          cat > index.html <<'HTML'
+          <!doctype html><html><head><meta charset="UTF-8"/></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>
+          HTML
+          cat > src/main.tsx <<'TSX'
+          import React from 'react';
+          import { createRoot } from 'react-dom/client';
+          import { PaperSurface, PaperCard, PaperButton, PencilText, MaterialEffect } from '@in-c0/paper-ui';
+
+          const App = () => <PaperSurface light="desk" texture={false}>
+            <PaperCard>
+              <PencilText animate={false}>Paper UI package smoke test</PencilText>
+              <PaperButton>Save</PaperButton>
+            </PaperCard>
+            <MaterialEffect kind="grain-blob" paused><p>Independent package</p></MaterialEffect>
+          </PaperSurface>;
+
+          createRoot(document.getElementById('root')!).render(<App />);
+          TSX
+          cat > tsconfig.json <<'JSON'
+          {"compilerOptions":{"target":"ESNext","lib":["DOM","ESNext"],"module":"ESNext","moduleResolution":"Bundler","jsx":"react-jsx","strict":true,"noEmit":true,"skipLibCheck":true},"include":["src"]}
+          JSON
+          npx tsc --noEmit
+          npx vite build
+          test -f dist/index.html
+          test -n "$(find dist/assets -name '*.css' -print -quit)"

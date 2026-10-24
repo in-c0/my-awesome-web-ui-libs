@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#f8f8f4">
+  <meta name="theme-color" content="#ece8dc">
   <meta name="description" content="Profile Atlas turns GitHub projects, stars, forks, personal stories, and inspiration into an interactive gallery.">
-  <title>Profile Atlas — Your work, your curiosity, your story</title>
+  <title>Profile Atlas — An endless shelf of work and curiosity</title>
   <style>
   :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#27302a;background:#f7f8f4}
   *{box-sizing:border-box}body{margin:0}a{color:inherit}button,input{font:inherit}button{cursor:pointer}
@@ -33,8 +33,16 @@
   footer{border-top:1px solid #dce2dc;padding:24px 0 42px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:#858e87;font-size:11px}
   @media(max-width:800px){.wrap{padding:0 16px}.hero{display:block;padding:46px 0 18px}.reader{margin-top:28px}.topbar{padding:17px 0}.links{gap:10px;font-size:11px}.section-head{margin-top:28px}.section-head h2{font-size:25px}.purpose{grid-template-columns:1fr;margin:30px 0}}
   @media(prefers-color-scheme:dark){:root{background:#171e19;color:#eaf0e8}.topbar,footer,.row-shell{border-color:#38493d}.reader,.purpose>div{background:#253027;border-color:#3a4b3e}.reader input{background:#1a251e;color:white;border-color:#455749}.hero p,.reader p,.purpose p,.section-head span,.links,footer{color:#a1b0a3}}
+  /* Editorial shell: clear hierarchy outside the interactive Web Component. */
+  :root{color:#242923;background:#ece8dc;font-family:"Trebuchet MS",Arial,sans-serif}
+  .wrap{max-width:1370px;padding:0 48px}.topbar{padding:23px 0;border-color:#c7c3b6}.identity{font-size:12px;letter-spacing:.1em;text-transform:uppercase}.logo{width:34px;height:34px;background:#e86b42;border-radius:50%;color:#fff;font-size:23px;font-weight:400}.links{color:#62695f;font-size:11px}
+  .hero{grid-template-columns:minmax(0,1.65fr) minmax(230px,.65fr);gap:50px;padding:54px 0 41px}.eyebrow{color:#b85939;letter-spacing:.21em;font-size:10px}.hero h1{font-weight:400;font-size:clamp(3.1rem,6vw,6.4rem);letter-spacing:-.075em;max-width:980px;line-height:.98}.hero h1 em{font-weight:400;color:#b95e40}.hero p{color:#717267;font-size:14px;max-width:600px;line-height:1.75;margin-top:24px}
+  .reader{border-radius:3px;padding:24px;border-color:#cac5b6;background:#f5f2e8;box-shadow:9px 9px 0 #dad5c7}.reader label{color:#7c7b69;font-size:10px;letter-spacing:.17em}.reader form{margin-top:18px}.reader input{border-radius:3px;background:#fcfaf4;border-color:#ccc7b9}.reader button{border-radius:3px;background:#293d30;font-weight:700}.reader p{color:#858274}
+  .section-head{margin:34px 0 23px}.section-head h2{font-size:clamp(29px,3vw,43px);letter-spacing:-.06em}.section-head span{letter-spacing:.03em;color:#8b887d}.narrative{padding-top:30px}.row-shell{padding-top:16px;border-color:#c9c5b8}.purpose{gap:0;border:1px solid #d1ccbd;margin:65px 0 84px}.purpose>div{border:0;border-right:1px solid #d1ccbd;background:transparent;border-radius:0;padding:25px 22px}.purpose>div:last-child{border-right:0}.purpose strong{font-family:Georgia,serif;font-size:20px;letter-spacing:-.03em;font-weight:400}.purpose p{color:#77786c;font-size:12px}footer{border-color:#c9c5b8;color:#87867a}
+  @media(max-width:800px){.wrap{padding:0 18px}.hero{display:block;padding:53px 0 34px}.hero h1{font-size:clamp(3rem,11vw,5.3rem)}.reader{margin-top:32px}.section-head{margin-top:26px}.section-head h2{font-size:30px}.purpose{grid-template-columns:1fr;margin:38px 0}.purpose>div{border-right:0;border-bottom:1px solid #d1ccbd}.purpose>div:last-child{border:0}.links{gap:9px}.topbar{padding:18px 0}}
+  @media(prefers-color-scheme:dark){:root{background:#ece8dc;color:#242923}.topbar,footer,.row-shell{border-color:#c7c3b6}.reader{background:#f5f2e8;border-color:#cac5b6}.reader input{background:#fcfaf4;color:#242923;border-color:#ccc7b9}.hero p,.reader p,.purpose p,.section-head span,.links,footer{color:#77786c}.purpose>div{background:transparent}}
   </style>
-  <script type="module" src="../src/profile-atlas.js"></script>
+  <script type="module" src="./src/profile-atlas.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -44,9 +52,9 @@
     </nav>
     <header class="hero">
       <div>
-        <span class="eyebrow">THE WORK IS THE STORY</span>
-        <h1>Every project is a piece of the journey.</h1>
-        <p>A place for the things you've made, the ideas you've followed, and the work that inspired you. Explore in motion — or see the entire catalogue at a glance.</p>
+        <span class="eyebrow">A PERSONAL ARCHIVE, NEVER A FINISHED PAGE</span>
+        <h1>Made things.<br><em>Found things.</em><br>Everything between.</h1>
+        <p>Six pinned projects were never enough. This is an endless, tactile gallery of what we build, what we discover, and how one idea leads to another. Drag into the collection, or open its full index.</p>
       </div>
       <aside class="reader">
         <label for="username">Explore a GitHub profile</label>
@@ -58,14 +66,14 @@
       </aside>
     </header>
     <section id="work">
-      <div class="section-head"><h2>Work & discovery</h2><span id="profile-summary">A 2.5D interactive collection</span></div>
-      <profile-atlas id="primary" username="in-c0" manifest-url="../data/in-c0.json" max-pages="10"></profile-atlas>
+      <div class="section-head"><h2>The collection</h2><span id="profile-summary">A living archive of public work</span></div>
+      <profile-atlas id="primary" username="in-c0" manifest-url="./data/in-c0.json" max-pages="10"></profile-atlas>
     </section>
     <div id="journey" class="narrative"></div>
     <section id="about" class="purpose" aria-label="About Profile Atlas">
-      <div><strong>One identity, many directions</strong><p>Bring your own projects and curated stories together with your public GitHub activity.</p></div>
-      <div><strong>Hundreds of entries, one viewport</strong><p>The gallery renders only nearby cards. Index and timeline progressively reveal more entries.</p></div>
-      <div><strong>Made for the open web</strong><p>Vanilla Custom Elements. No framework dependency, no secret token shipped to the browser, and accessible keyboard navigation.</p></div>
+      <div><strong>There is always more.</strong><p>Hundreds of projects, stars and forks. A small window into a collection that keeps moving.</p></div>
+      <div><strong>A trail, not a trophy case.</strong><p>Three parallel histories reveal the moments of making, bookmarking and remixing.</p></div>
+      <div><strong>Make it yours.</strong><p>A reusable, open-source Web Component. Bring a GitHub username, then add your own chapters.</p></div>
     </section>
     <footer><span>Profile Atlas · a public Web Component prototype</span><span>Project and star data from the GitHub REST API · snapshots recommended for high-traffic deployments</span></footer>
   </div>
@@ -77,7 +85,7 @@
    const u=input.value.trim();
    if(!/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(u)){input.setCustomValidity('Enter a valid GitHub username');input.reportValidity();return}
    input.setCustomValidity('');extra.replaceChildren();
-   if(u.toLowerCase()==='in-c0')atlas.setAttribute('manifest-url','../data/in-c0.json');else atlas.removeAttribute('manifest-url');
+   if(u.toLowerCase()==='in-c0')atlas.setAttribute('manifest-url','./data/in-c0.json');else atlas.removeAttribute('manifest-url');
    atlas.setAttribute('username',u);
    const search=new URL(location.href);search.searchParams.set('user',u);history.replaceState(null,'',search);
  }
@@ -88,12 +96,12 @@
    summary.textContent=counts.project+' projects · '+counts.star+' stars · '+counts.fork+' forks';
    extra.replaceChildren();
    if(atlas.username.toLowerCase()!=='in-c0')return;
-   for(const [kind,title,subtitle] of [['story','Stories & principles','Some of the reasons behind the work'],['inspiration','Visual inspiration','References, experiments, and ideas to explore']]){
+   for(const [kind,title,subtitle] of [['story','Notes from the margins','The ideas and convictions behind the work'],['inspiration','Collected sparks','Images and references worth revisiting']]){
      const shell=document.createElement('section');shell.className='row-shell';
      const heading=document.createElement('div');heading.className='section-head';
      const h2=document.createElement('h2');h2.textContent=title;
      const small=document.createElement('span');small.textContent=subtitle;heading.append(h2,small);
-     const child=document.createElement('profile-atlas');child.setAttribute('compact','');child.setAttribute('row',kind);child.setAttribute('username',atlas.username);child.setAttribute('manifest-url','../data/in-c0.json');child.setAttribute('max-pages','10');
+     const child=document.createElement('profile-atlas');child.setAttribute('compact','');child.setAttribute('row',kind);child.setAttribute('username',atlas.username);child.setAttribute('manifest-url','./data/in-c0.json');child.setAttribute('max-pages','10');
      shell.append(heading,child);extra.append(shell);
    }
  });

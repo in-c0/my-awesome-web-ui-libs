@@ -1,0 +1,29 @@
+{
+  "name": "@in-c0/profile-atlas",
+  "version": "0.1.0",
+  "description": "A framework-free GitHub profile gallery, index, and timeline Web Component.",
+  "type": "module",
+  "main": "./src/profile-atlas.js",
+  "module": "./src/profile-atlas.js",
+  "exports": {
+    ".": "./src/profile-atlas.js",
+    "./style.css": "./src/profile-atlas.css"
+  },
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "web-components",
+    "custom-elements",
+    "github",
+    "profile",
+    "gallery",
+    "timeline",
+    "portfolio"
+  ],
+  "license": "MIT",
+  "sideEffects": [
+    "./src/profile-atlas.js",
+    "./src/profile-atlas.css"
+  ]
+}

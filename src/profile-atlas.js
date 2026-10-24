@@ -31,7 +31,7 @@ function merge(repos,stars,manifest){
 const sorted=(items,kind)=>{const a=kind==='all'?[...items]:items.filter(x=>x.type===kind);return kind==='story'||kind==='inspiration'?a:a.sort((x,y)=>kind==='project'?(Number(y.featured)-Number(x.featured)||+new Date(y.date||0)-+new Date(x.date||0)):+new Date(y.date||0)-+new Date(x.date||0))};
 class ProfileAtlas extends HTMLElement{
  static get observedAttributes(){return['username','manifest-url','max-pages']}
- constructor(){super();this.attachShadow({mode:'open'});this.items=[];this.unlistedActivity=[];this.kind='project';this.pos={};this.pending=true;this.message='';this.loadId=0;this.lastWidth=0;this.root=E('div','atlas');const link=E('link');link.rel='stylesheet';link.href=new URL('./profile-atlas.css',import.meta.url).href;this.shadowRoot.append(link,this.root);this.keydown=this.keydown.bind(this)}
+ constructor(){super();this.attachShadow({mode:'open'});this.items=[];this.kind='project';this.pos={};this.pending=true;this.message='';this.loadId=0;this.lastWidth=0;this.root=E('div','atlas');const link=E('link');link.rel='stylesheet';link.href=new URL('./profile-atlas.css',import.meta.url).href;this.shadowRoot.append(link,this.root);this.keydown=this.keydown.bind(this)}
  connectedCallback(){if(['project','star','fork','story','inspiration'].includes(this.getAttribute('row')))this.kind=this.getAttribute('row');this.root.addEventListener('keydown',this.keydown);this.resize=new ResizeObserver(entries=>{const width=entries[0]?.contentRect.width||0;if(Math.abs(width-this.lastWidth)>3){this.lastWidth=width;if(!this.pending)this.gallery()}});this.resize.observe(this);this.load()}
  disconnectedCallback(){this.loadId++;this.controller?.abort();this.resize?.disconnect();this.root.removeEventListener('keydown',this.keydown)}
  attributeChangedCallback(){if(this.isConnected)this.load()}
@@ -56,9 +56,7 @@ class ProfileAtlas extends HTMLElement{
    let manifest={};const manifestPath=this.getAttribute('manifest-url');
    if(manifestPath){const u=new URL(manifestPath,document.baseURI);if(!['http:','https:'].includes(u.protocol))throw Error('Manifest must use HTTPS or HTTP');const r=await fetch(u.href,{signal:this.controller.signal});if(!r.ok)throw Error('Manifest HTTP '+r.status);manifest=await r.json()}
    if(current!==this.loadId)return;
-   this.items=merge(data.repos,data.stars,manifest);
-   this.unlistedActivity=manifest.projectVisibility==='curated'?data.repos.filter(r=>!r.fork&&r.created_at).map((r,i)=>({id:'unlisted:'+i,type:'project',title:'Unlisted project',summary:'A repository was created. Its identity is not featured in this portfolio.',date:r.created_at,language:'',url:'',demoUrl:''})):[];
-   this.message=data.warning||'';this.pending=false;this.render();this.dispatchEvent(new CustomEvent('atlas-ready',{detail:{count:this.items.length},bubbles:true}));
+   this.items=merge(data.repos,data.stars,manifest);this.message=data.warning||'';this.pending=false;this.render();this.dispatchEvent(new CustomEvent('atlas-ready',{detail:{count:this.items.length},bubbles:true}));
   }catch(e){if(current!==this.loadId||e.name==='AbortError')return;this.pending=false;this.message=e.message||'Unable to load activity.';this.render()}
  }
  render(){
@@ -118,8 +116,8 @@ class ProfileAtlas extends HTMLElement{
  }
  timeline(){
   const wrap=E('section','timeline-section'),head=E('div','timeline-heading'),intro=E('div');intro.append(E('small','eyebrow','A TRAIL THROUGH TIME'),E('h2','','The things I made & the things I found.'),E('p','','Three traces of curiosity. Travel sideways; select a moment to see what happened.'));
-  const activity=this.items.concat(this.unlistedActivity);const explore=E('button','browse','Explore activity ↗');explore.onclick=()=>this.openIndex(activity.filter(x=>['project','star','fork'].includes(x.type)).sort((a,b)=>+new Date(b.date||0)-+new Date(a.date||0)),'The activity archive');head.append(intro,explore);wrap.append(head);
-  const events=activity.filter(x=>['project','star','fork'].includes(x.type)&&x.date&&!Number.isNaN(+new Date(x.date)));
+  const explore=E('button','browse','Explore activity ↗');explore.onclick=()=>this.openIndex(this.items.filter(x=>['project','star','fork'].includes(x.type)).sort((a,b)=>+new Date(b.date||0)-+new Date(a.date||0)),'The activity archive');head.append(intro,explore);wrap.append(head);
+  const events=this.items.filter(x=>['project','star','fork'].includes(x.type)&&x.date&&!Number.isNaN(+new Date(x.date)));
   if(!events.length){wrap.append(E('p','notice','No dated public events yet.'));return wrap}
   const dates=events.map(x=>new Date(x.date)),first=new Date(Math.min(...dates)),last=new Date(Math.max(...dates)),start=first.getUTCFullYear()*12+first.getUTCMonth(),end=last.getUTCFullYear()*12+last.getUTCMonth(),months=end-start+1,unit=92,total=months*unit+100;
   const board=E('div','timeline-board'),labels=E('div','lane-labels');for(const [type,label,subtitle] of [['project','MADE','Repositories'],['star','SAVED','Stars'],['fork','REMIXED','Forks']]){const row=E('div','lane-label '+type);row.append(E('strong','',label),E('small','',subtitle));labels.append(row)}

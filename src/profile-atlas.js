@@ -16,6 +16,7 @@ async function pages(path,headers,signal,max){
  return{items:out,capped};
 }
 const repoToItem=r=>({id:'repo:'+r.full_name,type:r.fork?'fork':'project',title:r.name,summary:r.description||'GitHub repository',body:'',repo:r.full_name,url:url(r.html_url),demoUrl:url(r.homepage),image:'',preview:'link',date:r.created_at,language:r.language||'',featured:false});
+const eventToCommit=e=>({id:'push:'+e.id,type:'commit',title:'Code push',summary:'A public push event; this event does not necessarily represent one commit.',repo:e.repo?.name||'',url:url(e.repo?.name?'https://github.com/'+e.repo.name:''),date:e.created_at,activityCount:1,source:'github-public-events'});
 const manifestItem=(r,type,i)=>({id:r.id||type+':'+i,type,title:r.title||'Untitled',summary:r.summary||'',body:r.body||'',repo:r.repo||'',url:url(r.url),demoUrl:url(r.demoUrl),image:url(r.image),preview:['iframe','video','image','link'].includes(r.preview)?r.preview:'link',date:r.date||'',language:r.language||'',featured:!!r.featured});
 function merge(repos,stars,manifest){
  const exclusions=(manifest.excludeRepos||[]).map(x=>String(x).toLowerCase());
@@ -40,7 +41,77 @@ function unfeaturedMonthlyCounts(repos,manifest){
  }
  return [...counts.entries()].map(([month,count])=>({id:'unfeatured-month:'+month,type:'project',title:'Unfeatured repository creations',summary:count+' public repositories were created in '+new Date(month+'-01T00:00:00Z').toLocaleDateString(undefined,{month:'long',year:'numeric'})+'. Titles and links are intentionally withheld.',date:month+'-01T00:00:00Z',activityCount:count,aggregate:true}));
 }
+function monthlyPushCounts(pushes){
+ const groups=new Map();for(const event of pushes){const date=new Date(event.date);if(Number.isNaN(+date))continue;const period=date.toISOString().slice(0,7);groups.set(period,(groups.get(period)||0)+1)}
+ return [...groups].map(([period,count])=>({id:'public-push-month:'+period,type:'commit',title:'Public code pushes',summary:count+' recent public push event'+(count===1?'':'s')+' in '+period+'. Repository names and commit contents are omitted here.',date:period+'-01T00:00:00Z',activityCount:count,aggregate:true,source:'github-public-events'}));
+}
+function snapshotToItems(manifest,missingTypes){
+ const types=['star','fork','project'],labels={star:'Starred discoveries',fork:'Forks created',project:'Repositories created'},date=manifest.activitySnapshotRecordedAt||'an earlier date';
+ return (manifest.activitySnapshot||[]).flatMap(row=>types.flatMap((type,index)=>{
+  const count=Number(row[index+1]);if(!missingTypes.has(type)||!Number.isFinite(count)||count<=0||!/^[0-9]{4}-[0-9]{2}$/.test(row[0]))return[];
+  return[{id:'public-snapshot:'+row[0]+':'+type,type,title:labels[type],summary:count+' '+type+' activities recorded in '+row[0]+' (public monthly snapshot taken '+date+'). Individual names are omitted in the fallback.',date:row[0]+'-01T00:00:00Z',activityCount:count,aggregate:true,source:'monthly-snapshot'}]
+ }));
+}
 const sorted=(items,kind)=>{const a=kind==='all'?[...items]:items.filter(x=>x.type===kind);return kind==='story'||kind==='inspiration'?a:a.sort((x,y)=>kind==='project'?(Number(y.featured)-Number(x.featured)||(x.curatedOrder??Infinity)-(y.curatedOrder??Infinity)||+new Date(y.date||0)-+new Date(x.date||0)):+new Date(y.date||0)-+new Date(x.date||0))};
+/** Independent, framework-free GitHub activity railway. Set .events or use username. */
+class GithubActivityTimeline extends HTMLElement{
+ static get observedAttributes(){return ['username','max-pages']}
+ constructor(){super();this.attachShadow({mode:'open'});this._events=[];this._loadId=0;this._ready=false;const css=E('link'),graphcss=E('link');css.rel='stylesheet';css.href=new URL('./profile-atlas.css',import.meta.url).href;graphcss.rel='stylesheet';graphcss.href=new URL('./github-activity-timeline.css',import.meta.url).href;this.surface=E('section','timeline-section graph-section');this.shadowRoot.append(css,graphcss,this.surface)}
+ set events(value){this._events=Array.isArray(value)?value:[];this._ready=true;this._loadId++;if(this.isConnected)this.render()}
+ get events(){return this._events}
+ connectedCallback(){if(this._ready)this.render();else this.load()}
+ disconnectedCallback(){this._loadId++;this.controller?.abort()}
+ attributeChangedCallback(){if(this.isConnected&&!this._ready)this.load()}
+ async load(){
+  const username=(this.getAttribute('username')||'').trim();if(!/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(username)){this.surface.replaceChildren(E('p','notice','Set a GitHub username or provide an events array.'));return}
+  const id=++this._loadId;this.controller?.abort();this.controller=new AbortController();this.surface.replaceChildren(E('p','notice','Loading public activity…'));
+  try{
+   const max=Math.max(1,Math.min(30,Number(this.getAttribute('max-pages')||10)||10));
+   const key='profile-atlas:v2:'+username+':'+max;let data=cacheRead(key)||cacheRead('profile-atlas:v1:'+username+':'+max);
+   if(!data){
+    const path='/users/'+encodeURIComponent(username),results=await Promise.allSettled([pages(path+'/repos?type=owner&sort=created',{},this.controller.signal,max),pages(path+'/starred',{'Accept':'application/vnd.github.star+json'},this.controller.signal,max),pages(path+'/events/public',{},this.controller.signal,3)]);
+    if(results.every(x=>x.status==='rejected'))throw results[0].reason;
+    data={repos:results[0].status==='fulfilled'?results[0].value.items:[],stars:results[1].status==='fulfilled'?results[1].value.items:[],pushes:results[2].status==='fulfilled'?results[2].value.items.filter(x=>x.type==='PushEvent'):[]};if(results.some(x=>x.status==='fulfilled'))cacheWrite(key,data)
+   }
+   if(!('pushes' in data)){try{const p=await pages('/users/'+encodeURIComponent(username)+'/events/public',{},this.controller.signal,3);data.pushes=p.items.filter(x=>x.type==='PushEvent');cacheWrite(key,data)}catch{data.pushes=[]}}
+   if(id!==this._loadId)return;
+   const owned=data.repos.map(repoToItem),starred=data.stars.map(x=>({...repoToItem(x.repo||x),id:'star:'+((x.repo||x).full_name),type:'star',date:x.starred_at||''})),pushes=(data.pushes||[]).map(eventToCommit);this._events=[...owned,...starred,...pushes];this._ready=true;this.render();
+  }catch(e){if(id===this._loadId&&e.name!=='AbortError')this.surface.replaceChildren(E('p','notice',e.message||'Unable to load GitHub activity.'))}
+ }
+ open(items,label){const event=new CustomEvent('activity-open',{detail:{items,label},bubbles:true,composed:true,cancelable:true});this.dispatchEvent(event);if(!event.defaultPrevented)this.showDetails(items,label)}
+ showDetails(items,label){
+  this.surface.querySelector('.graph-drawer')?.remove();const drawer=E('div','graph-drawer');drawer.setAttribute('role','region');drawer.setAttribute('aria-label',label);const head=E('div','graph-drawer-head'),close=E('button','','×');close.setAttribute('aria-label','Close activity details');close.onclick=()=>drawer.remove();head.append(E('strong','',label),close);drawer.append(head);
+  for(const item of items){const row=E('div','graph-drawer-item');const link=item.url?E('a','',item.title):E('strong','',item.title);if(item.url){link.href=item.url;link.target='_blank';link.rel='noopener noreferrer'}row.append(link,E('small','',item.summary||item.type));drawer.append(row)}this.surface.append(drawer)
+ }
+ render(){
+  this.surface.replaceChildren();const events=this._events.filter(x=>['project','star','fork','commit'].includes(x.type)&&x.date&&!Number.isNaN(+new Date(x.date)));
+  const header=E('div','timeline-heading graph-heading'),intro=E('div');intro.append(E('small','eyebrow','GITHUB ACTIVITY / A LIVING BRANCH'),E('h2','','A trail of things made & found.'),E('p','','One timeline, four kinds of activity. Stars and forks above; new repositories and code activity below.'));
+  const legend=E('div','graph-legend');for(const [type,label,symbol] of [['star','Star','✳'],['fork','Fork','⑂'],['project','New repo','◆'],['commit','Code push','↟']]){const x=E('span','legend '+type);x.append(E('b','',symbol),E('span','',label));legend.append(x)}const more=E('button','graph-more','Explore activity ↗');more.onclick=()=>this.open(events.slice().sort((a,b)=>+new Date(b.date)-+new Date(a.date)),'All recorded activity');const aside=E('div','graph-heading-actions');aside.append(legend,more);header.append(intro,aside);this.surface.append(header);
+  if(!events.length){this.surface.append(E('p','notice','No dated public GitHub events yet.'));return}
+  const dates=events.map(x=>+new Date(x.date)),first=new Date(Math.min(...dates)),last=new Date(Math.max(...dates)),firstMonth=first.getUTCFullYear()*12+first.getUTCMonth(),lastMonth=last.getUTCFullYear()*12+last.getUTCMonth(),months=lastMonth-firstMonth+1,step=150,width=months*step+110;
+  const viewport=E('div','graph-viewport');viewport.tabIndex=0;viewport.setAttribute('role','region');viewport.setAttribute('aria-label','Horizontal GitHub activity graph. Drag sideways or use arrow buttons.');const rail=E('div','graph-rail');rail.style.width=width+'px';
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 '+width+' 395');svg.setAttribute('width',width);svg.setAttribute('height','395');svg.classList.add('graph-lines');const path=(d,cls)=>{const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',d);p.setAttribute('class',cls);svg.append(p)};
+  path(`M 24 183 H ${width-34} M ${width-43} 176 L ${width-33} 183 L ${width-43} 190`,'graph-main-line');
+  const startDot=document.createElementNS('http://www.w3.org/2000/svg','circle');startDot.setAttribute('cx','24');startDot.setAttribute('cy','183');startDot.setAttribute('r','6');startDot.setAttribute('class','graph-origin');svg.append(startDot);
+  const grouped=new Map();for(const item of events){const d=new Date(item.date),month=d.getUTCFullYear()*12+d.getUTCMonth()-firstMonth,key=month+':'+item.type;if(!grouped.has(key))grouped.set(key,{type:item.type,month,items:[]});grouped.get(key).items.push(item)}
+  const columns=new Set();for(const {month} of grouped.values())columns.add(month);
+  for(const month of columns){const x=70+month*step;path(`M ${x} 179 L ${x} 187`,'graph-tick')}
+  for(const group of grouped.values()){
+   const x=70+group.month*step,total=group.items.reduce((s,i)=>s+(i.activityCount||1),0),monthDate=new Date(Date.UTC(Math.floor((firstMonth+group.month)/12),(firstMonth+group.month)%12,1)),period=monthDate.toLocaleDateString(undefined,{year:'numeric',month:'long'}),t=group.type;
+   const px=(t==='star'||t==='project')?x-34:x+34,py=t==='star'?75:t==='fork'?125:t==='project'?245:304;
+   if(t==='star')path(`M ${x} 183 C ${x} 129 ${px} 131 ${px} ${py+22}`,'graph-branch star');
+   if(t==='fork')path(`M ${x} 183 C ${x} 155 ${px} 150 ${px} ${py+22}`,'graph-branch fork');
+   if(t==='project')path(`M ${x} 183 C ${x} 207 ${px} 211 ${px} ${py-22}`,'graph-branch project');
+   if(t==='commit')path(`M ${x} 183 C ${x} 245 ${px} 247 ${px} ${py-22}`,'graph-branch commit');
+   const node=E('button','graph-event '+t),count=E('span','graph-event-count',String(total)),symbol=E('span','graph-event-symbol',t==='star'?'✳':t==='fork'?'⑂':t==='project'?'◆':'↟'),tag=E('span','graph-event-tag',t==='star'?'STAR':t==='fork'?'FORK':t==='project'?'NEW REPO':'PUSH');node.type='button';node.style.left=px+'px';node.style.top=py+'px';node.append(symbol,count,tag);node.setAttribute('aria-label',total+' '+(t==='commit'?'public code push':t)+' activities in '+period);node.title=group.items.some(x=>x.aggregate)?total+' '+t+' activities · names intentionally omitted':group.items.slice(0,4).map(x=>x.title).join(' · ');node.onclick=()=>this.open(group.items,total+' '+(t==='commit'?'code push':t)+' activities · '+period);rail.append(node)
+  }
+  const axis=E('div','graph-axis');for(let m=0;m<months;m++){const v=firstMonth+m,year=Math.floor(v/12),month=v%12;if(m===0||month===0||month===3||month===6||month===9){const tick=E('span','graph-axis-tick',month===0?String(year):['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month]);tick.style.left=(70+m*step)+'px';axis.append(tick)}}rail.append(svg,axis);viewport.append(rail);this.surface.append(viewport);
+  const total=events.reduce((s,i)=>s+(i.activityCount||1),0),bottom=E('div','timeline-bottom graph-bottom'),controls=E('div','timeline-controls'),back=E('button','timeline-arrow','←'),next=E('button','timeline-arrow','→');bottom.append(E('span','',total+' recorded public activities · '+first.getUTCFullYear()+'—'+last.getUTCFullYear()+(events.some(x=>x.aggregate)?' · some names hidden':'')));back.setAttribute('aria-label','Travel to earlier events');next.setAttribute('aria-label','Travel to later events');back.onclick=()=>viewport.scrollBy({left:-step*4,behavior:'smooth'});next.onclick=()=>viewport.scrollBy({left:step*4,behavior:'smooth'});controls.append(E('span','','← DRAG TIME →'),back,next);bottom.append(controls);this.surface.append(E('p','graph-freshness','Code activity comes from recent public GitHub push events (up to 30 days), not an all-time commit history.'),bottom);
+  let drag=null;viewport.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('button'))return;drag={x:e.clientX,scroll:viewport.scrollLeft};viewport.setPointerCapture(e.pointerId);viewport.classList.add('dragging')});viewport.addEventListener('pointermove',e=>{if(drag)viewport.scrollLeft=drag.scroll+drag.x-e.clientX});const end=()=>{drag=null;viewport.classList.remove('dragging')};viewport.addEventListener('pointerup',end);viewport.addEventListener('pointercancel',end);viewport.addEventListener('wheel',e=>{if(e.shiftKey){e.preventDefault();viewport.scrollLeft+=e.deltaY}},{passive:false});
+  requestAnimationFrame(()=>{if(viewport.isConnected)viewport.scrollLeft=viewport.scrollWidth-viewport.clientWidth});
+ }
+}
+if(!customElements.get('github-activity-timeline'))customElements.define('github-activity-timeline',GithubActivityTimeline);
 class ProfileAtlas extends HTMLElement{
  static get observedAttributes(){return['username','manifest-url','max-pages']}
  constructor(){super();this.attachShadow({mode:'open'});this.items=[];this.hiddenMonthly=[];this.kind='project';this.pos={};this.pending=true;this.message='';this.loadId=0;this.lastWidth=0;this.root=E('div','atlas');const link=E('link');link.rel='stylesheet';link.href=new URL('./profile-atlas.css',import.meta.url).href;this.shadowRoot.append(link,this.root);this.keydown=this.keydown.bind(this)}
@@ -54,24 +125,25 @@ class ProfileAtlas extends HTMLElement{
  async load(){
   const current=++this.loadId;this.controller?.abort();this.controller=new AbortController();this.pending=true;this.message='';this.render();
   if(!/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(this.username)){this.pending=false;this.message='Choose a valid GitHub username.';this.render();return}
-  const key='profile-atlas:v1:'+this.username+':'+this.limit;
+  const key='profile-atlas:v2:'+this.username+':'+this.limit;
   try{
-   let data=cacheRead(key);
+   let data=cacheRead(key)||cacheRead('profile-atlas:v1:'+this.username+':'+this.limit);
    if(!data){
     const path='/users/'+encodeURIComponent(this.username);
-    const responses=await Promise.allSettled([pages(path+'/repos?type=owner&sort=created',{},this.controller.signal,this.limit),pages(path+'/starred',{'Accept':'application/vnd.github.star+json'},this.controller.signal,this.limit)]);
-    if(responses.every(x=>x.status==='rejected'))throw responses[0].reason;
+    const responses=await Promise.allSettled([pages(path+'/repos?type=owner&sort=created',{},this.controller.signal,this.limit),pages(path+'/starred',{'Accept':'application/vnd.github.star+json'},this.controller.signal,this.limit),pages(path+'/events/public',{},this.controller.signal,3)]);
     const r=responses[0].status==='fulfilled'?responses[0].value:{items:[],capped:false};
-    const s=responses[1].status==='fulfilled'?responses[1].value:{items:[],capped:false};
-    data={repos:r.items,stars:s.items,warning:(r.capped||s.capped?'Reached '+(this.limit*100)+' entries per feed. Increase max-pages. ':'')+(responses.some(x=>x.status==='rejected')?'One GitHub feed is unavailable.':'')};cacheWrite(key,data);
+    const s=responses[1].status==='fulfilled'?responses[1].value:{items:[],capped:false},p=responses[2].status==='fulfilled'?responses[2].value:{items:[],capped:false};
+    data={repos:r.items,stars:s.items,pushes:p.items.filter(e=>e.type==='PushEvent'),warning:(r.capped||s.capped?'Reached '+(this.limit*100)+' entries per feed. Increase max-pages. ':'')+(responses.some(x=>x.status==='rejected')?'One or more live GitHub feeds are unavailable; a dated public snapshot may be shown.':'')};if(responses.some(x=>x.status==='fulfilled'))cacheWrite(key,data);
    }
+   if(!('pushes' in data)){try{const p=await pages('/users/'+encodeURIComponent(this.username)+'/events/public',{},this.controller.signal,3);data.pushes=p.items.filter(e=>e.type==='PushEvent');cacheWrite(key,data)}catch{data.pushes=[]}}
    let manifest={};const manifestPath=this.getAttribute('manifest-url');
    if(manifestPath){const u=new URL(manifestPath,document.baseURI);if(!['http:','https:'].includes(u.protocol))throw Error('Manifest must use HTTPS or HTTP');const r=await fetch(u.href,{signal:this.controller.signal});if(!r.ok)throw Error('Manifest HTTP '+r.status);manifest=await r.json()}
    if(current!==this.loadId)return;
    this.items=merge(data.repos,data.stars,manifest);
    const knownDates=new Map(data.repos.map(r=>[String(r.full_name||'').toLowerCase(),r.created_at]));
    for(const item of this.items)if(item.type==='project'&&item.repo&&!item.date&&knownDates.has(item.repo.toLowerCase()))item.date=knownDates.get(item.repo.toLowerCase());
-   this.hiddenMonthly=unfeaturedMonthlyCounts(data.repos,manifest);
+   const missing=new Set();if(!data.repos.length){missing.add('project');missing.add('fork')}if(!data.stars.length)missing.add('star');
+   this.hiddenMonthly=[...unfeaturedMonthlyCounts(data.repos,manifest),...snapshotToItems(manifest,missing),...(manifest.projectVisibility==='curated'?monthlyPushCounts((data.pushes||[]).map(eventToCommit)):(data.pushes||[]).map(eventToCommit))];
    this.message=data.warning||'';this.pending=false;this.render();this.dispatchEvent(new CustomEvent('atlas-ready',{detail:{count:this.items.length},bubbles:true}));
   }catch(e){if(current!==this.loadId||e.name==='AbortError')return;this.pending=false;this.message=e.message||'Unable to load activity.';this.render()}
  }
@@ -131,22 +203,9 @@ class ProfileAtlas extends HTMLElement{
   search.oninput=()=>{limit=30;draw()};more.onclick=()=>{limit+=40;draw()};panel.append(head,search,label,list,more);overlay.append(panel);this.root.append(overlay);draw();search.focus()
  }
  timeline(){
-  const wrap=E('section','timeline-section'),head=E('div','timeline-heading'),intro=E('div');intro.append(E('small','eyebrow','A TRAIL THROUGH TIME'),E('h2','','The things I made & the things I found.'),E('p','','Three traces of curiosity. Travel sideways; select a moment to see what happened.'));
-  const activity=this.items.concat(this.hiddenMonthly);const explore=E('button','browse','Explore activity ↗');explore.onclick=()=>this.openIndex(activity.filter(x=>['project','star','fork'].includes(x.type)).sort((a,b)=>+new Date(b.date||0)-+new Date(a.date||0)),'The activity archive');head.append(intro,explore);wrap.append(head);
-  const events=activity.filter(x=>['project','star','fork'].includes(x.type)&&x.date&&!Number.isNaN(+new Date(x.date)));
-  if(!events.length){wrap.append(E('p','notice','No dated public events yet.'));return wrap}
-  const dates=events.map(x=>new Date(x.date)),first=new Date(Math.min(...dates)),last=new Date(Math.max(...dates)),start=first.getUTCFullYear()*12+first.getUTCMonth(),end=last.getUTCFullYear()*12+last.getUTCMonth(),months=end-start+1,unit=92,total=months*unit+100;
-  const board=E('div','timeline-board'),labels=E('div','lane-labels');for(const [type,label,subtitle] of [['project','MADE','Repositories'],['star','SAVED','Stars'],['fork','REMIXED','Forks']]){const row=E('div','lane-label '+type);row.append(E('strong','',label),E('small','',subtitle));labels.append(row)}
-  const scroller=E('div','time-window');scroller.tabIndex=0;scroller.setAttribute('aria-label','Horizontal timeline of repository creations, stars and forks. Scroll sideways.');const track=E('div','time-track');track.style.width=total+'px';
-  for(const [i,type] of ['project','star','fork'].entries()){const lane=E('div','time-lane '+type);lane.style.top=(53+i*83)+'px';track.append(lane)}
-  const axis=E('div','time-axis');for(let m=0;m<months;m++){const year=Math.floor((start+m)/12),month=(start+m)%12;if(m===0||month===0||month===3||month===6||month===9){const tick=E('span','time-tick',month===0?String(year):['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month]);tick.style.left=(45+m*unit)+'px';axis.append(tick)}}track.append(axis);
-  const grouped=new Map();for(const event of events){const d=new Date(event.date),period=d.getUTCFullYear()*12+d.getUTCMonth()-start,key=event.type+':'+period;if(!grouped.has(key))grouped.set(key,{type:event.type,period,items:[]});grouped.get(key).items.push(event)}
-  const rowIndex={project:0,star:1,fork:2};for(const group of grouped.values()){const total=group.items.reduce((sum,item)=>sum+(item.activityCount||1),0);const button=E('button','event-dot '+group.type);button.type='button';button.style.left=(45+group.period*unit)+'px';button.style.top=(53+rowIndex[group.type]*83)+'px';button.textContent=total>1?String(total):'•';button.setAttribute('aria-label',total+' '+group.type+' events in '+new Date(Date.UTC(Math.floor((start+group.period)/12),(start+group.period)%12,1)).toLocaleDateString(undefined,{month:'long',year:'numeric'}));button.title=group.items.slice(0,4).map(x=>x.title).join(' · ');button.onclick=()=>group.items.length===1?this.detail(group.items[0]):this.openIndex(group.items,total+' '+group.type+' events');track.append(button)}
-  scroller.append(track);board.append(labels,scroller);wrap.append(board);
-  const below=E('div','timeline-bottom'),totalEvents=events.reduce((sum,item)=>sum+(item.activityCount||1),0),meta=E('span','',totalEvents+' public moments · '+first.getUTCFullYear()+'—'+last.getUTCFullYear()+(this.hiddenMonthly.length?' · unfeatured creations shown by month only':'')),controls=E('div','timeline-controls'),back=E('button','timeline-arrow','←'),forward=E('button','timeline-arrow','→');back.setAttribute('aria-label','Scroll timeline backward');forward.setAttribute('aria-label','Scroll timeline forward');back.onclick=()=>scroller.scrollBy({left:-unit*5,behavior:'smooth'});forward.onclick=()=>scroller.scrollBy({left:unit*5,behavior:'smooth'});controls.append(E('span','','DRAG OR SCROLL TO EXPLORE'),back,forward);below.append(meta,controls);wrap.append(below);
-  scroller.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY))return;if(e.shiftKey){e.preventDefault();scroller.scrollLeft+=e.deltaY}},{passive:false});
-  let drag=null;scroller.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('button'))return;drag={x:e.clientX,scroll:scroller.scrollLeft};scroller.setPointerCapture(e.pointerId);scroller.classList.add('dragging')});scroller.addEventListener('pointermove',e=>{if(drag)scroller.scrollLeft=drag.scroll+drag.x-e.clientX});const endDrag=()=>{drag=null;scroller.classList.remove('dragging')};scroller.addEventListener('pointerup',endDrag);scroller.addEventListener('pointercancel',endDrag);
-  requestAnimationFrame(()=>{if(scroller.isConnected)scroller.scrollLeft=scroller.scrollWidth-scroller.clientWidth});return wrap
+  const component=E('github-activity-timeline');component.events=[...this.items,...this.hiddenMonthly];
+  component.addEventListener('activity-open',event=>{event.preventDefault();const {items,label}=event.detail;if(items.length===1)this.detail(items[0]);else this.openIndex(items,label)});
+  return component
  }
  detail(item,demoFirst=false){
   const overlay=E('div','overlay'),panel=E('section','detail');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label',item.title);

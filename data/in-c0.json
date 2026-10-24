@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "vibo",
+      "title": "ViBo",
+      "summary": "A visual workspace for planning and bringing ideas to life.",
+      "body": "Interactive boards for thinking, planning, and exploring ideas visually.",
+      "demoUrl": "https://vibomaker.com",
+      "url": "https://vibomaker.com",
+      "preview": "iframe",
+      "featured": true
+    },
+    {
+      "id": "sumzup",
+      "title": "Sumzup",
+      "summary": "Explore long-form ideas through concise, structured AI digests.",
+      "body": "A tool for working through long-form content and ideas more efficiently.",
+      "demoUrl": "https://sumz-up.com",
+      "url": "https://sumz-up.com",
+      "preview": "iframe",
+      "featured": true
+    },
+    {
+      "id": "consilium",
+      "title": "Consilium",
+      "summary": "Agentic roundtables for reviewing software, specifications, and visual quality.",
+      "demoUrl": "https://consilium.ava.kim",
+      "url": "https://consilium.ava.kim",
+      "preview": "iframe",
+      "featured": true
+    },
+    {
+      "id": "ssmt",
+      "title": "SSMT",
+      "summary": "Discovery of products, research, makers, and evidence.",
+      "demoUrl": "https://ssmt.uk",
+      "url": "https://ssmt.uk",
+      "preview": "iframe",
+      "featured": true
+    }
+  ],
+  "stories": [
+    {
+      "id": "why-build",
+      "title": "Why I build",
+      "summary": "I want useful ideas to have the resources and opportunity to make a difference.",
+      "body": "I want to build an R&D organization capable of supporting ambitious products, scientific research, and public-interest systems. I'm learning how to build that organization, one experiment at a time."
+    },
+    {
+      "id": "learning",
+      "title": "Learning in public",
+      "summary": "Products, research, engineering, creative technology — one experiment at a time.",
+      "body": "I enjoy composing music, building games, playing sports, learning new things, and documenting the process."
+    },
+    {
+      "id": "sport",
+      "title": "Beyond engineering",
+      "summary": "A late-starting sportswoman who loves the journey as much as the competition.",
+      "body": "I want to keep growing through sports, camaraderie, friendships, and competitive experiences."
+    },
+    {
+      "id": "future",
+      "title": "A world worth building",
+      "summary": "More autonomy, health, education, security, dignity, and connection.",
+      "body": "My hope is that powerful technology can help reduce unnecessary suffering while expanding human freedom, health, safety, and opportunity."
+    },
+    {
+      "id": "process",
+      "title": "Enjoy the journey",
+      "summary": "Trust the process. Find friends and build meaningful things together.",
+      "body": "I live for the camaraderie and passion that come alive when people strive together for something they truly care about."
+    }
+  ],
+  "inspirations": [
+    {
+      "id": "visual-01",
+      "title": "Visual inspiration 01",
+      "summary": "Part of my evolving visual reference collection.",
+      "image": "https://github.com/user-attachments/assets/5c9ff022-ac20-4ae5-8ff8-44286f4c90cd"
+    },
+    {
+      "id": "visual-02",
+      "title": "Visual inspiration 02",
+      "summary": "Ideas and forms I want to explore.",
+      "image": "https://github.com/user-attachments/assets/5661c5c2-1496-4c36-a932-1af9d5f7de54"
+    },
+    {
+      "id": "visual-03",
+      "title": "Visual inspiration 03",
+      "summary": "Ideas and forms I want to explore.",
+      "image": "https://github.com/user-attachments/assets/b08e443f-782d-4de0-b638-f8993f4158c3"
+    },
+    {
+      "id": "visual-04",
+      "title": "Visual inspiration 04",
+      "summary": "Ideas and forms I want to explore.",
+      "image": "https://github.com/user-attachments/assets/5bbdb7ef-1420-465b-b3e3-882491b5b730"
+    },
+    {
+      "id": "visual-05",
+      "title": "Visual inspiration 05",
+      "summary": "Ideas and forms I want to explore.",
+      "image": "https://github.com/user-attachments/assets/a8636ad4-1f9f-456b-a300-0fe73f3733fe"
+    },
+    {
+      "id": "visual-06",
+      "title": "Visual inspiration 06",
+      "summary": "Ideas and forms I want to explore.",
+      "image": "https://github.com/user-attachments/assets/4e0cc049-3665-4dac-a47a-d40470b4e0cd"
+    },
+    {
+      "id": "creative-01",
+      "title": "Creative direction 01",
+      "summary": "Ideas for future video and interactive experiments.",
+      "image": "https://github.com/user-attachments/assets/84080fea-f9ad-4413-81d4-785d5de866b4"
+    },
+    {
+      "id": "creative-02",
+      "title": "Creative direction 02",
+      "summary": "Ideas for future video and interactive experiments.",
+      "image": "https://github.com/user-attachments/assets/d3b6a0cd-71c2-4278-8c97-88d1a1641335"
+    },
+    {
+      "id": "creative-03",
+      "title": "Creative direction 03",
+      "summary": "Ideas for future video and interactive experiments.",
+      "image": "https://github.com/user-attachments/assets/6c3700c7-b2fb-4bf6-9b1e-f2d6d44cf9ff"
+    },
+    {
+      "id": "creative-04",
+      "title": "Creative direction 04",
+      "summary": "Ideas for future video and interactive experiments.",
+      "image": "https://github.com/user-attachments/assets/f6d969e4-3f76-46c3-b0f4-0600afcb51ae"
+    }
+  ]
+}

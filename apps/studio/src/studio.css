@@ -1119,3 +1119,19 @@ textarea:focus-visible {
     forced-color-adjust: auto;
   }
 }
+
+.studio-inspector__device-link {
+  display: inline-flex;
+  margin-top: 14px;
+  gap: 8px;
+  padding: 10px 0;
+  color: #49443b;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid #a8a093;
+}
+.studio-inspector__device-link:hover {
+  color: #28241e;
+  border-color: currentColor;
+}

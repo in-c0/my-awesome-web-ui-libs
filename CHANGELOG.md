@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — physical-device field testing readiness
+
+- Added opt-in, no-backend Device Lab with live WebGL material, RAF cadence/interval diagnostics, optional Long Task observation and JSON export.
+- Added clearly separate *human-only* VoiceOver/TalkBack, rotation, zoom and tab-resumption check outcomes, defaulting to Not tested.
+- Added narrow/touch Chromium browser checks for 320/390px layout and local JSON export; does not claim actual iOS/Android measurements.
+
+
 ## Unreleased — responsive GPU and accessibility hardening
 
 - Cap compact/touch-device shader buffers at 480,000 pixels (desktop budget 1,200,000); avoid unbounded retina DPR overhead.

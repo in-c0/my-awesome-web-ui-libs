@@ -640,6 +640,9 @@ export function StudioApp() {
             <p className="studio-inspector__fineprint">
               Material studies using Paper Shaders and Tegaki. Experimental; not production-certified.
             </p>
+            <a className="studio-inspector__device-link" href="/?device-lab=1">
+              Test on this device <span aria-hidden="true">↗</span>
+            </a>
           </div>
         </aside>
       </div>

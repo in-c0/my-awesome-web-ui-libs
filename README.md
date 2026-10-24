@@ -4,9 +4,9 @@
 
 A reusable, framework-free Web Component for showcasing **public GitHub projects, stars, forks, curated stories, and inspiration**.
 
-- 2.5D keyboard/swipe-controlled carousel. Only the current card and its neighbours are rendered.
-- Searchable, progressively revealed index: one concise description per entry.
-- Unified chronological timeline for repositories, stars, and forks.
+- **Orbital 2.5D gallery** inspired by Mellow UI's [Ring Gallery](https://www.mellowui.com/components/ring-gallery), adapted to framework-free DOM with inertial dragging, swipe, keyboard arrows and a bounded card window.
+- **Browse all** opens a searchable index overlay, rather than replacing the gallery.
+- **Always-visible, horizontally interactive timeline** with three distinct lanes: repository creations, starred discoveries and forks. Events are grouped by month; select a dot to explore the entries.
 - Optional manifest for products not represented by a public GitHub repository, stories, image galleries, and explicit live demos.
 - Works in plain HTML, React, Vue, Svelte, and other environments that support Custom Elements.
 - No sign-in or client-side GitHub token.
@@ -44,7 +44,7 @@ For separate visible carousels, render compact instances with different `row` va
 <profile-atlas compact row="inspiration" username="in-c0" manifest-url="/data/in-c0.json"></profile-atlas>
 ```
 
-For large pages, mount compact rows after the first gallery emits `atlas-ready`. Data is cached locally for six hours.
+For large pages, mount compact rows after the first gallery emits `atlas-ready`. Compact story/inspiration rows also expose a full searchable index. Data is cached locally for six hours.
 
 ## Attributes
 
@@ -58,11 +58,11 @@ For large pages, mount compact rows after the first gallery emits `atlas-ready`.
 
 Events: `atlas-ready` is dispatched with `detail.count` after successful loading.
 
-The default element has three views:
+The default element composes all three reading modes without a tab switch:
 
-1. **Gallery:** 2.5D cards, arrow buttons, swipes, and keyboard arrows. Details and demo open on demand.
-2. **Index:** search and display up to 24 rows initially, then progressively reveal more.
-3. **Timeline:** combines dated public events, with kind filters and progressively revealed entries.
+1. The **orbital gallery** is the primary view. It shows only up to eleven nearby cards even when the data set contains hundreds of entries. Arrow controls, dragging and keyboard navigation advance the ring. A click opens item details and optionally a live demo.
+2. **Browse all** opens an on-demand search and one-line list, progressively showing additional entries.
+3. Below the gallery, a **horizontal event timeline** is immediately visible, with separate heights for Made, Saved and Remixed. Drag the ruler, use the arrows, or scroll horizontally. Monthly event clusters open an item list.
 
 ## Manifest
 
@@ -70,6 +70,7 @@ See [data/in-c0.json](data/in-c0.json). Format:
 
 ```json
 {
+  "projectVisibility": "curated",
   "projects": [
     {
       "id": "my-app",
@@ -94,6 +95,8 @@ See [data/in-c0.json](data/in-c0.json). Format:
 
 When a curated project provides `repo` equal to a fetched public repository, its details override that auto-discovered card, avoiding duplicates. Other projects are added to the collection, including deployed products without a GitHub repository.
 
+The optional `projectVisibility: "curated"` setting hides automatically collected **owned projects** from the showcase, while retaining public forks and stars. This is useful when a founder has public source repositories that should not yet be featured as named products. With this setting, only explicitly listed `projects` appear in the Made gallery. Omit the setting to include all public GitHub repositories automatically. This is a presentation control, **not a privacy boundary**: public repository details remain accessible on GitHub.
+
 For embeds, set `preview` to `iframe` or `video`; nothing starts until the visitor presses **Try demo**. A cross-origin site may block iframe embedding with CSP or X-Frame-Options. An **Open live demo** link remains available. Only use URLs you are authorized to embed.
 
 ## Data and privacy
@@ -114,7 +117,7 @@ After a public demo is deployed, update the profile README link. Do not link to 
 
 ## Development and packaging
 
-This version is intentionally buildless. The standalone source is under `src/`; the showcase page is under `demo/`; a sample data manifest lives under `data/`. There is no runtime dependency.
+This version is intentionally buildless. The ring motion borrows the interaction idea from Mellow UI but is implemented here directly, rather than bundling its React source. The standalone source is under `src/`; the showcase page is under `demo/`; a sample data manifest lives under `data/`. There is no runtime dependency.
 
 Before a public npm release, add cross-browser automated interaction tests, a tagged distributable build, release automation, and GitHub Pages deployment. The current version is an early public prototype.
 

@@ -41,6 +41,28 @@
   .section-head{margin:34px 0 23px}.section-head h2{font-size:clamp(29px,3vw,43px);letter-spacing:-.06em}.section-head span{letter-spacing:.03em;color:#8b887d}.narrative{padding-top:30px}.row-shell{padding-top:16px;border-color:#c9c5b8}.purpose{gap:0;border:1px solid #d1ccbd;margin:65px 0 84px}.purpose>div{border:0;border-right:1px solid #d1ccbd;background:transparent;border-radius:0;padding:25px 22px}.purpose>div:last-child{border-right:0}.purpose strong{font-family:Georgia,serif;font-size:20px;letter-spacing:-.03em;font-weight:400}.purpose p{color:#77786c;font-size:12px}footer{border-color:#c9c5b8;color:#87867a}
   @media(max-width:800px){.wrap{padding:0 18px}.hero{display:block;padding:53px 0 34px}.hero h1{font-size:clamp(3rem,11vw,5.3rem)}.reader{margin-top:32px}.section-head{margin-top:26px}.section-head h2{font-size:30px}.purpose{grid-template-columns:1fr;margin:38px 0}.purpose>div{border-right:0;border-bottom:1px solid #d1ccbd}.purpose>div:last-child{border:0}.links{gap:9px}.topbar{padding:18px 0}}
   @media(prefers-color-scheme:dark){:root{background:#ece8dc;color:#242923}.topbar,footer,.row-shell{border-color:#c7c3b6}.reader{background:#f5f2e8;border-color:#cac5b6}.reader input{background:#fcfaf4;color:#242923;border-color:#ccc7b9}.hero p,.reader p,.purpose p,.section-head span,.links,footer{color:#77786c}.purpose>div{background:transparent}}
+  /* Quiet gallery shell: clear navigation, no ornamental panels. */
+  :root{background:#f5f3ec;color:#272a24}
+  .wrap{max-width:1350px}
+  .topbar{padding:20px 0;border-color:#dfdbcf}
+  .logo{background:#565e53;border-radius:50%;font-size:18px}
+  .hero{padding:53px 0 29px;grid-template-columns:minmax(0,1.7fr) minmax(190px,.55fr);gap:45px}
+  .hero h1{font-size:clamp(2.9rem,5.2vw,5.6rem);letter-spacing:-.07em;max-width:870px}
+  .hero h1 em{color:#8d897c}
+  .hero p{margin-top:15px;line-height:1.6;color:#88897d}
+  .reader{background:transparent;border:0;border-bottom:1px solid #d5d0c3;box-shadow:none;padding:6px 0 17px}
+  .reader form{margin-top:14px}
+  .reader input{background:transparent;border:0;border-bottom:1px solid #aaa99c;padding:10px 1px;border-radius:0}
+  .reader button{background:#343c34;border-radius:2px}
+  .reader p{font-size:10px}
+  .section-head{margin:30px 0 16px}
+  .section-head h2{font-size:clamp(24px,2.5vw,34px)}
+  .section-head span{font-size:11px;color:#9b9b8f}
+  .row-shell{border-color:#d9d5c9;padding-top:13px}
+  .narrative{padding-top:23px}
+  .purpose{display:block;margin:40px 0 28px;border:0;color:#898c80;font-size:12px}
+  footer{border-color:#dfdbcf}
+  @media(max-width:800px){.hero{padding:37px 0 19px}.reader{margin-top:28px}.hero h1{font-size:clamp(2.7rem,11vw,4.9rem)}.section-head{margin:25px 0 13px}.purpose{margin:30px 0 24px}}
   </style>
   <script type="module" src="../src/profile-atlas.js"></script>
 </head>
@@ -52,9 +74,8 @@
     </nav>
     <header class="hero">
       <div>
-        <span class="eyebrow">A PERSONAL ARCHIVE, NEVER A FINISHED PAGE</span>
-        <h1>Made things.<br><em>Found things.</em><br>Everything between.</h1>
-        <p>Six pinned projects were never enough. This is an endless, tactile gallery of what we build, what we discover, and how one idea leads to another. Drag into the collection, or open its full index.</p>
+        <h1>Made things.<br><em>Found things.</em></h1>
+        <p>An open collection of work, discoveries and ideas.</p>
       </div>
       <aside class="reader">
         <label for="username">Explore a GitHub profile</label>
@@ -62,20 +83,16 @@
           <input id="username" name="username" value="in-c0" autocapitalize="off" autocomplete="off" spellcheck="false" required maxlength="39" aria-label="GitHub username">
           <button type="submit">Explore →</button>
         </form>
-        <p>Only public GitHub data is read. No sign-in, tokens, or private repositories.</p>
+        <p>Public GitHub activity only. No sign-in.</p>
       </aside>
     </header>
     <section id="work">
-      <div class="section-head"><h2>The collection</h2><span id="profile-summary">A living archive of public work</span></div>
+      <div class="section-head"><h2>Projects</h2><span id="profile-summary">Explore the collection</span></div>
       <profile-atlas id="primary" username="in-c0" manifest-url="../data/in-c0.json" max-pages="10"></profile-atlas>
     </section>
     <div id="journey" class="narrative"></div>
-    <section id="about" class="purpose" aria-label="About Profile Atlas">
-      <div><strong>There is always more.</strong><p>Hundreds of projects, stars and forks. A small window into a collection that keeps moving.</p></div>
-      <div><strong>One line. Many kinds of curiosity.</strong><p>Follow a living chronology: stars and forks branch upward; new repositories and recent code activity branch below.</p></div>
-      <div><strong>Make it yours.</strong><p>A reusable, open-source Web Component. Bring a GitHub username, then add your own chapters.</p></div>
-    </section>
-    <footer><span>Profile Atlas · public Web Components</span><span>GitHub public API · code push history limited to the recent public event feed · snapshots recommended for high-traffic deployments</span></footer>
+    <section id="about" class="purpose" aria-label="About Profile Atlas">A reusable, open-source gallery and activity timeline. <a href="https://github.com/in-c0/profile-atlas" target="_blank" rel="noopener noreferrer">Get the components ↗</a></section>
+    <footer><span>Profile Atlas · public Web Components</span><span>GitHub public API · recent push events only</span></footer>
   </div>
 <script>
 (function(){
@@ -91,17 +108,15 @@
  }
  form.addEventListener('submit',e=>{e.preventDefault();mount()});
  atlas.addEventListener('atlas-ready',()=>{
-   const rows=atlas.items;const counts={project:0,star:0,fork:0};
-   for(const item of rows)if(item.type in counts)counts[item.type]++;
-   const archived=atlas.hiddenMonthly.filter(x=>x.source==='monthly-snapshot'),count=t=>archived.filter(x=>x.type===t).reduce((sum,x)=>sum+(x.activityCount||0),0);
-   summary.textContent=counts.project+' featured projects · '+(counts.star+count('star'))+' stars · '+(counts.fork+count('fork'))+' forks'+(archived.length?' · monthly archive':'');
+   const rows=atlas.items;
+   summary.textContent='Select a card to explore';
    extra.replaceChildren();
    if(atlas.username.toLowerCase()!=='in-c0')return;
-   for(const [kind,title,subtitle] of [['story','Notes from the margins','The ideas and convictions behind the work'],['inspiration','Collected sparks','Images and references worth revisiting']]){
+   for(const [kind,title] of [['story','Stories'],['inspiration','Inspiration']]){
      const shell=document.createElement('section');shell.className='row-shell';
      const heading=document.createElement('div');heading.className='section-head';
      const h2=document.createElement('h2');h2.textContent=title;
-     const small=document.createElement('span');small.textContent=subtitle;heading.append(h2,small);
+     heading.append(h2);
      const child=document.createElement('profile-atlas');child.setAttribute('compact','');child.setAttribute('row',kind);child.setAttribute('username',atlas.username);child.setAttribute('manifest-url','../data/in-c0.json');child.setAttribute('max-pages','10');
      shell.append(heading,child);extra.append(shell);
    }

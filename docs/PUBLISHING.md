@@ -8,7 +8,13 @@ Paper UI is developed in its own original GitHub repository: https://github.com/
 - Shader engine: [Paper Shaders](https://github.com/paper-design/shaders), installed as an Apache-2.0 dependency.
 - Nothing should be sent upstream to Tegaki unless the change benefits Tegaki itself, independently of Paper UI.
 
-## Alpha publishing gates
+## First public alpha — completed 2026-10-24
+
+`@in-c0/paper-ui@0.1.0-alpha.1` is publicly available under the `alpha` npm dist-tag. The staged package received owner 2FA approval and a separate GitHub Actions workflow verified actual public-registry installation before creating the [GitHub prerelease](https://github.com/in-c0/paper-ui/releases/tag/v0.1.0-alpha.1) at source commit `4d52d8aa083811dd320649d258e656985f48f63b`.
+
+The originally published npm tarball and its package README are immutable; documentation corrections made after release will ship in the next alpha version.
+
+## Future alpha publishing gates
 1. Pass CI build, unit tests, Chromium, and **packed tarball installed into a clean React project**.
 2. Manually inspect desktop/mobile shaders, no-GPU fallbacks, Korean handwriting, focus rings, motion preferences, and long-running GPU behavior.
 3. Confirm npm scope ownership (`@in-c0`), npm 2FA, and a stage-only token in GitHub Secrets (never commit credentials).

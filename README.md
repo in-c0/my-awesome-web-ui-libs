@@ -4,7 +4,7 @@
 
 A small independent, experimental library for surfaces that feel like paper and handwriting that appears stroke by stroke. Built with normal accessible DOM controls, Paper Shaders for optional GPU materials, and Tegaki for handwriting.
 
-**Status:** independent open-source alpha candidate. Source and interactive demo are public; **no npm release yet**. Mobile and browser interaction checks have passed, but real-device GPU, accessibility, and visual-fidelity audits are still required.
+**Status:** experimental public npm alpha **0.1.0-alpha.1** (under the `alpha` dist-tag, not `latest`). Released on 2026-10-24. Mobile/browser interaction and real-registry React consumer tests pass; real-device GPU, accessibility, and visual-fidelity audits are still required.
 
 **[Explore the interactive Studio →](https://paper-ui-react-lab.vercel.app/)** · [Source code](https://github.com/in-c0/paper-ui) · [Release readiness](docs/RELEASE_CHECKLIST.md) · [npm alpha staging](docs/NPM_ALPHA_STAGING.md)
 
@@ -20,13 +20,13 @@ A small independent, experimental library for surfaces that feel like paper and 
 
 Six material modes: **Paper Texture**, **Grain Gradient Sphere**, **Blob**, **Wave**, **Dithering**, and **Halftone Dots**. Presets preserve the creator-selected source values and expose optional tuning.
 
-## Installation (once npm release is verified)
+## Install the public alpha
 
 ```bash
-npm install @in-c0/paper-ui react
+npm install @in-c0/paper-ui@alpha react
 ```
 
-> **Not yet available on npm.** The proposed `@in-c0` npm organization/scope must be owned and verified before publishing. Do not use the installation command until a release is confirmed.
+> Version `0.1.0-alpha.1` is published publicly and tested through the real npm registry. Use the explicit `@alpha` tag; production stability is not yet certified.
 
 ## Usage (React)
 
@@ -79,7 +79,7 @@ cd packages/paper-ui
 npm pack --dry-run
 ```
 
-There are no automatic npm releases. Add trusted publishing, ownership verification, package installation smoke tests, and license validation before enabling a release workflow.
+First alpha was staged and approved manually with npm 2FA. The published registry tarball passed TypeScript and Vite smoke tests in a clean React application. Future releases remain manually gated; OIDC trusted publishing is planned.
 
 ## Scope and limitations
 

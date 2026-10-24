@@ -22,7 +22,7 @@ This is **not** a Vite/TypeScript/packaging error, and the workflow's `NODE_AUTH
 
 1. Sign in to npmjs.com and check whether **npm username is `in-c0`**, or whether you own/join an **npm organization `in-c0`**.
 2. If neither is true, choose a scope you own or create the free public-packages npm organization `in-c0` (if available). For the latter: profile menu → **Add an Organization** → name `in-c0` → **Unlimited public packages**. If unavailable, do not attempt to use someone else's scope; use an owned scope and rename the package consistently before retrying.
-3. Check the **granular stage-only token** has **read/write-stage-only** permissions covering that npm scope, and that it has not expired. Existing tokens may not automatically gain permission when a new organization is created; regenerate if necessary, then update the GitHub Actions `NPM` or `NPM_STAGE_TOKEN` secret privately.
+3. **After creating the npm organization**, issue a NEW granular token while signed in to the npm user who administers `in-c0`. Under **Packages and scopes**, select `Read and write (stage only)` for the `@in-c0` scope (or the most narrowly applicable owned scope). **Organizations → Read and write does not grant package publishing rights.** Check the expiration and ensure any IP restriction allows GitHub-hosted runners. Replace the value of your existing GitHub Actions secret `NPM` (or `NPM_STAGE_TOKEN`) privately. Never send it in chat.
 4. Rerun the manual workflow only after scope access is verified. **Do not approve or publish** until the staged artifact has been reviewed.
 
 The release workflow now prints an explicit GitHub error annotation when the registry responds with `Scope not found`, rather than leaving only an opaque E404.

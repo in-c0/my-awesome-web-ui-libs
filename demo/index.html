@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#ece8dc">
-  <meta name="description" content="Profile Atlas turns GitHub projects, stars, forks, personal stories, and inspiration into an interactive gallery.">
+  <meta name="description" content="Profile Atlas turns GitHub projects, stars, forks, recent code pushes, personal stories, and inspiration into an interactive gallery and activity timeline.">
   <title>Profile Atlas — An endless shelf of work and curiosity</title>
   <style>
   :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#27302a;background:#f7f8f4}
@@ -42,7 +42,7 @@
   @media(max-width:800px){.wrap{padding:0 18px}.hero{display:block;padding:53px 0 34px}.hero h1{font-size:clamp(3rem,11vw,5.3rem)}.reader{margin-top:32px}.section-head{margin-top:26px}.section-head h2{font-size:30px}.purpose{grid-template-columns:1fr;margin:38px 0}.purpose>div{border-right:0;border-bottom:1px solid #d1ccbd}.purpose>div:last-child{border:0}.links{gap:9px}.topbar{padding:18px 0}}
   @media(prefers-color-scheme:dark){:root{background:#ece8dc;color:#242923}.topbar,footer,.row-shell{border-color:#c7c3b6}.reader{background:#f5f2e8;border-color:#cac5b6}.reader input{background:#fcfaf4;color:#242923;border-color:#ccc7b9}.hero p,.reader p,.purpose p,.section-head span,.links,footer{color:#77786c}.purpose>div{background:transparent}}
   </style>
-  <script type="module" src="./src/profile-atlas.js"></script>
+  <script type="module" src="../src/profile-atlas.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -67,15 +67,15 @@
     </header>
     <section id="work">
       <div class="section-head"><h2>The collection</h2><span id="profile-summary">A living archive of public work</span></div>
-      <profile-atlas id="primary" username="in-c0" manifest-url="./data/in-c0.json" max-pages="10"></profile-atlas>
+      <profile-atlas id="primary" username="in-c0" manifest-url="../data/in-c0.json" max-pages="10"></profile-atlas>
     </section>
     <div id="journey" class="narrative"></div>
     <section id="about" class="purpose" aria-label="About Profile Atlas">
       <div><strong>There is always more.</strong><p>Hundreds of projects, stars and forks. A small window into a collection that keeps moving.</p></div>
-      <div><strong>A trail, not a trophy case.</strong><p>Three parallel histories reveal the moments of making, bookmarking and remixing.</p></div>
+      <div><strong>One line. Many kinds of curiosity.</strong><p>Follow a living chronology: stars and forks branch upward; new repositories and recent code activity branch below.</p></div>
       <div><strong>Make it yours.</strong><p>A reusable, open-source Web Component. Bring a GitHub username, then add your own chapters.</p></div>
     </section>
-    <footer><span>Profile Atlas · a public Web Component prototype</span><span>Project and star data from the GitHub REST API · snapshots recommended for high-traffic deployments</span></footer>
+    <footer><span>Profile Atlas · public Web Components</span><span>GitHub public API · code push history limited to the recent public event feed · snapshots recommended for high-traffic deployments</span></footer>
   </div>
 <script>
 (function(){
@@ -85,7 +85,7 @@
    const u=input.value.trim();
    if(!/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(u)){input.setCustomValidity('Enter a valid GitHub username');input.reportValidity();return}
    input.setCustomValidity('');extra.replaceChildren();
-   if(u.toLowerCase()==='in-c0')atlas.setAttribute('manifest-url','./data/in-c0.json');else atlas.removeAttribute('manifest-url');
+   if(u.toLowerCase()==='in-c0')atlas.setAttribute('manifest-url','../data/in-c0.json');else atlas.removeAttribute('manifest-url');
    atlas.setAttribute('username',u);
    const search=new URL(location.href);search.searchParams.set('user',u);history.replaceState(null,'',search);
  }
@@ -93,7 +93,8 @@
  atlas.addEventListener('atlas-ready',()=>{
    const rows=atlas.items;const counts={project:0,star:0,fork:0};
    for(const item of rows)if(item.type in counts)counts[item.type]++;
-   summary.textContent=counts.project+' projects · '+counts.star+' stars · '+counts.fork+' forks';
+   const archived=atlas.hiddenMonthly.filter(x=>x.source==='monthly-snapshot'),count=t=>archived.filter(x=>x.type===t).reduce((sum,x)=>sum+(x.activityCount||0),0);
+   summary.textContent=counts.project+' featured projects · '+(counts.star+count('star'))+' stars · '+(counts.fork+count('fork'))+' forks'+(archived.length?' · monthly archive':'');
    extra.replaceChildren();
    if(atlas.username.toLowerCase()!=='in-c0')return;
    for(const [kind,title,subtitle] of [['story','Notes from the margins','The ideas and convictions behind the work'],['inspiration','Collected sparks','Images and references worth revisiting']]){
@@ -101,7 +102,7 @@
      const heading=document.createElement('div');heading.className='section-head';
      const h2=document.createElement('h2');h2.textContent=title;
      const small=document.createElement('span');small.textContent=subtitle;heading.append(h2,small);
-     const child=document.createElement('profile-atlas');child.setAttribute('compact','');child.setAttribute('row',kind);child.setAttribute('username',atlas.username);child.setAttribute('manifest-url','./data/in-c0.json');child.setAttribute('max-pages','10');
+     const child=document.createElement('profile-atlas');child.setAttribute('compact','');child.setAttribute('row',kind);child.setAttribute('username',atlas.username);child.setAttribute('manifest-url','../data/in-c0.json');child.setAttribute('max-pages','10');
      shell.append(heading,child);extra.append(shell);
    }
  });

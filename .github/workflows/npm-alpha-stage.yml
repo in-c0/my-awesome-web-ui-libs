@@ -144,7 +144,23 @@ jobs:
             echo '::error::No stage token found. Configure NPM_STAGE_TOKEN (preferred) or NPM as a GitHub Actions secret.'
             exit 1
           fi
-          npm stage publish --access public --tag alpha
+          # npm may return 404 for a missing or unauthorized *scope*, even when the
+          # package, token, and staged-publish command are otherwise valid.
+          # Capture the CLI's exit status without suppressing a genuine failure.
+          log_file="$RUNNER_TEMP/npm-stage-output.log"
+          set +e
+          npm stage publish --access public --tag alpha > "$log_file" 2>&1
+          stage_status=$?
+          set -e
+          cat "$log_file"
+          if [ "$stage_status" -ne 0 ]; then
+            if grep -qi 'Scope not found' "$log_file"; then
+              echo '::error title=npm scope missing or unauthorized::The @in-c0 scope is not accessible to this npm identity. Verify npm USERNAME or create/own npm organization in-c0, then grant the GitHub NPM/NPM_STAGE_TOKEN granular token stage-only write permission for that scope. GitHub in-c0 ownership alone grants no npm scope access.'
+            elif grep -Eqi '(E401|ENEEDAUTH|E403|Invalid authentication|unauthorized)' "$log_file"; then
+              echo '::error title=npm token invalid or insufficient::Check the token expiry, npm account identity and scoped package publishing permissions; do not print the token.'
+            fi
+            exit "$stage_status"
+          fi
       - name: Explain the required human approval
         run: |
           echo '## npm alpha staged' >> "$GITHUB_STEP_SUMMARY"

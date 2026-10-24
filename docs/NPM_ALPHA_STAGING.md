@@ -7,6 +7,26 @@
 
 This workflow does NOT run on ordinary pushes or tags. It performs a fresh build, tests the packed artifact in an external React consumer, validates npm packaging, and **stages** the version on npm only when explicitly triggered.
 
+## Previous failure: Scope not found (2026-10-24)
+
+A GitHub Actions run completed **verify** successfully and failed at `npm stage publish` with:
+
+```
+npm error code E404
+404 Not Found ... Scope not found
+```
+
+This is **not** a Vite/TypeScript/packaging error, and the workflow's `NODE_AUTH_TOKEN` input was populated. npm requires an actual npm account or organization named `in-c0` with publishing rights; GitHub user `in-c0` is a different identity. The npm registry may return 404 for lack of scope access, so this does not prove whether the scope is absent or the token's permissions are inadequate.
+
+**Corrective owner action:**
+
+1. Sign in to npmjs.com and check whether **npm username is `in-c0`**, or whether you own/join an **npm organization `in-c0`**.
+2. If neither is true, choose a scope you own or create the free public-packages npm organization `in-c0` (if available). For the latter: profile menu → **Add an Organization** → name `in-c0` → **Unlimited public packages**. If unavailable, do not attempt to use someone else's scope; use an owned scope and rename the package consistently before retrying.
+3. Check the **granular stage-only token** has **read/write-stage-only** permissions covering that npm scope, and that it has not expired. Existing tokens may not automatically gain permission when a new organization is created; regenerate if necessary, then update the GitHub Actions `NPM` or `NPM_STAGE_TOKEN` secret privately.
+4. Rerun the manual workflow only after scope access is verified. **Do not approve or publish** until the staged artifact has been reviewed.
+
+The release workflow now prints an explicit GitHub error annotation when the registry responds with `Scope not found`, rather than leaving only an opaque E404.
+
 ## One-time npm account setup (must be done by the owner)
 
 1. On [npmjs.com](https://www.npmjs.com/), sign in or create an account. Confirm you administer the **npm** user or organization named `in-c0`. Your GitHub username does **not** grant npm scope ownership.

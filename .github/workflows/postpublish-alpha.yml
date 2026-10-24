@@ -98,7 +98,7 @@ jobs:
             echo "::notice::The GitHub release $VERSION_TAG already exists. No duplicate created."
             exit 0
           fi
-          existing_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$VERSION_TAG" --jq '.object.sha' 2>/dev/null || true)"
+          existing_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$VERSION_TAG" 2>/dev/null | jq -r '.object.sha // empty' || true)"
           if [ -n "$existing_sha" ] && [ "$existing_sha" != "$SOURCE_SHA" ]; then
             echo "::error::The existing tag references a different commit ($existing_sha). Refusing to overwrite."
             exit 1

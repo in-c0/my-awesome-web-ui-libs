@@ -222,12 +222,14 @@ export function StudioApp() {
   const [tuning, setTuning] = useState<MaterialTuning>(initial.tuning);
   const [mode, setMode] = useState<Mode>('material');
   const [playing, setPlaying] = useState(true);
+  const [showShader, setShowShader] = useState(true);
   const [sample, setSample] = useState('A little, over time.');
   const [writing, setWriting] = useState('조금씩, 꾸준히.');
   const [writingKey, setWritingKey] = useState(0);
   const [ink, setInk] = useState<'soft' | 'dark'>('soft');
   const [saved, setSaved] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageName, setImageName] = useState('');
   const [status, setStatus] = useState('');
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -381,6 +383,7 @@ export function StudioApp() {
                 kind={chosenKind}
                 tuning={isWriting ? undefined : tuning}
                 paused={paused}
+                renderMode={showShader ? 'auto' : 'fallback'}
                 image={previewImage}
                 className="studio-preview__material"
               >
@@ -410,15 +413,28 @@ export function StudioApp() {
             </div>
             <div className="studio-preview__caption">
               <span>{isWriting ? 'Tegaki / letterforms' : MATERIAL_PRESETS[kind].label + ' / material'}</span>
-              <span>
-                {chosenKind === 'halftone'
-                  ? 'SOURCE IMAGE / LIVE FILTER'
-                  : chosenKind === 'paper-texture'
-                    ? 'SURFACE / LIVE'
-                    : paused
-                      ? 'MOTION PAUSED'
-                      : 'ANIMATED / LIVE'}
-              </span>
+              <div className="studio-preview__tools">
+                <span className="studio-preview__mode">
+                  {!showShader
+                    ? 'CSS / ORIGINAL'
+                    : chosenKind === 'halftone'
+                      ? 'IMAGE / LIVE FILTER'
+                      : chosenKind === 'paper-texture'
+                        ? 'SURFACE / LIVE'
+                        : paused
+                          ? 'MOTION PAUSED'
+                          : 'ANIMATED / LIVE'}
+                </span>
+                <button
+                  type="button"
+                  className="studio-compare"
+                  aria-pressed={!showShader}
+                  onClick={() => setShowShader((value) => !value)}
+                >
+                  {showShader ? 'Compare without shader' : 'Restore shader'}
+                  <span aria-hidden="true">↗</span>
+                </button>
+              </div>
             </div>
           </div>
           <div className="studio-bottom">
@@ -516,13 +532,18 @@ export function StudioApp() {
                   ))}
                   {kind === 'halftone' && (
                     <div className="studio-upload">
-                      <label htmlFor="halftone-upload">
-                        Use your own drawing <span>↗</span>
+                      <label htmlFor="halftone-upload" className="studio-upload__trigger">
+                        <span className="studio-upload__title">Your drawing</span>
+                        <span className="studio-upload__browse">
+                          Select image <span aria-hidden="true">↗</span>
+                        </span>
                       </label>
                       <input
                         id="halftone-upload"
+                        className="studio-upload__input"
                         type="file"
                         accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                        aria-describedby="halftone-help"
                         onChange={(event) => {
                           const file = event.target.files?.[0];
                           if (!file) return;
@@ -531,10 +552,14 @@ export function StudioApp() {
                             return;
                           }
                           setImageUrl(URL.createObjectURL(file));
+                          setImageName(file.name);
                           setStatus('Image preview updated locally. Nothing uploaded.');
                         }}
                       />
-                      <p>Images stay in this browser; nothing is uploaded.</p>
+                      <p className="studio-upload__filename" aria-live="polite">
+                        {imageName || 'SVG, PNG, JPG or WebP · up to 8 MB'}
+                      </p>
+                      <p id="halftone-help">Images stay in this browser; nothing is uploaded.</p>
                     </div>
                   )}
                 </>
@@ -592,7 +617,7 @@ export function StudioApp() {
                           "import korean from 'tegaki/fonts/nanum-pen-script';",
                           '',
                           '<PencilText font={korean}>' + writing.replaceAll('<', '&lt;').replaceAll('>', '&gt;') + '</PencilText>',
-                        ].join('\\n')
+                        ].join('\n')
                       : sourceSnippet(kind, tuning, '/my-artwork.png'),
                     'React component copied.',
                   )

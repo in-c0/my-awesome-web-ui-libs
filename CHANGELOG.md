@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — material comparison and legibility
+
+- Studio can switch between live WebGL and CSS/original-artwork fallback without losing content.
+- Corrected copied Korean lettering JSX to use actual line breaks.
+- Refined matte paper and card shading; strengthened button and focus treatments.
+- Raised text contrast for explanatory content with a contrast regression test.
+- Replaced the visible native file-picker control with an accessible, keyboard-focusable paper-style upload surface and local filename feedback.
+- Added comparison, clipboard, picker, and fallback browser coverage.
+
+
 ## Unreleased — quality hardening for the next alpha
 
 - Suspend decorative WebGL effects in background tabs and outside the viewport while preserving DOM content.

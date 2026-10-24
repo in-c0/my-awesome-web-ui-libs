@@ -97,6 +97,7 @@ test('the halftone image picker uses a local browser blob without server upload'
     buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="30"/></svg>'),
   });
   await expect(page.locator('.studio-live-status')).toContainText('Nothing uploaded');
+  await expect(page.locator('.studio-upload__filename')).toHaveText('sketch.svg');
 });
 
 test.afterEach(async ({ page }, testInfo) => {
@@ -147,4 +148,48 @@ test('the published CSS is present on interactive cards and buttons', async ({ p
   const paper = page.getByRole('button', { name: 'Save note' });
   await expect(paper).toHaveCSS('cursor', 'pointer');
   await expect(paper).toHaveCSS('border-top-style', 'solid');
+});
+
+test('comparison toggles shader eligibility without hiding material content', async ({ page }) => {
+  const material = page.locator('.studio-preview__material');
+  await page.getByRole('button', { name: 'Compare without shader' }).click();
+  await expect(page.getByRole('button', { name: 'Restore shader' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(material).toHaveAttribute('data-shader-status', 'fallback');
+  await expect(page.getByText('A little, over time.', { exact: true }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Restore shader' }).click();
+  await expect(page.getByRole('button', { name: 'Compare without shader' })).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('Korean lettering copied snippet has actual lines and required imports', async ({ page }) => {
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.getByRole('button', { name: 'Written in graphite' }).click();
+  await page.getByRole('button', { name: 'Copy component' }).click();
+  const snippet = await page.evaluate(() => navigator.clipboard.readText());
+  expect(snippet).toContain("import '@in-c0/paper-ui/styles.css';\n");
+  expect(snippet).toContain('<PencilText font={korean}>');
+  expect(snippet).not.toContain('\\n');
+});
+
+test('inspector explanatory text passes basic 4.5:1 contrast check', async ({ page }) => {
+  const ratio = await page.locator('.studio-inspector__hint').first().evaluate((el) => {
+    const rgb = (s: string) => (s.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+    const lum = (v: number[]) => v.map((c) => {
+      const t = c / 255;
+      return t <= 0.04045 ? t / 12.92 : ((t + 0.055) / 1.055) ** 2.4;
+    }).reduce((sum, n, i) => sum + n * [0.2126, 0.7152, 0.0722][i], 0);
+    const foreground = lum(rgb(getComputedStyle(el).color));
+    const background = lum(rgb(getComputedStyle(el.closest('.studio-inspector')!).backgroundColor));
+    return (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
+  });
+  expect(ratio).toBeGreaterThanOrEqual(4.5);
+});
+
+test('custom image picker exposes an accessible label without a native browser button', async ({ page }) => {
+  await page.getByRole('button', { name: 'Printed study' }).click();
+  const input = page.getByLabel('Your drawing');
+  await expect(input).toHaveAttribute('type', 'file');
+  await expect(page.getByText('Select image')).toBeVisible();
+  await expect(input).toHaveCSS('opacity', '0');
+  await input.focus();
+  await expect(page.locator('.studio-upload')).toHaveCSS('outline-style', 'solid');
 });

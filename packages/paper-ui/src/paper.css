@@ -173,3 +173,38 @@
   opacity: 0.75;
   pointer-events: none;
 }
+
+/* Fine-scale matte surface detail remains visible without WebGL. */
+.pui-surface--paper {
+  background-color: var(--paper-ui-paper);
+  background-image:
+    radial-gradient(ellipse at 14% 0%, rgba(255, 248, 232, 0.55), transparent 58%),
+    repeating-linear-gradient(90deg, transparent 0 3px, rgba(89, 82, 69, 0.012) 3px 4px);
+}
+.pui-card {
+  background-image: linear-gradient(146deg, rgba(255, 255, 255, 0.28), transparent 62%);
+  box-shadow:
+    0 1px 2px rgba(33, 30, 25, 0.05),
+    0 6px 20px rgba(33, 30, 25, 0.022);
+}
+.pui-card--interactive:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 22px rgba(30, 27, 23, 0.09);
+}
+.pui-button--ink:hover:not(:disabled) {
+  opacity: 1;
+  background-color: #514c44;
+}
+.pui-button[aria-pressed='true'] {
+  border-color: currentColor;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pui-card--interactive:focus-within { transform: none; }
+}
+@media (forced-colors: active) {
+  .pui-card, .pui-button { border: 1px solid ButtonText; }
+  .pui-button:focus-visible, .pui-card:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 3px;
+  }
+}

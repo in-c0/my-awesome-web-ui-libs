@@ -15,6 +15,8 @@ export interface MaterialEffectProps {
   tuning?: MaterialTuning;
   image?: string;
   paused?: boolean;
+  /** Force the CSS / original-image fallback without requesting a GPU context. */
+  renderMode?: 'auto' | 'fallback';
   className?: string;
   style?: CSSProperties;
   children?: ReactNode;
@@ -24,8 +26,17 @@ export interface MaterialEffectProps {
  * Render semantic DOM content above a single decorative GPU material.
  * A CSS fallback survives no-WebGL browsers, background tabs, and shader errors.
  */
-export function MaterialEffect({ kind, tuning, image, paused = false, className = '', style, children }: MaterialEffectProps) {
-  const { containerRef, active, reducedMotion, status } = useShaderRuntime(true);
+export function MaterialEffect({
+  kind,
+  tuning,
+  image,
+  paused = false,
+  renderMode = 'auto',
+  className = '',
+  style,
+  children,
+}: MaterialEffectProps) {
+  const { containerRef, active, reducedMotion, status } = useShaderRuntime(renderMode === 'auto');
 
   return (
     <div

@@ -1,5 +1,7 @@
 # Profile Atlas
 
+**[Live interactive showcase ↗](https://profile-atlas-showcase.wldud5192.chatgpt.site)** · [Use with GitHub profile README](#github-profile-readme-integration)
+
 A reusable, framework-free Web Component for showcasing **public GitHub projects, stars, forks, curated stories, and inspiration**.
 
 - 2.5D keyboard/swipe-controlled carousel. Only the current card and its neighbours are rendered.

@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "projectVisibility": "curated",
   "projects": [
     {
       "id": "vibo",
@@ -36,6 +37,31 @@
       "summary": "Discovery of products, research, makers, and evidence.",
       "demoUrl": "https://ssmt.uk",
       "url": "https://ssmt.uk",
+      "preview": "iframe",
+      "featured": true
+    },
+    {
+      "id": "paper-ui",
+      "title": "Paper UI",
+      "summary": "A public collection of expressive, reusable interface components.",
+      "url": "https://github.com/in-c0/paper-ui",
+      "repo": "in-c0/paper-ui",
+      "featured": true
+    },
+    {
+      "id": "shorts-remover",
+      "title": "YouTube Shorts Remover",
+      "summary": "Give your YouTube browsing a little more room to breathe.",
+      "url": "https://github.com/in-c0/youtube-shorts-remover",
+      "repo": "in-c0/youtube-shorts-remover",
+      "featured": true
+    },
+    {
+      "id": "youtube-to-text",
+      "title": "YouTube to Text",
+      "summary": "Turn video transcripts into text you can actually work with.",
+      "url": "https://youtubetotext.com",
+      "demoUrl": "https://youtubetotext.com",
       "preview": "iframe",
       "featured": true
     }

@@ -22,16 +22,28 @@ function merge(repos,stars,manifest){
  const permitted=r=>!exclusions.some(x=>(r.full_name||'').toLowerCase().includes(x)||(r.name||'').toLowerCase().includes(x));
  const owned=repos.filter(r=>permitted(r)&&(manifest.projectVisibility!=='curated'||r.fork)).map(repoToItem), byRepo=new Map(owned.map(x=>[x.repo.toLowerCase(),x]));
  const extras=[];
- (manifest.projects||[]).forEach((r,i)=>{const item=manifestItem(r,'project',i),match=item.repo&&byRepo.get(item.repo.toLowerCase());if(match)Object.assign(match,item,{id:match.id,type:match.type});else extras.push(item)});
+ (manifest.projects||[]).forEach((r,i)=>{const item=manifestItem(r,'project',i);item.curatedOrder=i;const match=item.repo&&byRepo.get(item.repo.toLowerCase());if(match)Object.assign(match,item,{id:match.id,type:match.type});else extras.push(item)});
  const starItems=stars.filter(x=>permitted(x.repo||x)).map(x=>{const r=x.repo||x;return {...repoToItem(r),id:'star:'+r.full_name,type:'star',date:x.starred_at||''}});
  const stories=(manifest.stories||[]).map((x,i)=>manifestItem(x,'story',i));
  const inspiration=(manifest.inspirations||[]).map((x,i)=>manifestItem(x,'inspiration',i));
  return [...owned,...extras,...starItems,...stories,...inspiration];
 }
-const sorted=(items,kind)=>{const a=kind==='all'?[...items]:items.filter(x=>x.type===kind);return kind==='story'||kind==='inspiration'?a:a.sort((x,y)=>kind==='project'?(Number(y.featured)-Number(x.featured)||+new Date(y.date||0)-+new Date(x.date||0)):+new Date(y.date||0)-+new Date(x.date||0))};
+function unfeaturedMonthlyCounts(repos,manifest){
+ if(manifest.projectVisibility!=='curated')return[];
+ const featured=new Set((manifest.projects||[]).map(x=>String(x.repo||'').toLowerCase()).filter(Boolean));
+ const counts=new Map();
+ for(const r of repos){
+  if(r.fork||featured.has(String(r.full_name||'').toLowerCase()))continue;
+  const d=new Date(r.created_at);if(Number.isNaN(+d))continue;
+  const year=d.getUTCFullYear(),month=d.getUTCMonth()+1,key=year+'-'+String(month).padStart(2,'0');
+  counts.set(key,(counts.get(key)||0)+1);
+ }
+ return [...counts.entries()].map(([month,count])=>({id:'unfeatured-month:'+month,type:'project',title:'Unfeatured repository creations',summary:count+' public repositories were created in '+new Date(month+'-01T00:00:00Z').toLocaleDateString(undefined,{month:'long',year:'numeric'})+'. Titles and links are intentionally withheld.',date:month+'-01T00:00:00Z',activityCount:count,aggregate:true}));
+}
+const sorted=(items,kind)=>{const a=kind==='all'?[...items]:items.filter(x=>x.type===kind);return kind==='story'||kind==='inspiration'?a:a.sort((x,y)=>kind==='project'?(Number(y.featured)-Number(x.featured)||(x.curatedOrder??Infinity)-(y.curatedOrder??Infinity)||+new Date(y.date||0)-+new Date(x.date||0)):+new Date(y.date||0)-+new Date(x.date||0))};
 class ProfileAtlas extends HTMLElement{
  static get observedAttributes(){return['username','manifest-url','max-pages']}
- constructor(){super();this.attachShadow({mode:'open'});this.items=[];this.kind='project';this.pos={};this.pending=true;this.message='';this.loadId=0;this.lastWidth=0;this.root=E('div','atlas');const link=E('link');link.rel='stylesheet';link.href=new URL('./profile-atlas.css',import.meta.url).href;this.shadowRoot.append(link,this.root);this.keydown=this.keydown.bind(this)}
+ constructor(){super();this.attachShadow({mode:'open'});this.items=[];this.hiddenMonthly=[];this.kind='project';this.pos={};this.pending=true;this.message='';this.loadId=0;this.lastWidth=0;this.root=E('div','atlas');const link=E('link');link.rel='stylesheet';link.href=new URL('./profile-atlas.css',import.meta.url).href;this.shadowRoot.append(link,this.root);this.keydown=this.keydown.bind(this)}
  connectedCallback(){if(['project','star','fork','story','inspiration'].includes(this.getAttribute('row')))this.kind=this.getAttribute('row');this.root.addEventListener('keydown',this.keydown);this.resize=new ResizeObserver(entries=>{const width=entries[0]?.contentRect.width||0;if(Math.abs(width-this.lastWidth)>3){this.lastWidth=width;if(!this.pending)this.gallery()}});this.resize.observe(this);this.load()}
  disconnectedCallback(){this.loadId++;this.controller?.abort();this.resize?.disconnect();this.root.removeEventListener('keydown',this.keydown)}
  attributeChangedCallback(){if(this.isConnected)this.load()}
@@ -56,7 +68,11 @@ class ProfileAtlas extends HTMLElement{
    let manifest={};const manifestPath=this.getAttribute('manifest-url');
    if(manifestPath){const u=new URL(manifestPath,document.baseURI);if(!['http:','https:'].includes(u.protocol))throw Error('Manifest must use HTTPS or HTTP');const r=await fetch(u.href,{signal:this.controller.signal});if(!r.ok)throw Error('Manifest HTTP '+r.status);manifest=await r.json()}
    if(current!==this.loadId)return;
-   this.items=merge(data.repos,data.stars,manifest);this.message=data.warning||'';this.pending=false;this.render();this.dispatchEvent(new CustomEvent('atlas-ready',{detail:{count:this.items.length},bubbles:true}));
+   this.items=merge(data.repos,data.stars,manifest);
+   const knownDates=new Map(data.repos.map(r=>[String(r.full_name||'').toLowerCase(),r.created_at]));
+   for(const item of this.items)if(item.type==='project'&&item.repo&&!item.date&&knownDates.has(item.repo.toLowerCase()))item.date=knownDates.get(item.repo.toLowerCase());
+   this.hiddenMonthly=unfeaturedMonthlyCounts(data.repos,manifest);
+   this.message=data.warning||'';this.pending=false;this.render();this.dispatchEvent(new CustomEvent('atlas-ready',{detail:{count:this.items.length},bubbles:true}));
   }catch(e){if(current!==this.loadId||e.name==='AbortError')return;this.pending=false;this.message=e.message||'Unable to load activity.';this.render()}
  }
  render(){
@@ -116,8 +132,8 @@ class ProfileAtlas extends HTMLElement{
  }
  timeline(){
   const wrap=E('section','timeline-section'),head=E('div','timeline-heading'),intro=E('div');intro.append(E('small','eyebrow','A TRAIL THROUGH TIME'),E('h2','','The things I made & the things I found.'),E('p','','Three traces of curiosity. Travel sideways; select a moment to see what happened.'));
-  const explore=E('button','browse','Explore activity ↗');explore.onclick=()=>this.openIndex(this.items.filter(x=>['project','star','fork'].includes(x.type)).sort((a,b)=>+new Date(b.date||0)-+new Date(a.date||0)),'The activity archive');head.append(intro,explore);wrap.append(head);
-  const events=this.items.filter(x=>['project','star','fork'].includes(x.type)&&x.date&&!Number.isNaN(+new Date(x.date)));
+  const activity=this.items.concat(this.hiddenMonthly);const explore=E('button','browse','Explore activity ↗');explore.onclick=()=>this.openIndex(activity.filter(x=>['project','star','fork'].includes(x.type)).sort((a,b)=>+new Date(b.date||0)-+new Date(a.date||0)),'The activity archive');head.append(intro,explore);wrap.append(head);
+  const events=activity.filter(x=>['project','star','fork'].includes(x.type)&&x.date&&!Number.isNaN(+new Date(x.date)));
   if(!events.length){wrap.append(E('p','notice','No dated public events yet.'));return wrap}
   const dates=events.map(x=>new Date(x.date)),first=new Date(Math.min(...dates)),last=new Date(Math.max(...dates)),start=first.getUTCFullYear()*12+first.getUTCMonth(),end=last.getUTCFullYear()*12+last.getUTCMonth(),months=end-start+1,unit=92,total=months*unit+100;
   const board=E('div','timeline-board'),labels=E('div','lane-labels');for(const [type,label,subtitle] of [['project','MADE','Repositories'],['star','SAVED','Stars'],['fork','REMIXED','Forks']]){const row=E('div','lane-label '+type);row.append(E('strong','',label),E('small','',subtitle));labels.append(row)}
@@ -125,9 +141,9 @@ class ProfileAtlas extends HTMLElement{
   for(const [i,type] of ['project','star','fork'].entries()){const lane=E('div','time-lane '+type);lane.style.top=(53+i*83)+'px';track.append(lane)}
   const axis=E('div','time-axis');for(let m=0;m<months;m++){const year=Math.floor((start+m)/12),month=(start+m)%12;if(m===0||month===0||month===3||month===6||month===9){const tick=E('span','time-tick',month===0?String(year):['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month]);tick.style.left=(45+m*unit)+'px';axis.append(tick)}}track.append(axis);
   const grouped=new Map();for(const event of events){const d=new Date(event.date),period=d.getUTCFullYear()*12+d.getUTCMonth()-start,key=event.type+':'+period;if(!grouped.has(key))grouped.set(key,{type:event.type,period,items:[]});grouped.get(key).items.push(event)}
-  const rowIndex={project:0,star:1,fork:2};for(const group of grouped.values()){const button=E('button','event-dot '+group.type);button.type='button';button.style.left=(45+group.period*unit)+'px';button.style.top=(53+rowIndex[group.type]*83)+'px';button.textContent=group.items.length>1?String(group.items.length):'•';button.setAttribute('aria-label',group.items.length+' '+group.type+' events in '+new Date(Date.UTC(Math.floor((start+group.period)/12),(start+group.period)%12,1)).toLocaleDateString(undefined,{month:'long',year:'numeric'}));button.title=group.items.slice(0,4).map(x=>x.title).join(' · ');button.onclick=()=>group.items.length===1?this.detail(group.items[0]):this.openIndex(group.items,group.items.length+' '+group.type+' discoveries');track.append(button)}
+  const rowIndex={project:0,star:1,fork:2};for(const group of grouped.values()){const total=group.items.reduce((sum,item)=>sum+(item.activityCount||1),0);const button=E('button','event-dot '+group.type);button.type='button';button.style.left=(45+group.period*unit)+'px';button.style.top=(53+rowIndex[group.type]*83)+'px';button.textContent=total>1?String(total):'•';button.setAttribute('aria-label',total+' '+group.type+' events in '+new Date(Date.UTC(Math.floor((start+group.period)/12),(start+group.period)%12,1)).toLocaleDateString(undefined,{month:'long',year:'numeric'}));button.title=group.items.slice(0,4).map(x=>x.title).join(' · ');button.onclick=()=>group.items.length===1?this.detail(group.items[0]):this.openIndex(group.items,total+' '+group.type+' events');track.append(button)}
   scroller.append(track);board.append(labels,scroller);wrap.append(board);
-  const below=E('div','timeline-bottom'),meta=E('span','',events.length+' public moments · '+first.getUTCFullYear()+'—'+last.getUTCFullYear()),controls=E('div','timeline-controls'),back=E('button','timeline-arrow','←'),forward=E('button','timeline-arrow','→');back.setAttribute('aria-label','Scroll timeline backward');forward.setAttribute('aria-label','Scroll timeline forward');back.onclick=()=>scroller.scrollBy({left:-unit*5,behavior:'smooth'});forward.onclick=()=>scroller.scrollBy({left:unit*5,behavior:'smooth'});controls.append(E('span','','DRAG OR SCROLL TO EXPLORE'),back,forward);below.append(meta,controls);wrap.append(below);
+  const below=E('div','timeline-bottom'),totalEvents=events.reduce((sum,item)=>sum+(item.activityCount||1),0),meta=E('span','',totalEvents+' public moments · '+first.getUTCFullYear()+'—'+last.getUTCFullYear()+(this.hiddenMonthly.length?' · unfeatured creations shown by month only':'')),controls=E('div','timeline-controls'),back=E('button','timeline-arrow','←'),forward=E('button','timeline-arrow','→');back.setAttribute('aria-label','Scroll timeline backward');forward.setAttribute('aria-label','Scroll timeline forward');back.onclick=()=>scroller.scrollBy({left:-unit*5,behavior:'smooth'});forward.onclick=()=>scroller.scrollBy({left:unit*5,behavior:'smooth'});controls.append(E('span','','DRAG OR SCROLL TO EXPLORE'),back,forward);below.append(meta,controls);wrap.append(below);
   scroller.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY))return;if(e.shiftKey){e.preventDefault();scroller.scrollLeft+=e.deltaY}},{passive:false});
   let drag=null;scroller.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('button'))return;drag={x:e.clientX,scroll:scroller.scrollLeft};scroller.setPointerCapture(e.pointerId);scroller.classList.add('dragging')});scroller.addEventListener('pointermove',e=>{if(drag)scroller.scrollLeft=drag.scroll+drag.x-e.clientX});const endDrag=()=>{drag=null;scroller.classList.remove('dragging')};scroller.addEventListener('pointerup',endDrag);scroller.addEventListener('pointercancel',endDrag);
   requestAnimationFrame(()=>{if(scroller.isConnected)scroller.scrollLeft=scroller.scrollWidth-scroller.clientWidth});return wrap
@@ -139,7 +155,7 @@ class ProfileAtlas extends HTMLElement{
   if((demoFirst||!item.image)&&item.demoUrl&&item.preview==='iframe'){const f=E('iframe');f.src=item.demoUrl;f.title='Preview '+item.title;f.sandbox='allow-scripts allow-forms allow-popups';f.referrerPolicy='no-referrer';f.loading='lazy';media.append(f,E('small','','If this website blocks embedding, open the live demo in a new tab.'))}
   else if((demoFirst||!item.image)&&item.demoUrl&&item.preview==='video'){const v=E('video');v.src=item.demoUrl;v.controls=true;v.playsInline=true;media.append(v)}
   else if(item.image){const img=E('img');img.src=item.image;img.alt=item.title;media.append(img)}
-  const copy=E('div','detail-copy');copy.append(E('small','kicker',item.type.toUpperCase()),E('h2','',item.title),E('p','',item.body||item.summary));if(item.date)copy.append(E('small','muted','Added '+when(item.date)));const links=E('div','actions');
+  const copy=E('div','detail-copy');copy.append(E('small','kicker',item.type.toUpperCase()),E('h2','',item.title),E('p','',item.body||item.summary));if(item.date)copy.append(E('small','muted',item.aggregate?'Month: '+new Date(item.date).toLocaleDateString(undefined,{month:'long',year:'numeric'}):'Added '+when(item.date)));const links=E('div','actions');
   for(const [dest,label] of [[item.demoUrl,'Live demo ↗'],[item.url,'Open project ↗']])if(dest){const a=E('a','action',label);a.href=dest;a.target='_blank';a.rel='noopener noreferrer';links.append(a)}
   copy.append(links);panel.append(close,media,copy);overlay.append(panel);this.root.append(overlay);close.focus()
  }

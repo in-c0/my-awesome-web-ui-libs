@@ -1,7 +1,9 @@
 'use client';
 
-import { type CSSProperties, lazy, type ReactNode, Suspense, useEffect, useState } from 'react';
+import { type CSSProperties, lazy, type ReactNode, Suspense } from 'react';
 import type { MaterialKind, MaterialTuning } from './material-presets.ts';
+import { ShaderErrorBoundary } from './ShaderErrorBoundary.tsx';
+import { useShaderRuntime } from './useShaderRuntime.ts';
 
 const MaterialShader = lazy(async () => {
   const { MaterialShaderRenderer } = await import('./MaterialShaderRenderer.tsx');
@@ -18,49 +20,33 @@ export interface MaterialEffectProps {
   children?: ReactNode;
 }
 
-/** One shader instance, never a grid of canvases.
- * Controls and text remain in a normal accessible DOM above the shader.
+/**
+ * Render semantic DOM content above a single decorative GPU material.
+ * A CSS fallback survives no-WebGL browsers, background tabs, and shader errors.
  */
 export function MaterialEffect({ kind, tuning, image, paused = false, className = '', style, children }: MaterialEffectProps) {
-  const [enabled, setEnabled] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    let context: WebGLRenderingContext | WebGL2RenderingContext | null = null;
-    try {
-      const canvas = document.createElement('canvas');
-      context = canvas.getContext('webgl2') || canvas.getContext('webgl');
-    } catch {
-      // Canvas remains a readable CSS approximation on unsupported devices.
-    }
-    setEnabled(Boolean(context));
-    context?.getExtension('WEBGL_lose_context')?.loseContext();
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handle = () => setReducedMotion(media.matches);
-    handle();
-    media.addEventListener('change', handle);
-    return () => media.removeEventListener('change', handle);
-  }, []);
+  const { containerRef, active, reducedMotion, status } = useShaderRuntime(true);
 
   return (
     <div
+      ref={containerRef}
       className={['pui-material-effect', `pui-material-effect--${kind}`, className].filter(Boolean).join(' ')}
       style={style}
       data-material-kind={kind}
+      data-shader-status={status}
     >
-      {enabled ? (
-        <div className="pui-material-effect__shader" aria-hidden="true">
-          <Suspense fallback={null}>
-            <MaterialShader kind={kind} tuning={tuning} image={image} paused={paused || reducedMotion} />
-          </Suspense>
-        </div>
-      ) : kind === 'halftone' && image ? (
+      {kind === 'halftone' && image && (
         <img className="pui-material-effect__fallback-image" src={image} alt="" aria-hidden="true" />
-      ) : null}
+      )}
+      {active && (
+        <div className="pui-material-effect__shader" aria-hidden="true">
+          <ShaderErrorBoundary>
+            <Suspense fallback={null}>
+              <MaterialShader kind={kind} tuning={tuning} image={image} paused={paused || reducedMotion} />
+            </Suspense>
+          </ShaderErrorBoundary>
+        </div>
+      )}
       <div className="pui-material-effect__content">{children}</div>
     </div>
   );

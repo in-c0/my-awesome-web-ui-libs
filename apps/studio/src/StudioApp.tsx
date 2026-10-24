@@ -103,9 +103,12 @@ function sourceSnippet(kind: MaterialKind, tuning: MaterialTuning, image: string
   const tuneText = tuned.length ? ' tuning={{ ' + tuned.join(', ') + ' }}' : '';
   const imageText = kind === 'halftone' ? ' image="' + image + '"' : '';
   return [
+    "import '@in-c0/paper-ui/styles.css';",
     "import { MaterialEffect } from '@in-c0/paper-ui';",
     '',
-    '<MaterialEffect kind="' + kind + '"' + tuneText + imageText + ' />',
+    '<MaterialEffect kind="' + kind + '"' + tuneText + imageText + ' style={{ minHeight: 360 }}>',
+    '  <p style={{ padding: 40 }}>A little, over time.</p>',
+    '</MaterialEffect>',
   ].join('\n');
 }
 
@@ -582,7 +585,15 @@ export function StudioApp() {
                 className="studio-action--primary"
                 onClick={() =>
                   copy(
-                    isWriting ? '<PencilText>조금씩, 꾸준히.</PencilText>' : sourceSnippet(kind, tuning, '/my-artwork.png'),
+                    isWriting
+                      ? [
+                          "import '@in-c0/paper-ui/styles.css';",
+                          "import { PencilText } from '@in-c0/paper-ui';",
+                          "import korean from 'tegaki/fonts/nanum-pen-script';",
+                          '',
+                          '<PencilText font={korean}>' + writing.replaceAll('<', '&lt;').replaceAll('>', '&gt;') + '</PencilText>',
+                        ].join('\\n')
+                      : sourceSnippet(kind, tuning, '/my-artwork.png'),
                     'React component copied.',
                   )
                 }

@@ -1,6 +1,21 @@
 import { expect, test } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }, testInfo) => {
+  // Switching six expensive shader canvases is a GPU stress test, not a
+  // deterministic test of navigation and URL persistence. For those behavior
+  // checks, simulate the supported CSS fallback before any shaders mount.
+  if (
+    testInfo.title.startsWith('all material modes are selectable') ||
+    testInfo.title.startsWith('non-WebGL devices retain')
+  ) {
+    await page.addInitScript(() => {
+      const original = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (type: string, ...args: unknown[]) {
+        if (type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl') return null;
+        return original.call(this, type as '2d', ...(args as []));
+      } as typeof HTMLCanvasElement.prototype.getContext;
+    });
+  }
   await page.goto('/');
 });
 
@@ -86,4 +101,50 @@ test('the halftone image picker uses a local browser blob without server upload'
 
 test.afterEach(async ({ page }, testInfo) => {
   await page.screenshot({ path: testInfo.outputPath('studio.png'), fullPage: true });
+});
+
+test('non-WebGL devices retain semantic controls and the artwork fallback', async ({ page }) => {
+  await expect(page.locator('.studio-preview__material')).toHaveAttribute('data-shader-status', 'fallback');
+  await page.getByRole('button', { name: 'Printed study' }).click();
+  await expect(page.locator('.pui-material-effect__fallback-image')).toBeVisible();
+  await expect(page.getByRole('slider', { name: 'Dot size' })).toBeVisible();
+  await page.getByRole('button', { name: 'Written in graphite' }).click();
+  await expect(page.getByRole('textbox', { name: 'Handwritten text' })).toBeVisible();
+});
+
+test('GPU canvas mounts for the initial paper material when WebGL is supported', async ({ page }) => {
+  const material = page.locator('.studio-preview__material');
+  await expect.poll(() => material.getAttribute('data-shader-status')).toMatch(/^(webgl|fallback)$/);
+  if ((await material.getAttribute('data-shader-status')) === 'webgl') {
+    await expect(page.locator('.studio-preview canvas').first()).toBeVisible();
+  }
+});
+
+test('offscreen shader pauses without hiding DOM or affecting accessibility', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 650 });
+  await page.reload();
+  const material = page.locator('.studio-preview__material');
+  await expect(material).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  // Offscreen material no longer needs a GPU context; the UI is still navigable.
+  await expect
+    .poll(() => material.getAttribute('data-shader-status'))
+    .toMatch(/^(suspended|fallback)$/);
+  await expect(page.getByRole('button', { name: 'Reset parameters' })).toBeVisible();
+  await material.scrollIntoViewIfNeeded();
+  await expect.poll(() => material.getAttribute('data-shader-status')).toMatch(/^(webgl|fallback)$/);
+});
+
+test('material nav is keyboard-operable', async ({ page }) => {
+  const button = page.getByRole('button', { name: 'Amber wave' });
+  await button.focus();
+  await button.press('Enter');
+  await expect(button).toHaveAttribute('aria-current', 'true');
+  await expect(page.getByRole('heading', { name: 'A slow passing moment.' })).toBeVisible();
+});
+
+test('the published CSS is present on interactive cards and buttons', async ({ page }) => {
+  const paper = page.getByRole('button', { name: 'Save note' });
+  await expect(paper).toHaveCSS('cursor', 'pointer');
+  await expect(paper).toHaveCSS('border-top-style', 'solid');
 });

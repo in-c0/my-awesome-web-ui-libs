@@ -138,10 +138,10 @@ jobs:
       - name: Upload to npm staged publishing (not live yet)
         working-directory: packages/paper-ui
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_STAGE_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_STAGE_TOKEN || secrets.NPM }}
         run: |
           if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo '::error::NPM_STAGE_TOKEN secret is missing. Configure a stage-only npm token in GitHub Actions secrets.'
+            echo '::error::No stage token found. Configure NPM_STAGE_TOKEN (preferred) or NPM as a GitHub Actions secret.'
             exit 1
           fi
           npm stage publish --access public --tag alpha

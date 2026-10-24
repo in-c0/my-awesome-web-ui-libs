@@ -208,3 +208,29 @@
     outline-offset: 3px;
   }
 }
+
+/* Paper fibres and oblique reflected light remain when hardware acceleration
+   is unavailable. These are fixed CSS layers, not physically simulated fibres. */
+.pui-material-effect--paper-texture {
+  background-color: #eae6d9;
+  background-image:
+    radial-gradient(ellipse at 17% 9%, rgba(255, 255, 248, 0.69), transparent 65%),
+    linear-gradient(145deg, rgba(164, 156, 132, 0.1), transparent 38%, rgba(115, 110, 92, 0.07)),
+    repeating-linear-gradient(82deg, transparent 0 5px, rgba(101, 95, 76, 0.022) 5px 6px),
+    repeating-linear-gradient(0deg, transparent 0 7px, rgba(117, 109, 88, 0.016) 7px 8px);
+}
+.pui-material-effect[data-shader-status='context-lost'] > .pui-material-effect__shader,
+.pui-surface[data-shader-status='context-lost'] > .pui-surface__shader {
+  visibility: hidden;
+}
+@media (forced-colors: active) {
+  .pui-surface, .pui-material-effect, .pui-card {
+    border-color: CanvasText;
+    color: CanvasText;
+    background: Canvas;
+  }
+  .pui-button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 3px;
+  }
+}

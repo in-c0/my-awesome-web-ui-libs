@@ -36,7 +36,7 @@ export function MaterialEffect({
   style,
   children,
 }: MaterialEffectProps) {
-  const { containerRef, active, reducedMotion, status } = useShaderRuntime(renderMode === 'auto');
+  const { containerRef, active, reducedMotion, status, maxPixelCount, recoveryKey } = useShaderRuntime(renderMode === 'auto');
 
   return (
     <div
@@ -45,6 +45,7 @@ export function MaterialEffect({
       style={style}
       data-material-kind={kind}
       data-shader-status={status}
+      data-shader-pixel-budget={maxPixelCount}
     >
       {kind === 'halftone' && image && (
         <img className="pui-material-effect__fallback-image" src={image} alt="" aria-hidden="true" />
@@ -53,7 +54,14 @@ export function MaterialEffect({
         <div className="pui-material-effect__shader" aria-hidden="true">
           <ShaderErrorBoundary>
             <Suspense fallback={null}>
-              <MaterialShader kind={kind} tuning={tuning} image={image} paused={paused || reducedMotion} />
+              <MaterialShader
+                key={recoveryKey}
+                kind={kind}
+                tuning={tuning}
+                image={image}
+                paused={paused || reducedMotion}
+                maxPixelCount={maxPixelCount}
+              />
             </Suspense>
           </ShaderErrorBoundary>
         </div>

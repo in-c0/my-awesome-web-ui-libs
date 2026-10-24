@@ -193,3 +193,48 @@ test('custom image picker exposes an accessible label without a native browser b
   await input.focus();
   await expect(page.locator('.studio-upload')).toHaveCSS('outline-style', 'solid');
 });
+
+test('compact viewport uses a smaller GPU pixel budget without losing content', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('.studio-preview__material')).toHaveAttribute('data-shader-pixel-budget', '480000');
+  await expect(page.getByRole('heading', { name: 'Paper, in the light.' })).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 850 });
+  await expect(page.locator('.studio-preview__material')).toHaveAttribute('data-shader-pixel-budget', '1200000');
+});
+
+test('keyboard skip link moves focus directly to the main material workspace', async ({ page }) => {
+  await page.keyboard.press('Tab');
+  const link = page.getByRole('link', { name: 'Skip to material preview' });
+  await expect(link).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#main')).toBeFocused();
+});
+
+test('high-contrast Windows mode exposes keyboard focus and readable controls', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
+  await page.getByRole('button', { name: 'Printed study' }).focus();
+  await expect(page.getByRole('button', { name: 'Printed study' })).toHaveCSS('outline-style', 'solid');
+  await expect(page.getByRole('button', { name: 'Compare without shader' })).toBeVisible();
+  await page.getByRole('button', { name: 'Compare without shader' }).click();
+  await expect(page.locator('.studio-preview__material')).toHaveAttribute('data-shader-status', 'fallback');
+});
+
+test('WebGL loss gracefully reveals CSS fallback and restoration reinitializes the renderer', async ({ page }) => {
+  const surface = page.locator('.studio-preview__material');
+  await expect.poll(() => surface.getAttribute('data-shader-status')).toMatch(/^(webgl|fallback)$/);
+  if ((await surface.getAttribute('data-shader-status')) === 'fallback') {
+    test.skip(true, 'Environment does not provide WebGL, covered by explicit no-WebGL test');
+  }
+  const canvas = page.locator('.studio-preview canvas').first();
+  await expect(canvas).toBeVisible();
+  const defaultPrevented = await canvas.evaluate((node) => {
+    const lost = new Event('webglcontextlost', { bubbles: false, cancelable: true });
+    node.dispatchEvent(lost);
+    return lost.defaultPrevented;
+  });
+  expect(defaultPrevented).toBe(true);
+  await expect(surface).toHaveAttribute('data-shader-status', 'context-lost');
+  await expect(page.getByRole('heading', { name: 'Paper, in the light.' })).toBeVisible();
+  await canvas.evaluate((node) => node.dispatchEvent(new Event('webglcontextrestored', { bubbles: false })));
+  await expect(surface).toHaveAttribute('data-shader-status', 'webgl');
+});

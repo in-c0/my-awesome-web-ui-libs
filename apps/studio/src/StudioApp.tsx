@@ -281,6 +281,7 @@ export function StudioApp() {
 
   return (
     <div className="studio-app">
+      <a className="studio-skip-link" href="#main">Skip to material preview</a>
       <header className="studio-header">
         <div className="studio-brand">
           <span className="studio-brand__mark">w.</span>
@@ -363,7 +364,7 @@ export function StudioApp() {
           </div>
         </nav>
 
-        <main className="studio-workspace" id="main">
+        <main className="studio-workspace" id="main" tabIndex={-1}>
           <div className="studio-workspace__top">
             <div>
               <div className="studio-eyebrow">

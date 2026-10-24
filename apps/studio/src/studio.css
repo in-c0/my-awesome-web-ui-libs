@@ -1083,3 +1083,39 @@ textarea:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .studio-upload__browse { transition: none; }
 }
+
+/* Keyboard visitors should reach the actual preview before the seven material items. */
+.studio-skip-link {
+  position: absolute;
+  z-index: 1000;
+  left: 14px;
+  top: 10px;
+  transform: translateY(-160%);
+  display: inline-flex;
+  padding: 12px 15px;
+  border-radius: 5px;
+  background: #302b25;
+  color: #fff9ee;
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+}
+.studio-skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 3px solid #d9b86d;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-skip-link { transition: none; }
+}
+@media (forced-colors: active) {
+  .studio-skip-link:focus-visible, .studio-compare:focus-visible,
+  .studio-range:focus-visible, .studio-upload:focus-within {
+    outline: 2px solid Highlight !important;
+    outline-offset: 3px;
+  }
+  .studio-compare, .studio-nav__item.is-active, .studio-upload {
+    border: 1px solid ButtonText;
+    forced-color-adjust: auto;
+  }
+}

@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — responsive GPU and accessibility hardening
+
+- Cap compact/touch-device shader buffers at 480,000 pixels (desktop budget 1,200,000); avoid unbounded retina DPR overhead.
+- Detect WebGL context loss without unmounting semantic content, expose a CSS fallback and remount the renderer after restoration.
+- Add a keyboard-first skip link and stronger native Windows forced-colors focus styling.
+- Give the no-WebGL paper mode an inexpensive layered matte-fibre fallback.
+- Add Chromium regressions for narrow/touch pixel budget, keyboard skip link, forced colors and simulated WebGL loss/restoration.
+- **Not verified on physical iOS/Android hardware**; GPU budgets are conservative design limits, not performance measurements.
+
+
 ## Unreleased — material comparison and legibility
 
 - Studio can switch between live WebGL and CSS/original-artwork fallback without losing content.

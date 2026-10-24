@@ -9,17 +9,18 @@ export interface MaterialShaderRendererProps {
   tuning?: MaterialTuning;
   image?: string;
   paused?: boolean;
+  maxPixelCount?: number;
 }
 
 /** One replaceable integration with Paper Shaders.
  * The vendor's shader lighting is artistic rather than a physically accurate desk lamp.
  */
-export function MaterialShaderRenderer({ kind, tuning = {}, image, paused = false }: MaterialShaderRendererProps) {
+export function MaterialShaderRenderer({ kind, tuning = {}, image, paused = false, maxPixelCount = 1_200_000 }: MaterialShaderRendererProps) {
   const preset = MATERIAL_PRESETS[kind];
   const base = {
     width: '100%',
     height: '100%',
-    maxPixelCount: 1_200_000,
+    maxPixelCount,
     style: { width: '100%', height: '100%' },
   } as const;
 

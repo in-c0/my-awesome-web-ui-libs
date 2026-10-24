@@ -34,7 +34,7 @@ export function PaperSurface({
   style,
   ...props
 }: PaperSurfaceProps) {
-  const { containerRef, active, status } = useShaderRuntime(texture && tone === 'paper');
+  const { containerRef, active, status, maxPixelCount, recoveryKey } = useShaderRuntime(texture && tone === 'paper');
   const combinedStyle = { ...style } as CSSProperties;
 
   return (
@@ -45,17 +45,19 @@ export function PaperSurface({
       style={combinedStyle}
       data-paper-surface=""
       data-shader-status={status}
+      data-shader-pixel-budget={maxPixelCount}
     >
       {active && (
         <div className="pui-surface__shader" aria-hidden="true">
           <ShaderErrorBoundary>
             <Suspense fallback={null}>
               <LazyPaperTexture
+                key={recoveryKey}
                 {...WHISPERS_PAPER_PRESET}
                 {...material}
                 width="100%"
                 height="100%"
-                maxPixelCount={2_000_000}
+                maxPixelCount={maxPixelCount}
                 style={{ width: '100%', height: '100%' }}
               />
             </Suspense>

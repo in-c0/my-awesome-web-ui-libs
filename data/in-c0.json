@@ -123,74 +123,74 @@
   "inspirations": [
     {
       "id": "visual-01",
-      "title": "Visual inspiration 01",
-      "summary": "Part of my evolving visual reference collection.",
+      "title": "Touching the invisible",
+      "summary": "A hand, a fern, and a delicate layer of responsive digital geometry.",
       "mediaType": "video",
       "poster": "../assets/project-previews/inspiration-01.jpg",
       "image": "https://github.com/user-attachments/assets/5c9ff022-ac20-4ae5-8ff8-44286f4c90cd"
     },
     {
       "id": "visual-02",
-      "title": "Visual inspiration 02",
-      "summary": "Ideas and forms I want to explore.",
+      "title": "Electric traces",
+      "summary": "Luminous currents behaving like drawn lines inside glass.",
       "mediaType": "video",
       "poster": "../assets/project-previews/inspiration-02.jpg",
       "image": "https://github.com/user-attachments/assets/5661c5c2-1496-4c36-a932-1af9d5f7de54"
     },
     {
       "id": "visual-03",
-      "title": "Visual inspiration 03",
-      "summary": "Ideas and forms I want to explore.",
+      "title": "Sensing the hand",
+      "summary": "A flex-sensor glove translating finger motion into a wearable interface.",
       "mediaType": "video",
       "poster": "../assets/project-previews/inspiration-03.jpg",
       "image": "https://github.com/user-attachments/assets/b08e443f-782d-4de0-b638-f8993f4158c3"
     },
     {
       "id": "visual-04",
-      "title": "Visual inspiration 04",
-      "summary": "Ideas and forms I want to explore.",
+      "title": "Hands in hardware",
+      "summary": "A small articulated hand mechanism assembled and explored at a workbench.",
       "mediaType": "video",
       "poster": "../assets/project-previews/inspiration-04.jpg",
       "image": "https://github.com/user-attachments/assets/5bbdb7ef-1420-465b-b3e3-882491b5b730"
     },
     {
       "id": "visual-05",
-      "title": "Visual inspiration 05",
-      "summary": "Ideas and forms I want to explore.",
+      "title": "Training in another world",
+      "summary": "A VR sports-training concept connecting physical movement with virtual timing.",
       "mediaType": "video",
       "poster": "../assets/project-previews/inspiration-05.jpg",
       "image": "https://github.com/user-attachments/assets/a8636ad4-1f9f-456b-a300-0fe73f3733fe"
     },
     {
       "id": "visual-06",
-      "title": "Visual inspiration 06",
-      "summary": "Ideas and forms I want to explore.",
+      "title": "Kinetic feedback",
+      "summary": "An impact-training apparatus that makes movement and resistance tangible.",
       "mediaType": "video",
       "poster": "../assets/project-previews/inspiration-06.jpg",
       "image": "https://github.com/user-attachments/assets/4e0cc049-3665-4dac-a47a-d40470b4e0cd"
     },
     {
       "id": "creative-01",
-      "title": "Creative direction 01",
-      "summary": "Ideas for future video and interactive experiments.",
+      "title": "Mechanical fingers",
+      "summary": "A compact, sensor-rich hand mechanism as inspiration for wearable interfaces.",
       "image": "https://github.com/user-attachments/assets/84080fea-f9ad-4413-81d4-785d5de866b4"
     },
     {
       "id": "creative-02",
-      "title": "Creative direction 02",
-      "summary": "Ideas for future video and interactive experiments.",
+      "title": "A camera on the wrist",
+      "summary": "A concept collage for a wrist-mounted camera with a scope and tactile controls.",
       "image": "https://github.com/user-attachments/assets/d3b6a0cd-71c2-4278-8c97-88d1a1641335"
     },
     {
       "id": "creative-03",
-      "title": "Creative direction 03",
-      "summary": "Ideas for future video and interactive experiments.",
+      "title": "Physical feedback in VR",
+      "summary": "A reference collage exploring recoil and embodied feedback in simulated training.",
       "image": "https://github.com/user-attachments/assets/6c3700c7-b2fb-4bf6-9b1e-f2d6d44cf9ff"
     },
     {
       "id": "creative-04",
-      "title": "Creative direction 04",
-      "summary": "Ideas for future video and interactive experiments.",
+      "title": "A charged gauntlet",
+      "summary": "A glowing plasma globe meets an ornate wearable prop inspired by Arcane.",
       "image": "https://github.com/user-attachments/assets/f6d969e4-3f76-46c3-b0f4-0600afcb51ae"
     }
   ]

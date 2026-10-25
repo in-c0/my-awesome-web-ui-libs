@@ -1,4 +1,5 @@
 /* Profile Atlas. MIT. Framework-free custom element; public data only. */
+import {ACTIVITY_TYPES,activityWindow,reconcileMonthlySnapshots} from './timeline-math.js';
 const E=(tag,cls='',label)=>{const n=document.createElement(tag);n.className=cls;if(label!==undefined)n.textContent=String(label);return n};
 const ACTIVITY_LABELS={star:'Star',fork:'Fork',project:'New repo',commit:'Push'};
 function activityIcon(type){
@@ -8,26 +9,6 @@ function activityIcon(type){
  if(type==='fork'){make('circle',{cx:6,cy:4,r:2});make('circle',{cx:18,cy:4,r:2});make('circle',{cx:12,cy:20,r:2});make('path',{d:'M6 6v4a6 6 0 0 0 6 6m6-10v4a6 6 0 0 1-6 6v2'})}
  if(type==='project'){make('path',{d:'M5 3.5h10l4 4V20H5a2 2 0 0 1-2-2V5.5a2 2 0 0 1 2-2Zm10 0v4h4'});make('path',{d:'M8 13h8m-4-4v8'})}
  if(type==='commit'){make('path',{d:'M12 17V3m-5 5 5-5 5 5M5 15v5h14v-5'})}
- return svg;
-}
-/** Lightweight SVG adaptation of Mellow UI's Isometric Bars, bound to real monthly counts. */
-function isometricBars(counts,month){
- const xmlns='http://www.w3.org/2000/svg',svg=document.createElementNS(xmlns,'svg');svg.setAttribute('viewBox','0 0 630 250');svg.setAttribute('preserveAspectRatio','xMidYMid meet');svg.setAttribute('role','img');svg.setAttribute('aria-label',Object.entries(ACTIVITY_LABELS).map(([type,label])=>label+' '+counts[type]).join(', ')+' in '+month);svg.classList.add('iso-chart-svg');
- const node=(tag,attrs,parent=svg)=>{const el=document.createElementNS(xmlns,tag);for(const [key,value] of Object.entries(attrs))el.setAttribute(key,String(value));parent.append(el);return el};
- const line=node('line',{x1:31,y1:209,x2:599,y2:209,class:'iso-baseline'});
- const max=Math.max(1,...Object.values(counts)),types=['star','fork','project','commit'];
- const faces=types.map((type,index)=>{
-  const x=103+index*139,g=node('g',{class:'iso-column '+type}),back=node('polygon',{class:'iso-face iso-top',points:''},g),left=node('polygon',{class:'iso-face iso-left',points:''},g),right=node('polygon',{class:'iso-face iso-right',points:''},g);
-  const title=node('title',{},g);title.textContent=ACTIVITY_LABELS[type]+': '+counts[type];const label=node('text',{x:x,y:236,'text-anchor':'middle',class:'iso-label'},svg);label.textContent=ACTIVITY_LABELS[type];
-  const apply=h=>{const base=195,cy=base-h,point=p=>p.map(n=>Number(n).toFixed(1)).join(','),points=arr=>arr.map(point).join(' ');
-   back.setAttribute('points',points([[x,cy-25],[x+28,cy-11],[x,cy+3],[x-28,cy-11]]));
-   left.setAttribute('points',points([[x-28,cy-11],[x,cy+3],[x,base+3],[x-28,base-11]]));
-   right.setAttribute('points',points([[x,cy+3],[x+28,cy-11],[x+28,base-11],[x,base+3]]));};
-  apply(0);return{apply,target:Math.max(0,counts[type]/max*118),index};
- });
- const reduce=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
- if(reduce){faces.forEach(face=>face.apply(face.target))}
- else{const start=performance.now();const frame=now=>{if(!svg.isConnected)return;const elapsed=now-start,t=Math.min(1,elapsed/790);for(const f of faces){const delay=f.index*.07,u=Math.max(0,Math.min(1,(t-delay)/(1-delay)));const ease=1-Math.exp(-6*u)*Math.cos(8*u);f.apply(Math.max(0,f.target*ease))}if(t<1)requestAnimationFrame(frame)};requestAnimationFrame(frame)}
  return svg;
 }
 const url=s=>{try{const u=new URL(s);return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return''}};
@@ -72,22 +53,11 @@ function unfeaturedMonthlyCounts(repos,manifest){
  }
  return [...counts.entries()].map(([month,count])=>({id:'unfeatured-month:'+month,type:'project',title:'Unfeatured repository creations',summary:count+' public repositories were created in '+new Date(month+'-01T00:00:00Z').toLocaleDateString(undefined,{month:'long',year:'numeric'})+'. Titles and links are intentionally withheld.',date:month+'-01T00:00:00Z',activityCount:count,aggregate:true}));
 }
-function monthlyPushCounts(pushes){
- const groups=new Map();for(const event of pushes){const date=new Date(event.date);if(Number.isNaN(+date))continue;const period=date.toISOString().slice(0,7);groups.set(period,(groups.get(period)||0)+1)}
- return [...groups].map(([period,count])=>({id:'public-push-month:'+period,type:'commit',title:'Public code pushes',summary:count+' recent public push event'+(count===1?'':'s')+' in '+period+'. Repository names and commit contents are omitted here.',date:period+'-01T00:00:00Z',activityCount:count,aggregate:true,source:'github-public-events'}));
-}
-function snapshotToItems(manifest,missingTypes){
- const types=['star','fork','project'],labels={star:'Starred discoveries',fork:'Forks created',project:'Repositories created'},date=manifest.activitySnapshotRecordedAt||'an earlier date';
- return (manifest.activitySnapshot||[]).flatMap(row=>types.flatMap((type,index)=>{
-  const count=Number(row[index+1]);if(!missingTypes.has(type)||!Number.isFinite(count)||count<=0||!/^[0-9]{4}-[0-9]{2}$/.test(row[0]))return[];
-  return[{id:'public-snapshot:'+row[0]+':'+type,type,title:labels[type],summary:count+' '+type+' activities recorded in '+row[0]+' (public monthly snapshot taken '+date+'). Individual names are omitted in the fallback.',date:row[0]+'-01T00:00:00Z',activityCount:count,aggregate:true,source:'monthly-snapshot'}]
- }));
-}
 const sorted=(items,kind)=>{const a=kind==='all'?[...items]:items.filter(x=>x.type===kind);return kind==='story'||kind==='inspiration'?a:a.sort((x,y)=>kind==='project'?(Number(y.featured)-Number(x.featured)||(x.curatedOrder??Infinity)-(y.curatedOrder??Infinity)||+new Date(y.date||0)-+new Date(x.date||0)):+new Date(y.date||0)-+new Date(x.date||0))};
 /** Independent, framework-free GitHub activity railway. Set .events or use username. */
 class GithubActivityTimeline extends HTMLElement{
  static get observedAttributes(){return ['username','max-pages']}
- constructor(){super();this.attachShadow({mode:'open'});this._events=[];this._loadId=0;this._ready=false;const css=E('link'),graphcss=E('link');css.rel='stylesheet';css.href=new URL('./profile-atlas.css',import.meta.url).href;graphcss.rel='stylesheet';graphcss.href=new URL('./github-activity-timeline.css',import.meta.url).href;this.surface=E('section','timeline-section graph-section');this.shadowRoot.append(css,graphcss,this.surface)}
+ constructor(){super();this.attachShadow({mode:'open'});this._events=[];this._loadId=0;this._ready=false;this.range='year';this.activeType=null;const css=E('link'),graphcss=E('link');css.rel='stylesheet';css.href=new URL('./profile-atlas.css',import.meta.url).href;graphcss.rel='stylesheet';graphcss.href=new URL('./github-activity-timeline.css',import.meta.url).href;this.surface=E('section','timeline-section graph-section');this.shadowRoot.append(css,graphcss,this.surface)}
  set events(value){this._events=Array.isArray(value)?value:[];this._ready=true;this._loadId++;if(this.isConnected)this.render()}
  get events(){return this._events}
  connectedCallback(){if(this._ready)this.render();else this.load()}
@@ -112,43 +82,100 @@ class GithubActivityTimeline extends HTMLElement{
  open(items,label){const event=new CustomEvent('activity-open',{detail:{items,label},bubbles:true,composed:true,cancelable:true});this.dispatchEvent(event);if(!event.defaultPrevented)this.showDetails(items,label)}
  showDetails(items,label){
   this.surface.querySelector('.graph-drawer')?.remove();const drawer=E('div','graph-drawer');drawer.setAttribute('role','region');drawer.setAttribute('aria-label',label);const head=E('div','graph-drawer-head'),close=E('button','','×');close.setAttribute('aria-label','Close activity details');close.onclick=()=>drawer.remove();head.append(E('strong','',label),close);drawer.append(head);
-  for(const item of items){const row=E('div','graph-drawer-item');const link=item.url?E('a','',item.title):E('strong','',item.title);if(item.url){link.href=item.url;link.target='_blank';link.rel='noopener noreferrer'}row.append(link,E('small','',item.summary||item.type));drawer.append(row)}this.surface.append(drawer)
+  const list=E('div','activity-detail-list'),more=E('button','activity-details-more','Show more');let limit=12;
+  const draw=()=>{list.replaceChildren();for(const item of items.slice(0,limit)){const row=E('div','graph-drawer-item');const link=item.url?E('a','',item.title):E('strong','',item.title);if(item.url){link.href=item.url;link.target='_blank';link.rel='noopener noreferrer'}const date=E('small','',item.aggregate?'Month-only record':item.date?when(item.date):'');row.append(link,E('small','',item.summary||item.type),date);list.append(row)}more.hidden=limit>=items.length};more.onclick=()=>{limit+=30;draw()};
+  drawer.append(list,more);const analysis=this.surface.querySelector('.activity-monthly-analysis');if(analysis)analysis.before(drawer);else this.surface.append(drawer);draw();drawer.scrollIntoView({block:'nearest',behavior:'smooth'});
  }
  render(){
-  this.surface.replaceChildren();const events=this._events.filter(x=>['project','star','fork','commit'].includes(x.type)&&x.date&&!Number.isNaN(+new Date(x.date)));
-  const header=E('div','timeline-heading graph-heading'),intro=E('div');intro.append(E('h2','','GitHub activity'));
-  const legend=E('div','graph-legend');for(const [type,label] of Object.entries(ACTIVITY_LABELS)){const x=E('span','legend '+type);x.append(activityIcon(type),E('span','',label));legend.append(x)}const more=E('button','graph-more','More ↗');more.onclick=()=>this.open(events.slice().sort((a,b)=>+new Date(b.date)-+new Date(a.date)),'All recorded activity');const aside=E('div','graph-heading-actions');aside.append(legend,more);header.append(intro,aside);this.surface.append(header);
-  if(!events.length){this.surface.append(E('p','notice','No dated public GitHub events yet.'));return}
-  const dates=events.map(x=>+new Date(x.date)),first=new Date(Math.min(...dates)),last=new Date(Math.max(...dates)),firstMonth=first.getUTCFullYear()*12+first.getUTCMonth(),lastMonth=last.getUTCFullYear()*12+last.getUTCMonth(),months=lastMonth-firstMonth+1,step=150,width=months*step+110;
-  const viewport=E('div','graph-viewport');viewport.tabIndex=0;viewport.setAttribute('role','region');viewport.setAttribute('aria-label','Horizontal GitHub activity graph. Drag sideways or use arrow buttons.');const rail=E('div','graph-rail');rail.style.width=width+'px';
-  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 '+width+' 395');svg.setAttribute('width',width);svg.setAttribute('height','395');svg.classList.add('graph-lines');const path=(d,cls)=>{const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',d);p.setAttribute('class',cls);svg.append(p)};
-  path(`M 24 183 H ${width-34} M ${width-43} 176 L ${width-33} 183 L ${width-43} 190`,'graph-main-line');
-  const startDot=document.createElementNS('http://www.w3.org/2000/svg','circle');startDot.setAttribute('cx','24');startDot.setAttribute('cy','183');startDot.setAttribute('r','6');startDot.setAttribute('class','graph-origin');svg.append(startDot);
-  const grouped=new Map();for(const item of events){const d=new Date(item.date),month=d.getUTCFullYear()*12+d.getUTCMonth()-firstMonth,key=month+':'+item.type;if(!grouped.has(key))grouped.set(key,{type:item.type,month,items:[]});grouped.get(key).items.push(item)}
-  const columns=new Set();for(const {month} of grouped.values())columns.add(month);
-  for(const month of columns){const x=70+month*step;path(`M ${x} 179 L ${x} 187`,'graph-tick')}
-  for(const group of grouped.values()){
-   const x=70+group.month*step,total=group.items.reduce((s,i)=>s+(i.activityCount||1),0),monthDate=new Date(Date.UTC(Math.floor((firstMonth+group.month)/12),(firstMonth+group.month)%12,1)),period=monthDate.toLocaleDateString(undefined,{year:'numeric',month:'long'}),t=group.type;
-   const px=(t==='star'||t==='project')?x-34:x+34,py=t==='star'?75:t==='fork'?125:t==='project'?245:304;
-   if(t==='star')path(`M ${x} 183 C ${x} 129 ${px} 131 ${px} ${py+22}`,'graph-branch star');
-   if(t==='fork')path(`M ${x} 183 C ${x} 155 ${px} 150 ${px} ${py+22}`,'graph-branch fork');
-   if(t==='project')path(`M ${x} 183 C ${x} 207 ${px} 211 ${px} ${py-22}`,'graph-branch project');
-   if(t==='commit')path(`M ${x} 183 C ${x} 245 ${px} 247 ${px} ${py-22}`,'graph-branch commit');
-   const node=E('button','graph-event '+t);node.type='button';node.style.left=px+'px';node.style.top=py+'px';node.append(activityIcon(t));node.setAttribute('aria-label',ACTIVITY_LABELS[t]+', '+period+', '+total+' activities');node.title=ACTIVITY_LABELS[t]+' · '+period;node.onclick=()=>this.open(group.items,ACTIVITY_LABELS[t]+' · '+period);rail.append(node)
+  this.surface.replaceChildren();
+  const events=this._events.filter(x=>ACTIVITY_TYPES.includes(x.type)&&x.date&&!Number.isNaN(+new Date(x.date)));
+  const state=activityWindow(this.range,events);
+  const heading=E('div','activity-heading'),headingCopy=E('div');
+  headingCopy.append(E('h2','','GitHub activity'),E('p','activity-period',state.label));
+  const all=E('button','activity-view-all','Browse activity');
+  all.type='button';all.onclick=()=>this.open(state.bins.flatMap(bin=>bin.items).sort((a,b)=>+new Date(b.date)-+new Date(a.date)),'Recorded activity · '+state.label);
+  all.disabled=!Object.values(state.totals).some(Boolean);
+  heading.append(headingCopy,all);this.surface.append(heading);
+  const ranges=E('div','activity-range-picker');
+  ranges.setAttribute('role','group');ranges.setAttribute('aria-label','Timeline period');
+  for(const [key,label] of [['week','This week'],['month','This month'],['year','This year'],['five','Past 5 years'],['all','All']]){
+   const button=E('button','activity-range'+(key===this.range?' selected':''),label);
+   button.type='button';button.setAttribute('aria-pressed',String(key===this.range));
+   button.onclick=()=>{this.range=key;this.activeType=null;this.metricMonth=undefined;this.render()};
+   ranges.append(button);
   }
-  const axis=E('div','graph-axis');for(let m=0;m<months;m++){const v=firstMonth+m,year=Math.floor(v/12),month=v%12;if(m===0||month===0||month===3||month===6||month===9){const tick=E('span','graph-axis-tick',month===0?String(year):['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month]);tick.style.left=(70+m*step)+'px';axis.append(tick)}}rail.append(svg,axis);viewport.append(rail);this.surface.append(viewport);
-  const bottom=E('div','timeline-bottom graph-bottom'),controls=E('div','timeline-controls'),back=E('button','timeline-arrow','←'),next=E('button','timeline-arrow','→');back.setAttribute('aria-label','Earlier');next.setAttribute('aria-label','Later');back.onclick=()=>viewport.scrollBy({left:-step*4,behavior:'smooth'});next.onclick=()=>viewport.scrollBy({left:step*4,behavior:'smooth'});controls.append(back,next);bottom.append(controls);this.surface.append(bottom);
-  const analysis=E('section','monthly-analysis'),analysisHead=E('div','monthly-analysis-head');analysisHead.append(E('h3','','Monthly analysis'));
-  const monthsList=[...new Set(events.map(x=>new Date(x.date).toISOString().slice(0,7)))].sort().reverse(),selector=E('select','month-select');selector.setAttribute('aria-label','Month');
-  for(const month of monthsList){const option=E('option','',new Date(month+'-01T00:00:00Z').toLocaleDateString(undefined,{month:'short',year:'numeric'}));option.value=month;selector.append(option)}
-  const toggle=E('button','monthly-view-toggle','3D view ↗'),headActions=E('div','monthly-head-actions');toggle.type='button';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Show isometric monthly activity chart');headActions.append(selector,toggle);analysisHead.append(headActions);
-  const metrics=E('div','monthly-metrics'),detail=E('div','isometric-view'),note=E('p','monthly-note','Push: recent public events only · not a complete commit history.');detail.hidden=true;
-  let chartVisible=false;
-  const update=()=>{const counts={star:0,fork:0,project:0,commit:0};for(const item of events)if(new Date(item.date).toISOString().startsWith(selector.value))counts[item.type]+=item.activityCount||1;metrics.replaceChildren();for(const type of ['star','fork','project','commit']){const group=E('div','monthly-metric '+type),label=E('span','monthly-metric-label');label.append(activityIcon(type),E('span','',ACTIVITY_LABELS[type]));group.append(label,E('strong','',String(counts[type])));metrics.append(group)}if(chartVisible){detail.replaceChildren(isometricBars(counts,selector.value))}};
-  toggle.onclick=()=>{chartVisible=!chartVisible;detail.hidden=!chartVisible;toggle.setAttribute('aria-expanded',String(chartVisible));toggle.textContent=chartVisible?'Hide 3D ↗':'3D view ↗';if(chartVisible)update();else detail.replaceChildren()};
-  selector.onchange=update;analysis.append(analysisHead,metrics,detail,note);this.surface.append(analysis);update();
-  let drag=null;viewport.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('button'))return;drag={x:e.clientX,scroll:viewport.scrollLeft};viewport.setPointerCapture(e.pointerId);viewport.classList.add('dragging')});viewport.addEventListener('pointermove',e=>{if(drag)viewport.scrollLeft=drag.scroll+drag.x-e.clientX});const end=()=>{drag=null;viewport.classList.remove('dragging')};viewport.addEventListener('pointerup',end);viewport.addEventListener('pointercancel',end);viewport.addEventListener('wheel',e=>{if(e.shiftKey){e.preventDefault();viewport.scrollLeft+=e.deltaY}},{passive:false});
-  requestAnimationFrame(()=>{if(viewport.isConnected)viewport.scrollLeft=viewport.scrollWidth-viewport.clientWidth});
+  this.surface.append(ranges);
+  if(!events.length){this.surface.append(E('p','activity-empty','No dated public activity records are available.'));return}
+
+  const matrix=E('div','activity-matrix'),labels=E('div','activity-labels'),viewport=E('div','activity-plot-viewport'),plot=E('div','activity-plot');
+  viewport.tabIndex=0;viewport.setAttribute('role','region');viewport.setAttribute('aria-label','Activity by period, scroll horizontally to explore');
+  const columns=state.bins.length;
+  plot.style.minWidth=Math.max(390,columns*(columns<=7?62:columns<=12?43:columns<=36?24:14))+'px';
+  for(const type of ACTIVITY_TYPES){
+   const active=!this.activeType||this.activeType===type;
+   const label=E('button','activity-lane-label '+type+(active?'':' dimmed'));
+   label.type='button';label.title='Highlight '+ACTIVITY_LABELS[type];
+   label.setAttribute('aria-pressed',String(this.activeType===type));
+   label.append(activityIcon(type),E('span','',ACTIVITY_LABELS[type]));
+   label.onclick=()=>{this.activeType=this.activeType===type?null:type;this.render()};
+   labels.append(label);
+   const row=E('div','activity-lane '+type+(active?'':' dimmed'));
+   row.style.gridTemplateColumns='repeat('+columns+',minmax(0,1fr))';
+   const peak=Math.max(1,...state.bins.map(bin=>bin.counts[type]));
+   for(const bin of state.bins){
+    const count=bin.counts[type],cell=E('div','activity-cell'+(bin.future?' future':''));
+    if(count){
+     const mark=E('button','activity-mark '+type);
+     mark.type='button';mark.style.height=(5+Math.round(25*Math.sqrt(count/peak)))+'px';
+     mark.title=ACTIVITY_LABELS[type]+' · '+bin.label+': '+count+' recorded';
+     mark.setAttribute('aria-label',mark.title+'. Open records.');
+     mark.onclick=()=>{this.metricMonth=bin.key.slice(0,7).length===7?bin.key.slice(0,7):this.metricMonth;this.open(bin.items.filter(item=>item.type===type),ACTIVITY_LABELS[type]+' · '+bin.label)};
+     cell.append(mark);
+    }
+    row.append(cell);
+   }
+   plot.append(row);
+  }
+  labels.append(E('span','activity-axis-spacer',''));
+  const axis=E('div','activity-bin-axis');axis.style.gridTemplateColumns='repeat('+columns+',minmax(0,1fr))';
+  state.bins.forEach((bin,index)=>{
+   const d=bin.start,show=state.grain==='year'||(state.grain==='month'?(columns<=12||d.getMonth()===0||index%6===0):columns<=7||index===0||d.getDate()%5===0);
+   const tick=E('span','activity-bin-label',show?(state.grain==='day'?String(d.getDate()):state.grain==='year'?String(d.getFullYear()):d.getMonth()===0?String(d.getFullYear()):d.toLocaleDateString('en',{month:'short'})):'');
+   tick.title=bin.label;axis.append(tick);
+  });
+  plot.append(axis);viewport.append(plot);matrix.append(labels,viewport);this.surface.append(matrix);
+  const insight=E('div','activity-under-chart');
+  insight.append(E('span','',state.grain==='day'?'Daily activity':state.grain==='year'?'Yearly activity':'Monthly activity'));
+  if(state.monthOnlyOmitted)insight.append(E('span','activity-precision',state.monthOnlyOmitted+' month-only records are not shown on individual days. Choose This year.'));
+  if(!Object.values(state.totals).some(Boolean))insight.append(E('span','activity-precision','No recorded events in this range.'));
+  this.surface.append(insight);
+
+  const analysis=E('section','monthly-analysis activity-monthly-analysis'),analysisHead=E('div','monthly-analysis-head');
+  analysisHead.append(E('h3','','Monthly analysis'));
+  const select=E('select','month-select');select.setAttribute('aria-label','Select month for analysis');
+  const months=[...new Set(events.map(item=>item.date.slice(0,7)))].filter(month=>/^\d{4}-\d{2}$/.test(month)).sort().reverse();
+  const today=new Date(),currentMonth=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0');
+  const defaultMonth=months.find(month=>month===currentMonth)||months[0];
+  if(!months.includes(this.metricMonth))this.metricMonth=defaultMonth;
+  for(const month of months){const option=E('option','',new Date(month+'-01T12:00:00Z').toLocaleDateString(undefined,{month:'short',year:'numeric'}));option.value=month;option.selected=month===this.metricMonth;select.append(option)}
+  analysisHead.append(select);
+  const metrics=E('div','monthly-metrics');
+  const updateMetrics=()=>{
+   metrics.replaceChildren();
+   const month=this.metricMonth;
+   for(const type of ACTIVITY_TYPES){
+    const items=events.filter(item=>item.type===type&&item.date.slice(0,7)===month);
+    const count=items.reduce((total,item)=>total+(Number(item.activityCount)||1),0);
+    const metric=E('button','monthly-metric '+type);metric.type='button';metric.title='Inspect '+ACTIVITY_LABELS[type]+' · '+month;
+    const name=E('span','monthly-metric-label');name.append(activityIcon(type),E('span','',ACTIVITY_LABELS[type]));
+    metric.append(name,E('strong','',String(count)));metric.onclick=()=>this.open(items,ACTIVITY_LABELS[type]+' · '+month);
+    metrics.append(metric);
+   }
+  };
+  select.onchange=()=>{this.metricMonth=select.value;updateMetrics()};
+  const coverage=E('details','activity-coverage'),summary=E('summary','','About the data');
+  coverage.append(summary,E('p','','This is a partial record of public GitHub activity, not a complete contribution history. Public push events are recent only. Historical snapshot totals have month-level precision; they are included in monthly/yearly views but never assigned to invented days. Private work and uncollected events are not counted.'));
+  analysis.append(analysisHead,metrics,coverage);this.surface.append(analysis);updateMetrics();
  }
 }
 if(!customElements.get('github-activity-timeline'))customElements.define('github-activity-timeline',GithubActivityTimeline);
@@ -182,8 +209,10 @@ class ProfileAtlas extends HTMLElement{
    this.items=merge(data.repos,data.stars,manifest,manifestHref);
    const knownDates=new Map(data.repos.map(r=>[String(r.full_name||'').toLowerCase(),r.created_at]));
    for(const item of this.items)if(item.type==='project'&&item.repo&&!item.date&&knownDates.has(item.repo.toLowerCase()))item.date=knownDates.get(item.repo.toLowerCase());
-   const missing=new Set();if(!data.repos.length){missing.add('project');missing.add('fork')}if(!data.stars.length)missing.add('star');
-   this.hiddenMonthly=[...unfeaturedMonthlyCounts(data.repos,manifest),...snapshotToItems(manifest,missing),...(manifest.projectVisibility==='curated'?monthlyPushCounts((data.pushes||[]).map(eventToCommit)):(data.pushes||[]).map(eventToCommit))];
+   const hiddenRepos=unfeaturedMonthlyCounts(data.repos,manifest);
+   const historical=reconcileMonthlySnapshots(manifest.activitySnapshot,manifest.activitySnapshotRecordedAt,[...this.items,...hiddenRepos]);
+   const publicPushes=(data.pushes||[]).map(eventToCommit).map(item=>manifest.projectVisibility==='curated'?{...item,repo:'',url:''}:item);
+   this.hiddenMonthly=[...hiddenRepos,...historical,...publicPushes];
    this.message=data.warning||'';this.pending=false;this.render();this.dispatchEvent(new CustomEvent('atlas-ready',{detail:{count:this.items.length},bubbles:true}));
   }catch(e){if(current!==this.loadId||e.name==='AbortError')return;this.pending=false;this.message=e.message||'Unable to load activity.';this.render()}
  }
@@ -235,8 +264,8 @@ class ProfileAtlas extends HTMLElement{
     video=E('video');video.src=item.image;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';video.setAttribute('aria-hidden','true');if(item.poster)video.poster=item.poster;
     video.onerror=()=>{video.hidden=true;if(item.poster){const still=E('img');still.src=item.poster;still.alt='';preview.append(still)}else preview.append(E('span','splay-monogram',item.title.slice(0,2).toUpperCase()))};preview.append(video);
    }
-   else if(item.image){const image=E('img');image.src=item.image;image.alt='';image.loading='lazy';image.decoding='async';image.onerror=()=>{image.remove();preview.append(E('span','splay-monogram',item.title.slice(0,2).toUpperCase()))};preview.append(image)}
-   else{preview.append(E('span','splay-monogram',item.title.slice(0,2).toUpperCase()));}
+   else if(item.image){const image=E('img');image.src=item.image;image.alt='';image.loading='lazy';image.decoding='async';image.onerror=()=>{image.remove();card.classList.add('has-text-preview');preview.append(this.textPreview(item))};preview.append(image)}
+   else{card.classList.add('has-text-preview');preview.append(this.textPreview(item))}
    const copy=E('div','splay-copy');copy.append(E('h3','',item.title),E('p','',item.summary));if(item.demoUrl)copy.append(E('small','splay-live','LIVE ↗'));face.append(preview,copy);card.append(face);
    card.onfocus=()=>activate(index);rack.append(card);controls.push({card,i:index,video});
   }
@@ -249,6 +278,12 @@ class ProfileAtlas extends HTMLElement{
   stage.addEventListener('pointercancel',()=>{drag=null});
   stage.addEventListener('click',e=>{if(Date.now()<(this.suppressClickUntil||0))return;const bounds=rack.getBoundingClientRect();let index=Number(e.target.closest('.splay-plate')?.dataset.index);if(e.detail!==0&&e.clientX>=bounds.left){index=Math.max(0,Math.min(visible-1,Math.floor((e.clientX-bounds.left)/spacing)))}if(Number.isInteger(index)&&index>=0&&index<cards.length){const item=cards[index].item;this.detail(item,!!item.demoUrl)}});
   activate(null);stage.append(rack);container.append(stage,caption);this.galleryNavigation(n,start,container);this.main.append(container);
+ }
+ textPreview(item){
+  const cover=E('div','splay-text-preview'),kind=E('small','splay-text-kind',item.type==='project'?'BUILT':item.type==='star'?'DISCOVERED':item.type==='fork'?'FORKED':'COLLECTED');
+  const meta=item.language||(item.demoUrl||item.url?(()=>{try{return new URL(item.demoUrl||item.url).hostname.replace(/^www\./,'')}catch{return''}})():'');
+  cover.append(kind,E('strong','splay-text-title',item.title),E('span','splay-text-meta',meta||'GitHub'));
+  return cover;
  }
  tossGallery(items){
   const n=items.length,start=((this.pos[this.kind]||0)%n+n)%n,width=this.getBoundingClientRect().width||900;
@@ -279,7 +314,6 @@ class ProfileAtlas extends HTMLElement{
  }
  timeline(){
   const component=E('github-activity-timeline');component.events=[...this.items,...this.hiddenMonthly];
-  component.addEventListener('activity-open',event=>{event.preventDefault();const {items,label}=event.detail;if(items.length===1)this.detail(items[0]);else this.openIndex(items,label)});
   return component
  }
  detail(item,demoFirst=false){
@@ -293,7 +327,7 @@ class ProfileAtlas extends HTMLElement{
   const copy=E('div','detail-copy');copy.append(E('small','kicker',item.type.toUpperCase()),E('h2','',item.title),E('p','',item.body||item.summary));if(item.date)copy.append(E('small','muted',item.aggregate?'Month: '+new Date(item.date).toLocaleDateString(undefined,{month:'long',year:'numeric'}):'Added '+when(item.date)));const links=E('div','actions');
   const actions=item.image?(item.url&&item.url!==(item.demoUrl||item.url)?[[item.url,'Source ↗']]:[]):[[item.demoUrl,'Live demo ↗'],[item.url&&item.url!==item.demoUrl?item.url:'',item.demoUrl?'Source ↗':'Open project ↗']];
   for(const [dest,label] of actions)if(dest){const a=E('a','action',label);a.href=dest;a.target='_blank';a.rel='noopener noreferrer';links.append(a)}
-  if(links.childElementCount)copy.append(links);panel.append(close,media,copy);overlay.append(panel);this.root.append(overlay);close.focus()
+  if(links.childElementCount)copy.append(links);panel.append(close);if(media.childElementCount)panel.append(media);panel.append(copy);overlay.append(panel);this.root.append(overlay);close.focus()
  }
 }
 if(!customElements.get('profile-atlas'))customElements.define('profile-atlas',ProfileAtlas);

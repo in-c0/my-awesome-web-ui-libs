@@ -109,3 +109,61 @@
 .iso-column:hover .iso-face{filter:brightness(1.08)}
 .iso-label{fill:#8c8f85;font-size:12px;font-family:Inter,ui-sans-serif,system-ui,sans-serif;letter-spacing:.005em}
 @container(max-width:700px){.monthly-head-actions{gap:12px}.monthly-view-toggle{font-size:10px}.isometric-view{margin-top:19px;padding-top:7px;min-height:145px}.iso-label{font-size:13px}}
+
+/* Functional timeline: one shared time scale, four compact activity lanes. */
+.graph-section{padding:27px 0 0;background:#f0eee7}
+.activity-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:0 26px}
+.activity-heading h2{font-family:Georgia,"Iowan Old Style",serif;font-size:clamp(26px,3.4vw,36px);font-weight:400;letter-spacing:-.06em;line-height:1.12;margin:0}
+.activity-period{margin:7px 0 0;color:#83877e;font-size:12px;font-variant-numeric:tabular-nums}
+.activity-view-all{background:transparent;border:0;border-bottom:1px solid #b4b7a9;color:#505c51;padding:8px 0;font:inherit;font-size:11px;white-space:nowrap;cursor:pointer}
+.activity-view-all:disabled{opacity:.35;cursor:default}
+.activity-range-picker{display:flex;gap:5px;margin:22px 26px 23px;padding:0;overflow-x:auto;scrollbar-width:thin}
+.activity-range{font:inherit;font-size:11px;line-height:1.3;background:transparent;border:0;border-bottom:2px solid transparent;color:#8d9287;padding:8px 12px 10px;white-space:nowrap;cursor:pointer}
+.activity-range:hover{color:#444b43}
+.activity-range.selected{color:#303a32;border-bottom-color:#4f6758;font-weight:700}
+.activity-range:focus-visible,.activity-lane-label:focus-visible,.activity-mark:focus-visible,.monthly-metric:focus-visible{outline:2px solid #557667;outline-offset:3px}
+.activity-matrix{display:grid;grid-template-columns:108px minmax(0,1fr);gap:12px;margin:0 26px 0 20px;align-items:start}
+.activity-labels{display:grid;grid-template-rows:repeat(4,57px) 26px;align-items:center}
+.activity-lane-label{display:flex;align-items:center;gap:9px;height:42px;border:0;background:transparent;color:#6b776d;padding:0 4px;font:inherit;font-size:11px;text-align:left;cursor:pointer}
+.activity-lane-label svg{width:19px;height:19px;flex-shrink:0}
+.activity-lane-label.star svg{color:#a78953}.activity-lane-label.fork svg{color:#8189a9}.activity-lane-label.project svg{color:#b7795f}.activity-lane-label.commit svg{color:#548778}
+.activity-lane-label[aria-pressed="true"]{font-weight:800}
+.activity-lane-label.dimmed,.activity-lane.dimmed{opacity:.23}
+.activity-plot-viewport{width:100%;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#bfc4b8 transparent;padding-bottom:5px}
+.activity-plot{width:100%;display:flex;flex-direction:column}
+.activity-lane{height:57px;display:grid;align-items:end;border-bottom:1px solid #dadbd1;background-image:linear-gradient(to top,#dddcd13d 1px,transparent 1px);background-size:100% 25%;background-position:bottom}
+.activity-cell{height:100%;display:flex;justify-content:center;align-items:end;padding-bottom:6px;border-right:1px solid #deded435}
+.activity-cell.future{opacity:.13}
+.activity-mark{display:block;width:70%;max-width:28px;min-width:5px;padding:0;border:0;border-radius:2px 2px 0 0;background:var(--activity-color);cursor:pointer;transition:filter .12s,transform .12s;transform-origin:bottom}
+.activity-mark:hover,.activity-mark:focus-visible{filter:brightness(.82);transform:scaleX(1.18)}
+.activity-mark.star{--activity-color:#b89b68}.activity-mark.fork{--activity-color:#979bb5}.activity-mark.project{--activity-color:#c38d73}.activity-mark.commit{--activity-color:#77a28e}
+.activity-bin-axis{height:26px;display:grid;align-items:center}
+.activity-bin-label{display:block;font-size:9px;color:#999f93;font-variant-numeric:tabular-nums;text-align:center;white-space:nowrap;overflow:hidden}
+.activity-under-chart{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#969a90;font-size:10px;margin:13px 26px 24px 140px}
+.activity-precision{color:#8a7565}
+.activity-monthly-analysis{border-top:1px solid #dfdfd5;background:#faf9f5;padding:24px 26px 22px}
+.activity-monthly-analysis .monthly-analysis-head{margin-bottom:20px}
+.activity-monthly-analysis h3{font-family:Georgia,"Iowan Old Style",serif;font-size:22px}
+.activity-monthly-analysis .monthly-metric{border-top:0;border-right:0;border-bottom:0;background:transparent;align-items:stretch;text-align:left;cursor:pointer;font:inherit}
+.activity-monthly-analysis .monthly-metric:hover strong{text-decoration:underline;text-underline-offset:4px}
+.activity-monthly-analysis .monthly-metric strong{font-size:31px}
+.activity-coverage{margin-top:21px;color:#929487;font-size:10px;line-height:1.65}
+.activity-coverage summary{width:fit-content;cursor:pointer;text-decoration:underline;text-decoration-color:#bfc5ba;text-underline-offset:3px}
+.activity-coverage p{max-width:700px;margin:8px 0 0}
+.activity-empty{padding:15px 26px;color:#777f75}
+.activity-details-more{border:0;border-bottom:1px solid #9ea99e;background:transparent;color:#55705d;padding:9px 0;margin:6px 0;font-size:11px;cursor:pointer}
+.activity-details-more[hidden]{display:none}
+.graph-drawer{max-height:390px;scrollbar-width:thin}
+@container(max-width:700px){
+ .activity-heading{padding:0 16px}.activity-heading h2{font-size:28px}
+ .activity-range-picker{margin:16px 16px 18px;gap:1px}
+ .activity-range{padding:8px 10px;font-size:10px}
+ .activity-matrix{grid-template-columns:88px minmax(0,1fr);gap:4px;margin:0 15px 0 11px}
+ .activity-labels{grid-template-rows:repeat(4,53px) 24px}
+ .activity-lane{height:53px}.activity-lane-label{font-size:10px;gap:6px}.activity-lane-label svg{width:16px;height:16px}
+ .activity-bin-axis{height:24px}.activity-under-chart{margin:9px 16px 21px 103px}
+ .activity-monthly-analysis{padding:22px 16px}
+ .activity-monthly-analysis .monthly-metric{padding:2px 6px}
+ .activity-monthly-analysis .monthly-metric strong{font-size:27px}
+}
+@media(prefers-reduced-motion:reduce){.activity-mark{transition:none}}

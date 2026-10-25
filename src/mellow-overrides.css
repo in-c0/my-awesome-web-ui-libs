@@ -72,3 +72,15 @@
  :host([compact]) .splay-stage{height:298px}:host([compact]) .splay-rack{height:270px}
 }
 @media(prefers-reduced-motion:reduce){.splay-plate,.toss-card{transition:none!important}}
+
+/* Meaningful editorial cards when a project has no verified visual asset. */
+.splay-plate.has-text-preview .splay-preview{background:#e7e5dd}
+.splay-text-preview{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:24px;width:100%;height:100%;padding:22px 19px;color:#343b35}
+.splay-text-kind{font-size:9px;letter-spacing:.18em;font-weight:700;color:#92998f}
+.splay-text-title{font-family:Georgia,"Iowan Old Style",serif;font-size:clamp(25px,2.4vw,33px);line-height:1.09;letter-spacing:-.055em;font-weight:400;overflow-wrap:anywhere;hyphens:auto}
+.splay-text-meta{font-size:10px;letter-spacing:.02em;color:#7f8a7f;overflow-wrap:anywhere}
+.splay-plate.has-text-preview .splay-copy h3{display:none}
+.splay-plate.has-text-preview .splay-copy{min-height:86px}
+.splay-plate.has-text-preview .splay-copy p{margin:0;line-height:1.5;-webkit-line-clamp:3}
+.splay-plate.has-text-preview .splay-copy .splay-live{margin-top:9px}
+@media(max-width:700px){.splay-text-preview{padding:15px 14px;gap:14px}.splay-text-title{font-size:25px}}

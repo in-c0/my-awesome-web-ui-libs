@@ -6,7 +6,7 @@ A buildless, open-source Web Component set for a GitHub profile that is more tha
 
 ## Design
 
-- **Projects, stars, forks, inspiration — Splay Cards.** Based on [Mellow UI Splay Cards](https://mellowui.com/r/splay-cards.json): overlapping 3D plates fan apart on hover/focus. A bounded card window navigates hundreds of entries without mounting hundreds of plates. Select a card to open details or a lazy-loaded live demo.
+- **Projects, stars, forks, inspiration — Splay Cards.** Based on [Mellow UI Splay Cards](https://mellowui.com/r/splay-cards.json): overlapping 3D plates fan apart on hover/focus. A bounded card window navigates hundreds of entries without mounting hundreds of plates. Curated projects can show genuine captured public product pages; selecting one opens a larger preview linked to the live demo.
 - **Stories — Toss Deck.** Based on [Mellow UI Toss Deck](https://mellowui.com/r/toss-deck.json): swipe the top card out of the stack or use the navigation arrows.
 - **Activity — four icon lanes.** Star and Fork branch above the shared horizontal time spine; New repo and Push branch below, each at its own height. Nodes are clickable icons, without quantity boxes. A dedicated **Monthly analysis** area displays the four exact aggregate counts for a selected month.
 - **Optional monthly 3D view.** A lightweight SVG port of [Mellow UI Isometric Bars](https://mellowui.com/r/isometric-bars.json) opens only when the visitor chooses **3D view** in Monthly analysis. Bars use the currently selected month's actual activity counts and compare their relative heights; the exact values remain in the metric row.
@@ -60,6 +60,8 @@ Optional `activityCount` and `aggregate: true` support month-only records. Every
 
 `row` accepts `project`, `star`, `fork`, `story`, or `inspiration`. `username` is the GitHub username; `max-pages` fetches 100 entries per page (default 10, maximum 30); `manifest-url` supplies optional curated `projects`, `stories`, `inspirations`, and `excludeRepos`. Items can include `title`, `summary`, `body`, `url`, `demoUrl`, `preview: "iframe" | "video" | "image" | "link"`, `image`, and `repo`. See [data/in-c0.json](data/in-c0.json) for a complete example.
 
+Image paths may be absolute HTTPS URLs or relative to the manifest JSON file (for example `../assets/project-previews/paper-ui.webp`). The showcase's four product thumbnails are captured public product/demo pages from 2026-10-25, not live iframes. A screenshot is never silently substituted with a security-verification page; entries without a verified image retain a quiet fallback. Real screenshots are still subject to the original sites' branding and content rights.
+
 ## Data, limits, and privacy
 
 - Public repos from GitHub's user repository endpoint; forks use repo creation timestamps.
@@ -67,7 +69,7 @@ Optional `activityCount` and `aggregate: true` support month-only records. Every
 - **Push** from the recent public `PushEvent` feed: this is **not a complete commit history** and a push event is not a single commit. Public event history is limited to recent events (approximately 30 days / 300 events).
 - Public GitHub API requests are unauthenticated; local browser cache lasts six hours. The sample profile includes a dated, month-only snapshot if rate limits block live reads.
 - `projectVisibility: "curated"` in the manifest hides unfeatured owned repo **titles from the gallery** and represents their creation in the public chart as month-only totals. This does **not** make public GitHub repos private.
-- When the live demo blocks cross-origin iframe embedding, visitors can open the project directly.
+- Curated screenshot previews link directly to the live product or store listing. Other items may use iframes if allowed; when embedding is blocked, visitors can open the project directly.
 
 ## GitHub profile README
 

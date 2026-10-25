@@ -31,6 +31,7 @@ function isometricBars(counts,month){
  return svg;
 }
 const url=s=>{try{const u=new URL(s);return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return''}};
+const assetUrl=(value,base)=>{try{const u=new URL(value,base);return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return''}};
 const when=s=>{const d=new Date(s);return Number.isNaN(+d)?'Undated':d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})};
 const cacheRead=k=>{try{const o=JSON.parse(localStorage.getItem(k));return o&&Date.now()-o.t<21600000?o.data:null}catch{return null}};
 const cacheWrite=(k,data)=>{try{localStorage.setItem(k,JSON.stringify({t:Date.now(),data}))}catch{}};
@@ -47,16 +48,16 @@ async function pages(path,headers,signal,max){
 }
 const repoToItem=r=>({id:'repo:'+r.full_name,type:r.fork?'fork':'project',title:r.name,summary:r.description||'GitHub repository',body:'',repo:r.full_name,url:url(r.html_url),demoUrl:url(r.homepage),image:'',preview:'link',date:r.created_at,language:r.language||'',featured:false});
 const eventToCommit=e=>({id:'push:'+e.id,type:'commit',title:'Code push',summary:'A public push event; this event does not necessarily represent one commit.',repo:e.repo?.name||'',url:url(e.repo?.name?'https://github.com/'+e.repo.name:''),date:e.created_at,activityCount:1,source:'github-public-events'});
-const manifestItem=(r,type,i)=>({id:r.id||type+':'+i,type,title:r.title||'Untitled',summary:r.summary||'',body:r.body||'',repo:r.repo||'',url:url(r.url),demoUrl:url(r.demoUrl),image:url(r.image),preview:['iframe','video','image','link'].includes(r.preview)?r.preview:'link',date:r.date||'',language:r.language||'',featured:!!r.featured});
-function merge(repos,stars,manifest){
+const manifestItem=(r,type,i,manifestUrl)=>({id:r.id||type+':'+i,type,title:r.title||'Untitled',summary:r.summary||'',body:r.body||'',repo:r.repo||'',url:url(r.url),demoUrl:url(r.demoUrl),image:r.image?assetUrl(r.image,manifestUrl):'',preview:['iframe','video','image','link'].includes(r.preview)?r.preview:'link',date:r.date||'',language:r.language||'',featured:!!r.featured});
+function merge(repos,stars,manifest,manifestUrl){
  const exclusions=(manifest.excludeRepos||[]).map(x=>String(x).toLowerCase());
  const permitted=r=>!exclusions.some(x=>(r.full_name||'').toLowerCase().includes(x)||(r.name||'').toLowerCase().includes(x));
  const owned=repos.filter(r=>permitted(r)&&(manifest.projectVisibility!=='curated'||r.fork)).map(repoToItem), byRepo=new Map(owned.map(x=>[x.repo.toLowerCase(),x]));
  const extras=[];
- (manifest.projects||[]).forEach((r,i)=>{const item=manifestItem(r,'project',i);item.curatedOrder=i;const match=item.repo&&byRepo.get(item.repo.toLowerCase());if(match)Object.assign(match,item,{id:match.id,type:match.type});else extras.push(item)});
+ (manifest.projects||[]).forEach((r,i)=>{const item=manifestItem(r,'project',i,manifestUrl);item.curatedOrder=i;const match=item.repo&&byRepo.get(item.repo.toLowerCase());if(match)Object.assign(match,item,{id:match.id,type:match.type});else extras.push(item)});
  const starItems=stars.filter(x=>permitted(x.repo||x)).map(x=>{const r=x.repo||x;return {...repoToItem(r),id:'star:'+r.full_name,type:'star',date:x.starred_at||''}});
- const stories=(manifest.stories||[]).map((x,i)=>manifestItem(x,'story',i));
- const inspiration=(manifest.inspirations||[]).map((x,i)=>manifestItem(x,'inspiration',i));
+ const stories=(manifest.stories||[]).map((x,i)=>manifestItem(x,'story',i,manifestUrl));
+ const inspiration=(manifest.inspirations||[]).map((x,i)=>manifestItem(x,'inspiration',i,manifestUrl));
  return [...owned,...extras,...starItems,...stories,...inspiration];
 }
 function unfeaturedMonthlyCounts(repos,manifest){
@@ -175,10 +176,10 @@ class ProfileAtlas extends HTMLElement{
     data={repos:r.items,stars:s.items,pushes:p.items.filter(e=>e.type==='PushEvent'),warning:(r.capped||s.capped?'Reached '+(this.limit*100)+' entries per feed. Increase max-pages. ':'')+(responses.some(x=>x.status==='rejected')?'One or more live GitHub feeds are unavailable; a dated public snapshot may be shown.':'')};if(responses.some(x=>x.status==='fulfilled'))cacheWrite(key,data);
    }
    if(!('pushes' in data)){try{const p=await pages('/users/'+encodeURIComponent(this.username)+'/events/public',{},this.controller.signal,3);data.pushes=p.items.filter(e=>e.type==='PushEvent');cacheWrite(key,data)}catch{data.pushes=[]}}
-   let manifest={};const manifestPath=this.getAttribute('manifest-url');
-   if(manifestPath){const u=new URL(manifestPath,document.baseURI);if(!['http:','https:'].includes(u.protocol))throw Error('Manifest must use HTTPS or HTTP');const r=await fetch(u.href,{signal:this.controller.signal});if(!r.ok)throw Error('Manifest HTTP '+r.status);manifest=await r.json()}
+   let manifest={};const manifestPath=this.getAttribute('manifest-url');let manifestHref=document.baseURI;
+   if(manifestPath){const u=new URL(manifestPath,document.baseURI);if(!['http:','https:'].includes(u.protocol))throw Error('Manifest must use HTTPS or HTTP');manifestHref=u.href;const r=await fetch(u.href,{signal:this.controller.signal});if(!r.ok)throw Error('Manifest HTTP '+r.status);manifest=await r.json()}
    if(current!==this.loadId)return;
-   this.items=merge(data.repos,data.stars,manifest);
+   this.items=merge(data.repos,data.stars,manifest,manifestHref);
    const knownDates=new Map(data.repos.map(r=>[String(r.full_name||'').toLowerCase(),r.created_at]));
    for(const item of this.items)if(item.type==='project'&&item.repo&&!item.date&&knownDates.has(item.repo.toLowerCase()))item.date=knownDates.get(item.repo.toLowerCase());
    const missing=new Set();if(!data.repos.length){missing.add('project');missing.add('fork')}if(!data.stars.length)missing.add('star');
@@ -280,12 +281,13 @@ class ProfileAtlas extends HTMLElement{
   const overlay=E('div','overlay'),panel=E('section','detail');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label',item.title);
   const before=this.shadowRoot.activeElement,close=E('button','close','×'),exit=()=>{overlay.remove();before?.focus()};close.setAttribute('aria-label','Close detail');close.onclick=exit;overlay.onclick=e=>{if(e.target===overlay)exit()};overlay.onkeydown=e=>{if(e.key==='Escape')exit()};
   const media=E('div','detail-media');
-  if((demoFirst||!item.image)&&item.demoUrl&&item.preview==='iframe'){const f=E('iframe');f.src=item.demoUrl;f.title='Preview '+item.title;f.sandbox='allow-scripts allow-forms allow-popups';f.referrerPolicy='no-referrer';f.loading='lazy';media.append(f,E('small','','If this website blocks embedding, open the live demo in a new tab.'))}
+   if(item.image){const img=E('img');img.src=item.image;img.alt=item.title+' project preview';if(item.demoUrl||item.url){const destination=E('a','detail-poster-link');destination.href=item.demoUrl||item.url;destination.target='_blank';destination.rel='noopener noreferrer';destination.setAttribute('aria-label','Open '+item.title+' in a new tab');destination.append(img,E('span','detail-open-site','Visit live ↗'));media.append(destination)}else media.append(img)}
+   else if(item.demoUrl&&item.preview==='iframe'){const f=E('iframe');f.src=item.demoUrl;f.title='Preview '+item.title;f.sandbox='allow-scripts allow-forms allow-popups';f.referrerPolicy='no-referrer';f.loading='lazy';media.append(f,E('small','','If this website blocks embedding, open the live demo in a new tab.'))}
   else if((demoFirst||!item.image)&&item.demoUrl&&item.preview==='video'){const v=E('video');v.src=item.demoUrl;v.controls=true;v.playsInline=true;media.append(v)}
-  else if(item.image){const img=E('img');img.src=item.image;img.alt=item.title;media.append(img)}
   const copy=E('div','detail-copy');copy.append(E('small','kicker',item.type.toUpperCase()),E('h2','',item.title),E('p','',item.body||item.summary));if(item.date)copy.append(E('small','muted',item.aggregate?'Month: '+new Date(item.date).toLocaleDateString(undefined,{month:'long',year:'numeric'}):'Added '+when(item.date)));const links=E('div','actions');
-  for(const [dest,label] of [[item.demoUrl,'Live demo ↗'],[item.url,'Open project ↗']])if(dest){const a=E('a','action',label);a.href=dest;a.target='_blank';a.rel='noopener noreferrer';links.append(a)}
-  copy.append(links);panel.append(close,media,copy);overlay.append(panel);this.root.append(overlay);close.focus()
+  const actions=item.image?(item.url&&item.url!==(item.demoUrl||item.url)?[[item.url,'Source ↗']]:[]):[[item.demoUrl,'Live demo ↗'],[item.url&&item.url!==item.demoUrl?item.url:'',item.demoUrl?'Source ↗':'Open project ↗']];
+  for(const [dest,label] of actions)if(dest){const a=E('a','action',label);a.href=dest;a.target='_blank';a.rel='noopener noreferrer';links.append(a)}
+  if(links.childElementCount)copy.append(links);panel.append(close,media,copy);overlay.append(panel);this.root.append(overlay);close.focus()
  }
 }
 if(!customElements.get('profile-atlas'))customElements.define('profile-atlas',ProfileAtlas);

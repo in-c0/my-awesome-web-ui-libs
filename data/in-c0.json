@@ -9,7 +9,8 @@
       "body": "Interactive boards for thinking, planning, and exploring ideas visually.",
       "demoUrl": "https://vibomaker.com",
       "url": "https://vibomaker.com",
-      "preview": "iframe",
+      "image": "../assets/project-previews/vibo.webp",
+      "preview": "image",
       "featured": true
     },
     {
@@ -19,7 +20,8 @@
       "body": "A tool for working through long-form content and ideas more efficiently.",
       "demoUrl": "https://sumz-up.com",
       "url": "https://sumz-up.com",
-      "preview": "iframe",
+      "image": "../assets/project-previews/sumzup.webp",
+      "preview": "image",
       "featured": true
     },
     {
@@ -28,7 +30,7 @@
       "summary": "Agentic roundtables for reviewing software, specifications, and visual quality.",
       "demoUrl": "https://consilium.ava.kim",
       "url": "https://consilium.ava.kim",
-      "preview": "iframe",
+      "preview": "link",
       "featured": true
     },
     {
@@ -37,7 +39,7 @@
       "summary": "Discovery of products, research, makers, and evidence.",
       "demoUrl": "https://ssmt.uk",
       "url": "https://ssmt.uk",
-      "preview": "iframe",
+      "preview": "link",
       "featured": true
     },
     {
@@ -45,6 +47,9 @@
       "title": "Paper UI",
       "summary": "A public collection of expressive, reusable interface components.",
       "url": "https://github.com/in-c0/paper-ui",
+      "demoUrl": "https://paper-ui-react-lab.vercel.app/",
+      "image": "../assets/project-previews/paper-ui.webp",
+      "preview": "image",
       "repo": "in-c0/paper-ui",
       "featured": true
     },
@@ -53,6 +58,9 @@
       "title": "YouTube Shorts Remover",
       "summary": "Give your YouTube browsing a little more room to breathe.",
       "url": "https://github.com/in-c0/youtube-shorts-remover",
+      "demoUrl": "https://chromewebstore.google.com/detail/youtube-shorts-playables/dilmoegnonbiadmhbmaehnhogjlkikdp",
+      "image": "../assets/project-previews/shorts-remover.webp",
+      "preview": "image",
       "repo": "in-c0/youtube-shorts-remover",
       "featured": true
     },
@@ -62,7 +70,7 @@
       "summary": "Turn video transcripts into text you can actually work with.",
       "url": "https://youtubetotext.com",
       "demoUrl": "https://youtubetotext.com",
-      "preview": "iframe",
+      "preview": "link",
       "featured": true
     }
   ],

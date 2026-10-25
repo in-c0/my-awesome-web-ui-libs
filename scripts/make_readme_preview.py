@@ -13,8 +13,20 @@ ASSETS = ROOT / 'dist' / 'assets' if (ROOT / 'dist' / 'assets').exists() else RO
 OUT = ASSETS / 'profile-atlas-preview.gif'
 W, H = 960, 456
 BG, PANEL, INK, MUTED, EDGE = '#f5f3ec', '#f9f8f3', '#282b25', '#8e8e83', '#d6d3c8'
-SERIF, SANS = '/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
-font = {name: ImageFont.truetype(SERIF if serif else SANS, size) for name, size, serif in (
+SERIF = ['/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf', 'C:/Windows/Fonts/georgia.ttf', '/System/Library/Fonts/Supplemental/Georgia.ttf', 'DejaVuSerif.ttf']
+SANS = ['/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 'C:/Windows/Fonts/arial.ttf', '/System/Library/Fonts/Supplemental/Arial.ttf', 'DejaVuSans.ttf']
+
+
+def system_font(size, serif=False):
+    for path in SERIF if serif else SANS:
+        try:
+            return ImageFont.truetype(path, size)
+        except OSError:
+            continue
+    return ImageFont.load_default(size=size)
+
+
+font = {name: system_font(size, serif) for name, size, serif in (
     ('brand', 11, False), ('tiny', 10, False), ('small', 12, False),
     ('title', 29, True), ('card', 15, True), ('number', 25, True))}
 projects = [

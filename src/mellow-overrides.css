@@ -21,10 +21,11 @@
 .splay-plate:hover .splay-face,.splay-plate.is-active .splay-face{border-color:#aaa194;box-shadow:12px 20px 30px -12px #25211855}
 .splay-preview{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(143deg,hsl(var(--tone) 19% 87%),hsl(var(--tone) 15% 73%));overflow:hidden}
 .splay-preview::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,#fff8,transparent 40%,#191e1711);pointer-events:none}
-.splay-preview img{width:100%;height:100%;object-fit:cover}
-.splay-preview:has(img){background:#f7f5ef}
-.splay-preview img{object-position:center top;filter:saturate(.86)}
-.splay-plate.is-active .splay-preview img{filter:saturate(1)}
+.splay-preview img,.splay-preview video{width:100%;height:100%;object-fit:cover;object-position:center top;filter:saturate(.86)}
+.splay-preview:has(img),.splay-preview:has(video){background:#f7f5ef}
+.splay-preview video{pointer-events:none}
+.splay-preview video[hidden]{display:none}
+.splay-plate.is-active .splay-preview img,.splay-plate.is-active .splay-preview video{filter:saturate(1)}
 .splay-monogram{font-family:Georgia,serif;font-size:clamp(56px,8vw,100px);font-weight:400;letter-spacing:-.13em;color:#303b3566;transform:rotate(-11deg);user-select:none}
 .splay-copy{padding:15px 17px 16px;min-height:105px;display:flex;flex-direction:column;justify-content:flex-start}
 .splay-copy h3{font-family:Georgia,"Iowan Old Style",serif;font-size:20px;font-weight:400;letter-spacing:-.04em;line-height:1.07;margin:0;color:#292b26}
@@ -52,6 +53,7 @@
 .toss-picture{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.3;pointer-events:none}
 .detail-poster-link{display:block;position:relative;color:inherit;text-decoration:none;outline-offset:-4px}
 .detail-media .detail-poster-link img{width:100%;height:auto;max-height:min(52vh,490px);object-fit:contain;background:#f9f8f4}
+.detail-media video{display:block;width:100%;max-height:min(52vh,490px);object-fit:contain;background:#201f1c}
 .detail-open-site{position:absolute;right:18px;bottom:18px;border:1px solid #e3e0d5;background:#faf9f1f0;color:#30332d;padding:9px 13px;border-radius:999px;font-size:12px;letter-spacing:.015em;box-shadow:0 3px 15px #0002}
 .detail-poster-link:hover .detail-open-site,.detail-poster-link:focus-visible .detail-open-site{background:#252c26;color:white;border-color:#252c26}
 :host([compact]) .atlas{background:transparent}:host([compact]) .mellow-gallery{background:transparent}

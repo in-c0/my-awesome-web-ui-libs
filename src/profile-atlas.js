@@ -48,7 +48,7 @@ async function pages(path,headers,signal,max){
 }
 const repoToItem=r=>({id:'repo:'+r.full_name,type:r.fork?'fork':'project',title:r.name,summary:r.description||'GitHub repository',body:'',repo:r.full_name,url:url(r.html_url),demoUrl:url(r.homepage),image:'',preview:'link',date:r.created_at,language:r.language||'',featured:false});
 const eventToCommit=e=>({id:'push:'+e.id,type:'commit',title:'Code push',summary:'A public push event; this event does not necessarily represent one commit.',repo:e.repo?.name||'',url:url(e.repo?.name?'https://github.com/'+e.repo.name:''),date:e.created_at,activityCount:1,source:'github-public-events'});
-const manifestItem=(r,type,i,manifestUrl)=>({id:r.id||type+':'+i,type,title:r.title||'Untitled',summary:r.summary||'',body:r.body||'',repo:r.repo||'',url:url(r.url),demoUrl:url(r.demoUrl),image:r.image?assetUrl(r.image,manifestUrl):'',preview:['iframe','video','image','link'].includes(r.preview)?r.preview:'link',date:r.date||'',language:r.language||'',featured:!!r.featured});
+const manifestItem=(r,type,i,manifestUrl)=>({id:r.id||type+':'+i,type,title:r.title||'Untitled',summary:r.summary||'',body:r.body||'',repo:r.repo||'',url:url(r.url),demoUrl:url(r.demoUrl),image:r.image?assetUrl(r.image,manifestUrl):'',poster:r.poster?assetUrl(r.poster,manifestUrl):'',mediaType:r.mediaType==='video'?'video':'image',preview:['iframe','video','image','link'].includes(r.preview)?r.preview:'link',date:r.date||'',language:r.language||'',featured:!!r.featured});
 function merge(repos,stars,manifest,manifestUrl){
  const exclusions=(manifest.excludeRepos||[]).map(x=>String(x).toLowerCase());
  const permitted=r=>!exclusions.some(x=>(r.full_name||'').toLowerCase().includes(x)||(r.name||'').toLowerCase().includes(x));
@@ -223,17 +223,22 @@ class ProfileAtlas extends HTMLElement{
   const container=E('div','mellow-gallery splay-gallery'),stage=E('div','splay-stage'),rack=E('div','splay-rack');
   stage.setAttribute('aria-label','Splay Cards gallery. Hover a card to open the stack; select to preview.');
   rack.style.setProperty('--plate-width',plateWidth+'px');rack.style.setProperty('--plate-height',(mobile?268:330)+'px');rack.style.width=(plateWidth+(visible-1)*spacing)+'px';
-  const controls=[],caption=E('div','splay-caption');
-  const activate=index=>{for(const {card,i} of controls){card.classList.toggle('is-active',i===index);card.classList.toggle('is-behind',index!==null&&i>index);card.style.zIndex=String(index===i?visible+2:i+1)}
+  const controls=[],caption=E('div','splay-caption');let activeIndex=undefined;
+  const activate=index=>{if(activeIndex===index)return;activeIndex=index;for(const {card,i,video} of controls){card.classList.toggle('is-active',i===index);card.classList.toggle('is-behind',index!==null&&i>index);card.style.zIndex=String(index===i?visible+2:i+1);if(video){if(index===i&&!(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches))video.play().catch(()=>{});else video.pause()}}
    caption.replaceChildren();if(index===null){caption.append(E('span','caption-idle',this.kind==='project'?'Things I’ve built':this.kind==='inspiration'?'Collected inspiration':'Curious discoveries'));return}
    const item=cards[index].item;caption.append(E('strong','',item.title),E('span','',item.summary));};
   for(const {item,index} of cards){
    const card=E('button','splay-plate'),face=E('div','splay-face');card.type='button';card.dataset.index=String(index);card.style.left=index*spacing+'px';card.style.setProperty('--splay-rank',String(index));card.setAttribute('aria-label',item.title+', open preview');card.title=item.title;
    const preview=E('div','splay-preview');preview.style.setProperty('--tone',String((index*41+start*19+34)%360));
-   if(item.image){const image=E('img');image.src=item.image;image.alt='';image.loading='lazy';image.decoding='async';image.onerror=()=>{image.remove();preview.append(E('span','splay-monogram',item.title.slice(0,2).toUpperCase()))};preview.append(image)}
+   let video=null;
+   if(item.mediaType==='video'&&item.image){
+    video=E('video');video.src=item.image;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';video.setAttribute('aria-hidden','true');if(item.poster)video.poster=item.poster;
+    video.onerror=()=>{video.hidden=true;if(item.poster){const still=E('img');still.src=item.poster;still.alt='';preview.append(still)}else preview.append(E('span','splay-monogram',item.title.slice(0,2).toUpperCase()))};preview.append(video);
+   }
+   else if(item.image){const image=E('img');image.src=item.image;image.alt='';image.loading='lazy';image.decoding='async';image.onerror=()=>{image.remove();preview.append(E('span','splay-monogram',item.title.slice(0,2).toUpperCase()))};preview.append(image)}
    else{preview.append(E('span','splay-monogram',item.title.slice(0,2).toUpperCase()));}
    const copy=E('div','splay-copy');copy.append(E('h3','',item.title),E('p','',item.summary));if(item.demoUrl)copy.append(E('small','splay-live','LIVE ↗'));face.append(preview,copy);card.append(face);
-   card.onfocus=()=>activate(index);rack.append(card);controls.push({card,i:index});
+   card.onfocus=()=>activate(index);rack.append(card);controls.push({card,i:index,video});
   }
   let drag=null;
   rack.addEventListener('pointermove',e=>{if(drag)return;const bounds=rack.getBoundingClientRect(),index=Math.max(0,Math.min(visible-1,Math.floor((e.clientX-bounds.left)/spacing)));activate(index)});
@@ -252,7 +257,7 @@ class ProfileAtlas extends HTMLElement{
   for(let depth=count-1;depth>=0;depth--){
    const index=(start+depth)%n,item=items[index],card=E('button','toss-card depth-'+depth);card.type='button';card.style.setProperty('--depth',String(depth));card.setAttribute('aria-label',item.title+', open story');card.style.zIndex=String(count-depth);
    const top=E('span','toss-topline',String(index+1).padStart(2,'0')+' / '+String(n).padStart(2,'0')),quote=E('span','toss-quote','“'),title=E('h3','',item.title),summary=E('p','',item.summary);card.append(top,quote,title,summary);
-   if(item.image){card.classList.add('with-image');const picture=E('img','toss-picture');picture.src=item.image;picture.alt='';picture.loading='lazy';card.prepend(picture)}
+   if(item.image){card.classList.add('with-image');const picture=E('img','toss-picture');picture.src=item.mediaType==='video'?item.poster:item.image;picture.alt='';picture.loading='lazy';if(picture.src)card.prepend(picture)}
    if(depth===0){card.onclick=()=>{if(Date.now()>(this.suppressClickUntil||0))this.detail(item)}}
    else{card.tabIndex=-1;card.setAttribute('aria-hidden','true');card.disabled=true}
    deck.append(card);
@@ -281,7 +286,8 @@ class ProfileAtlas extends HTMLElement{
   const overlay=E('div','overlay'),panel=E('section','detail');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label',item.title);
   const before=this.shadowRoot.activeElement,close=E('button','close','×'),exit=()=>{overlay.remove();before?.focus()};close.setAttribute('aria-label','Close detail');close.onclick=exit;overlay.onclick=e=>{if(e.target===overlay)exit()};overlay.onkeydown=e=>{if(e.key==='Escape')exit()};
   const media=E('div','detail-media');
-   if(item.image){const img=E('img');img.src=item.image;img.alt=item.title+' project preview';if(item.demoUrl||item.url){const destination=E('a','detail-poster-link');destination.href=item.demoUrl||item.url;destination.target='_blank';destination.rel='noopener noreferrer';destination.setAttribute('aria-label','Open '+item.title+' in a new tab');destination.append(img,E('span','detail-open-site','Visit live ↗'));media.append(destination)}else media.append(img)}
+   if(item.mediaType==='video'&&item.image){const v=E('video');v.src=item.image;if(item.poster)v.poster=item.poster;v.controls=true;v.playsInline=true;v.preload='metadata';v.autoplay=true;v.muted=true;v.loop=true;v.setAttribute('aria-label',item.title+' motion preview');media.append(v)}
+   else if(item.image){const img=E('img');img.src=item.image;img.alt=item.title+' project preview';if(item.demoUrl||item.url){const destination=E('a','detail-poster-link');destination.href=item.demoUrl||item.url;destination.target='_blank';destination.rel='noopener noreferrer';destination.setAttribute('aria-label','Open '+item.title+' in a new tab');destination.append(img,E('span','detail-open-site','Visit live ↗'));media.append(destination)}else media.append(img)}
    else if(item.demoUrl&&item.preview==='iframe'){const f=E('iframe');f.src=item.demoUrl;f.title='Preview '+item.title;f.sandbox='allow-scripts allow-forms allow-popups';f.referrerPolicy='no-referrer';f.loading='lazy';media.append(f,E('small','','If this website blocks embedding, open the live demo in a new tab.'))}
   else if((demoFirst||!item.image)&&item.demoUrl&&item.preview==='video'){const v=E('video');v.src=item.demoUrl;v.controls=true;v.playsInline=true;media.append(v)}
   const copy=E('div','detail-copy');copy.append(E('small','kicker',item.type.toUpperCase()),E('h2','',item.title),E('p','',item.body||item.summary));if(item.date)copy.append(E('small','muted',item.aggregate?'Month: '+new Date(item.date).toLocaleDateString(undefined,{month:'long',year:'numeric'}):'Added '+when(item.date)));const links=E('div','actions');

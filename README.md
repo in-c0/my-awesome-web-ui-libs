@@ -1,5 +1,9 @@
 # Profile Atlas
 
+[![Profile Atlas animated preview: projects and GitHub activity](https://raw.githubusercontent.com/in-c0/profile-atlas/main/assets/profile-atlas-preview.gif)](https://profile-atlas-showcase.wldud5192.chatgpt.site/)
+
+[Explore the interactive version](https://profile-atlas-showcase.wldud5192.chatgpt.site/) · *Lightweight illustrated preview; the live cards and icons are interactive.*
+
 [Live showcase](https://profile-atlas-showcase.wldud5192.chatgpt.site/) · [Standalone activity timeline](https://profile-atlas-showcase.wldud5192.chatgpt.site/activity-demo)
 
 A buildless, open-source Web Component set for a GitHub profile that is more than six pinned repositories. Display public projects, stars, forks, recent push activity, stories, and inspiration without an account or GitHub access token.
@@ -11,6 +15,7 @@ A buildless, open-source Web Component set for a GitHub profile that is more tha
 - **Activity — four icon lanes.** Star and Fork branch above the shared horizontal time spine; New repo and Push branch below, each at its own height. Nodes are clickable icons, without quantity boxes. A dedicated **Monthly analysis** area displays the four exact aggregate counts for a selected month.
 - **Optional monthly 3D view.** A lightweight SVG port of [Mellow UI Isometric Bars](https://mellowui.com/r/isometric-bars.json) opens only when the visitor chooses **3D view** in Monthly analysis. Bars use the currently selected month's actual activity counts and compare their relative heights; the exact values remain in the metric row.
 - **Browse all** opens a searchable, progressively rendered, one-sentence index without replacing the gallery.
+- **Motion references — native video.** Inspiration cards accept `mediaType: "video"`, `image: "https://…/clip.mp4"`, and a `poster` thumbnail. Only the currently focused/hovered video plays silently; reduced-motion preferences keep the still preview. Clicking opens a video with controls. The six sample videos ship with local first-frame poster images instead of broken image placeholders.
 
 The named Mellow UI designs are **adapted from their published React + Motion behavior into framework-free Custom Elements**, not installed as React/shadcn components into this buildless package. To use the original React implementations in a React/Tailwind project, run:
 
@@ -58,7 +63,7 @@ Optional `activityCount` and `aggregate: true` support month-only records. Every
 <profile-atlas compact row="inspiration" username="in-c0" manifest-url="/data/in-c0.json"></profile-atlas>
 ```
 
-`row` accepts `project`, `star`, `fork`, `story`, or `inspiration`. `username` is the GitHub username; `max-pages` fetches 100 entries per page (default 10, maximum 30); `manifest-url` supplies optional curated `projects`, `stories`, `inspirations`, and `excludeRepos`. Items can include `title`, `summary`, `body`, `url`, `demoUrl`, `preview: "iframe" | "video" | "image" | "link"`, `image`, and `repo`. See [data/in-c0.json](data/in-c0.json) for a complete example.
+`row` accepts `project`, `star`, `fork`, `story`, or `inspiration`. `username` is the GitHub username; `max-pages` fetches 100 entries per page (default 10, maximum 30); `manifest-url` supplies optional curated `projects`, `stories`, `inspirations`, and `excludeRepos`. Items can include `title`, `summary`, `body`, `url`, `demoUrl`, `preview: "iframe" | "video" | "image" | "link"`, `image`, `poster`, `mediaType: "video"`, and `repo`. See [data/in-c0.json](data/in-c0.json) for a complete example.
 
 Image paths may be absolute HTTPS URLs or relative to the manifest JSON file (for example `../assets/project-previews/paper-ui.webp`). The showcase's four product thumbnails are captured public product/demo pages from 2026-10-25, not live iframes. A screenshot is never silently substituted with a security-verification page; entries without a verified image retain a quiet fallback. Real screenshots are still subject to the original sites' branding and content rights.
 
@@ -73,6 +78,6 @@ Image paths may be absolute HTTPS URLs or relative to the manifest JSON file (fo
 
 ## GitHub profile README
 
-GitHub profile READMEs cannot execute JavaScript. Add a short featured-project list, a static gallery preview, and a link to a separately hosted Profile Atlas page. The GitHub six-pin limit is independent of what you can display on that page.
+GitHub profile READMEs cannot execute JavaScript. Embed `assets/profile-atlas-preview.gif` as a linked image, and point it at the live interactive Atlas. Rebuild the compact animated illustration with `python scripts/make_readme_preview.py` (requires Pillow). The GitHub six-pin limit is independent of what you can display on the hosted page.
 
 MIT licensed. This release is an early public Web Component prototype; automated cross-browser interaction tests, package publishing, and static pre-generated feed support are future work.

@@ -125,36 +125,48 @@
       "id": "visual-01",
       "title": "Visual inspiration 01",
       "summary": "Part of my evolving visual reference collection.",
+      "mediaType": "video",
+      "poster": "../assets/project-previews/inspiration-01.jpg",
       "image": "https://github.com/user-attachments/assets/5c9ff022-ac20-4ae5-8ff8-44286f4c90cd"
     },
     {
       "id": "visual-02",
       "title": "Visual inspiration 02",
       "summary": "Ideas and forms I want to explore.",
+      "mediaType": "video",
+      "poster": "../assets/project-previews/inspiration-02.jpg",
       "image": "https://github.com/user-attachments/assets/5661c5c2-1496-4c36-a932-1af9d5f7de54"
     },
     {
       "id": "visual-03",
       "title": "Visual inspiration 03",
       "summary": "Ideas and forms I want to explore.",
+      "mediaType": "video",
+      "poster": "../assets/project-previews/inspiration-03.jpg",
       "image": "https://github.com/user-attachments/assets/b08e443f-782d-4de0-b638-f8993f4158c3"
     },
     {
       "id": "visual-04",
       "title": "Visual inspiration 04",
       "summary": "Ideas and forms I want to explore.",
+      "mediaType": "video",
+      "poster": "../assets/project-previews/inspiration-04.jpg",
       "image": "https://github.com/user-attachments/assets/5bbdb7ef-1420-465b-b3e3-882491b5b730"
     },
     {
       "id": "visual-05",
       "title": "Visual inspiration 05",
       "summary": "Ideas and forms I want to explore.",
+      "mediaType": "video",
+      "poster": "../assets/project-previews/inspiration-05.jpg",
       "image": "https://github.com/user-attachments/assets/a8636ad4-1f9f-456b-a300-0fe73f3733fe"
     },
     {
       "id": "visual-06",
       "title": "Visual inspiration 06",
       "summary": "Ideas and forms I want to explore.",
+      "mediaType": "video",
+      "poster": "../assets/project-previews/inspiration-06.jpg",
       "image": "https://github.com/user-attachments/assets/4e0cc049-3665-4dac-a47a-d40470b4e0cd"
     },
     {

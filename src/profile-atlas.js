@@ -10,6 +10,26 @@ function activityIcon(type){
  if(type==='commit'){make('path',{d:'M12 17V3m-5 5 5-5 5 5M5 15v5h14v-5'})}
  return svg;
 }
+/** Lightweight SVG adaptation of Mellow UI's Isometric Bars, bound to real monthly counts. */
+function isometricBars(counts,month){
+ const xmlns='http://www.w3.org/2000/svg',svg=document.createElementNS(xmlns,'svg');svg.setAttribute('viewBox','0 0 630 250');svg.setAttribute('preserveAspectRatio','xMidYMid meet');svg.setAttribute('role','img');svg.setAttribute('aria-label',Object.entries(ACTIVITY_LABELS).map(([type,label])=>label+' '+counts[type]).join(', ')+' in '+month);svg.classList.add('iso-chart-svg');
+ const node=(tag,attrs,parent=svg)=>{const el=document.createElementNS(xmlns,tag);for(const [key,value] of Object.entries(attrs))el.setAttribute(key,String(value));parent.append(el);return el};
+ const line=node('line',{x1:31,y1:209,x2:599,y2:209,class:'iso-baseline'});
+ const max=Math.max(1,...Object.values(counts)),types=['star','fork','project','commit'];
+ const faces=types.map((type,index)=>{
+  const x=103+index*139,g=node('g',{class:'iso-column '+type}),back=node('polygon',{class:'iso-face iso-top',points:''},g),left=node('polygon',{class:'iso-face iso-left',points:''},g),right=node('polygon',{class:'iso-face iso-right',points:''},g);
+  const title=node('title',{},g);title.textContent=ACTIVITY_LABELS[type]+': '+counts[type];const label=node('text',{x:x,y:236,'text-anchor':'middle',class:'iso-label'},svg);label.textContent=ACTIVITY_LABELS[type];
+  const apply=h=>{const base=195,cy=base-h,point=p=>p.map(n=>Number(n).toFixed(1)).join(','),points=arr=>arr.map(point).join(' ');
+   back.setAttribute('points',points([[x,cy-25],[x+28,cy-11],[x,cy+3],[x-28,cy-11]]));
+   left.setAttribute('points',points([[x-28,cy-11],[x,cy+3],[x,base+3],[x-28,base-11]]));
+   right.setAttribute('points',points([[x,cy+3],[x+28,cy-11],[x+28,base-11],[x,base+3]]));};
+  apply(0);return{apply,target:Math.max(0,counts[type]/max*118),index};
+ });
+ const reduce=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(reduce){faces.forEach(face=>face.apply(face.target))}
+ else{const start=performance.now();const frame=now=>{if(!svg.isConnected)return;const elapsed=now-start,t=Math.min(1,elapsed/790);for(const f of faces){const delay=f.index*.07,u=Math.max(0,Math.min(1,(t-delay)/(1-delay)));const ease=1-Math.exp(-6*u)*Math.cos(8*u);f.apply(Math.max(0,f.target*ease))}if(t<1)requestAnimationFrame(frame)};requestAnimationFrame(frame)}
+ return svg;
+}
 const url=s=>{try{const u=new URL(s);return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return''}};
 const when=s=>{const d=new Date(s);return Number.isNaN(+d)?'Undated':d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})};
 const cacheRead=k=>{try{const o=JSON.parse(localStorage.getItem(k));return o&&Date.now()-o.t<21600000?o.data:null}catch{return null}};
@@ -119,10 +139,13 @@ class GithubActivityTimeline extends HTMLElement{
   const bottom=E('div','timeline-bottom graph-bottom'),controls=E('div','timeline-controls'),back=E('button','timeline-arrow','←'),next=E('button','timeline-arrow','→');back.setAttribute('aria-label','Earlier');next.setAttribute('aria-label','Later');back.onclick=()=>viewport.scrollBy({left:-step*4,behavior:'smooth'});next.onclick=()=>viewport.scrollBy({left:step*4,behavior:'smooth'});controls.append(back,next);bottom.append(controls);this.surface.append(bottom);
   const analysis=E('section','monthly-analysis'),analysisHead=E('div','monthly-analysis-head');analysisHead.append(E('h3','','Monthly analysis'));
   const monthsList=[...new Set(events.map(x=>new Date(x.date).toISOString().slice(0,7)))].sort().reverse(),selector=E('select','month-select');selector.setAttribute('aria-label','Month');
-  for(const month of monthsList){const option=E('option','',new Date(month+'-01T00:00:00Z').toLocaleDateString(undefined,{month:'short',year:'numeric'}));option.value=month;selector.append(option)}analysisHead.append(selector);
-  const metrics=E('div','monthly-metrics'),note=E('p','monthly-note','Push: recent public events only · not a complete commit history.');
-  const update=()=>{const counts={star:0,fork:0,project:0,commit:0};for(const item of events)if(new Date(item.date).toISOString().startsWith(selector.value))counts[item.type]+=item.activityCount||1;metrics.replaceChildren();for(const type of ['star','fork','project','commit']){const group=E('div','monthly-metric '+type),label=E('span','monthly-metric-label');label.append(activityIcon(type),E('span','',ACTIVITY_LABELS[type]));group.append(label,E('strong','',String(counts[type])));metrics.append(group)}};
-  selector.onchange=update;analysis.append(analysisHead,metrics,note);this.surface.append(analysis);update();
+  for(const month of monthsList){const option=E('option','',new Date(month+'-01T00:00:00Z').toLocaleDateString(undefined,{month:'short',year:'numeric'}));option.value=month;selector.append(option)}
+  const toggle=E('button','monthly-view-toggle','3D view ↗'),headActions=E('div','monthly-head-actions');toggle.type='button';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Show isometric monthly activity chart');headActions.append(selector,toggle);analysisHead.append(headActions);
+  const metrics=E('div','monthly-metrics'),detail=E('div','isometric-view'),note=E('p','monthly-note','Push: recent public events only · not a complete commit history.');detail.hidden=true;
+  let chartVisible=false;
+  const update=()=>{const counts={star:0,fork:0,project:0,commit:0};for(const item of events)if(new Date(item.date).toISOString().startsWith(selector.value))counts[item.type]+=item.activityCount||1;metrics.replaceChildren();for(const type of ['star','fork','project','commit']){const group=E('div','monthly-metric '+type),label=E('span','monthly-metric-label');label.append(activityIcon(type),E('span','',ACTIVITY_LABELS[type]));group.append(label,E('strong','',String(counts[type])));metrics.append(group)}if(chartVisible){detail.replaceChildren(isometricBars(counts,selector.value))}};
+  toggle.onclick=()=>{chartVisible=!chartVisible;detail.hidden=!chartVisible;toggle.setAttribute('aria-expanded',String(chartVisible));toggle.textContent=chartVisible?'Hide 3D ↗':'3D view ↗';if(chartVisible)update();else detail.replaceChildren()};
+  selector.onchange=update;analysis.append(analysisHead,metrics,detail,note);this.surface.append(analysis);update();
   let drag=null;viewport.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('button'))return;drag={x:e.clientX,scroll:viewport.scrollLeft};viewport.setPointerCapture(e.pointerId);viewport.classList.add('dragging')});viewport.addEventListener('pointermove',e=>{if(drag)viewport.scrollLeft=drag.scroll+drag.x-e.clientX});const end=()=>{drag=null;viewport.classList.remove('dragging')};viewport.addEventListener('pointerup',end);viewport.addEventListener('pointercancel',end);viewport.addEventListener('wheel',e=>{if(e.shiftKey){e.preventDefault();viewport.scrollLeft+=e.deltaY}},{passive:false});
   requestAnimationFrame(()=>{if(viewport.isConnected)viewport.scrollLeft=viewport.scrollWidth-viewport.clientWidth});
  }
@@ -215,6 +238,7 @@ class ProfileAtlas extends HTMLElement{
   rack.addEventListener('pointermove',e=>{if(drag)return;const bounds=rack.getBoundingClientRect(),index=Math.max(0,Math.min(visible-1,Math.floor((e.clientX-bounds.left)/spacing)));activate(index)});
   rack.addEventListener('pointerleave',()=>{if(!drag)activate(null)});
   stage.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={start:e.clientX,index:Number(e.target.closest('.splay-plate')?.dataset.index)}});
+  stage.addEventListener('pointermove',e=>{if(drag&&!drag.captured&&Math.abs(e.clientX-drag.start)>16){stage.setPointerCapture(e.pointerId);drag.captured=true}});
   stage.addEventListener('pointerup',e=>{if(!drag)return;const movement=e.clientX-drag.start;drag=null;if(Math.abs(movement)>65&&n>1){this.suppressClickUntil=Date.now()+380;this.shift(movement<0?1:-1)}});
   stage.addEventListener('pointercancel',()=>{drag=null});
   stage.addEventListener('click',e=>{if(Date.now()<(this.suppressClickUntil||0))return;const bounds=rack.getBoundingClientRect();let index=Number(e.target.closest('.splay-plate')?.dataset.index);if(e.detail!==0&&e.clientX>=bounds.left){index=Math.max(0,Math.min(visible-1,Math.floor((e.clientX-bounds.left)/spacing)))}if(Number.isInteger(index)&&index>=0&&index<cards.length){const item=cards[index].item;this.detail(item,!!item.demoUrl)}});
@@ -235,7 +259,7 @@ class ProfileAtlas extends HTMLElement{
   let gesture=null,animating=false;const front=deck.querySelector('.depth-0');
   const toss=direction=>{if(animating||n<2)return;animating=true;this.suppressClickUntil=Date.now()+400;front.style.setProperty('--fling',String(direction));front.classList.add('is-flying');setTimeout(()=>{this.pos[this.kind]=(start+(direction<0?-1:1)+n)%n;this.gallery()},275)};
   deck.addEventListener('pointerdown',e=>{if(e.button!==0||animating||n<2)return;gesture={x:e.clientX}});
-  deck.addEventListener('pointermove',e=>{if(!gesture||animating)return;const delta=Math.max(-125,Math.min(125,e.clientX-gesture.x));front.style.setProperty('--drag-x',delta+'px');front.style.setProperty('--drag-rotation',(delta*.045)+'deg')});
+  deck.addEventListener('pointermove',e=>{if(!gesture||animating)return;const delta=Math.max(-125,Math.min(125,e.clientX-gesture.x));if(Math.abs(delta)>16&&!gesture.captured){deck.setPointerCapture(e.pointerId);gesture.captured=true}front.style.setProperty('--drag-x',delta+'px');front.style.setProperty('--drag-rotation',(delta*.045)+'deg')});
   deck.addEventListener('pointerup',e=>{if(!gesture)return;const delta=e.clientX-gesture.x;gesture=null;if(Math.abs(delta)>55)toss(delta<0?-1:1);else{front.style.removeProperty('--drag-x');front.style.removeProperty('--drag-rotation')}});
   deck.addEventListener('pointercancel',()=>{gesture=null;front.style.removeProperty('--drag-x');front.style.removeProperty('--drag-rotation')});
   stage.append(deck);container.append(stage);this.galleryNavigation(n,start,container);this.main.append(container);

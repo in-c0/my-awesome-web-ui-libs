@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { Auto, blink, circle, cycle, flip, typing, wander, wanderPair, wind, type Lamp } from "./auto";
 import { Annunciator, Caliper, Combo, Joystick, Rocker, Selector, Tank, Timer, Track, Tray } from "@in-c0/knurl/react";
 import type { Finish } from "@in-c0/knurl";
 import type { Doc, Prop } from "./data";
@@ -10,44 +11,54 @@ const Readout = ({ children }: { children: ReactNode }) => <output className="re
 type Base = (exclude?: string[]) => Prop[];
 
 function RockerMains({ finish }: { finish: Finish }) {
-  const [on, setOn] = useState(false);
-  return <div className="demo-row"><Rocker finish={finish} label="Mains power" checked={on} onCheckedChange={setOn} /><Readout>Mains {on ? "on" : "off"}</Readout></div>;
+  return <Auto init={false} next={flip} ms={2400}>{(on, setOn) => <div className="demo-row"><Rocker finish={finish} label="Mains power" checked={on} onCheckedChange={setOn} /><Readout>Mains {on ? "on" : "off"}</Readout></div>}</Auto>;
 }
+const ROWS = ["Invoice 0412", "Invoice 0413", "Invoice 0414"];
+// one row ticks or unticks a tick: the rocker goes from off through mixed to on and back
+const tickRow = (sel: string[], i: number) => { const r = ROWS[i % ROWS.length]; return sel.includes(r) ? sel.filter((x) => x !== r) : [...sel, r]; };
 function RockerSelectAll({ finish }: { finish: Finish }) {
-  const rows = ["Invoice 0412", "Invoice 0413", "Invoice 0414"];
-  const [sel, setSel] = useState<string[]>(["Invoice 0413"]);
-  const all = sel.length === rows.length;
-  return (
-    <div className="demo-row">
-      <Rocker finish={finish} label="Select all rows" checked={all} indeterminate={sel.length > 0 && !all} onCheckedChange={(c) => setSel(c ? rows : [])} />
-      <ul className="demo-list">{rows.map((r) => <li key={r}><label><input type="checkbox" checked={sel.includes(r)} onChange={(e) => setSel((s) => e.target.checked ? [...s, r] : s.filter((x) => x !== r))} /> {r}</label></li>)}</ul>
-    </div>
-  );
+  return <Auto init={["Invoice 0413"]} next={tickRow} ms={1600}>{(sel, setSel) => {
+    const all = sel.length === ROWS.length;
+    return (
+      <div className="demo-row">
+        <Rocker finish={finish} label="Select all rows" checked={all} indeterminate={sel.length > 0 && !all} onCheckedChange={(c) => setSel(c ? ROWS : [])} />
+        <ul className="demo-list">{ROWS.map((r) => <li key={r}><label><input type="checkbox" checked={sel.includes(r)} onChange={(e) => setSel(e.target.checked ? [...sel, r] : sel.filter((x) => x !== r))} /> {r}</label></li>)}</ul>
+      </div>
+    );
+  }}</Auto>;
 }
+const AutoRocker = ({ finish, label }: { finish: Finish; label: string }) =>
+  <Auto init={false} next={flip} ms={2400}>{(on, set) => <Rocker finish={finish} label={label} checked={on} onCheckedChange={set} />}</Auto>;
+const AutoCaliper = ({ finish, label }: { finish: Finish; label: string }) =>
+  <Auto init={[25, 75] as [number, number]} next={wanderPair(0, 100)} ms={2200}>{(v, set) => <Caliper finish={finish} label={label} value={v} onValueChange={set} />}</Auto>;
 function CaliperPrice({ finish }: { finish: Finish }) {
-  const [range, setRange] = useState<[number, number]>([40, 120]);
-  return <div className="demo-col"><Caliper finish={finish} label="Price" min={0} max={200} step={5} value={range} onValueChange={setRange} format={(v) => `$${v}`} /><Readout>${range[0]} – ${range[1]}</Readout></div>;
+  return <Auto init={[40, 120] as [number, number]} next={wanderPair(0, 200, 5)} ms={2200}>{(range, setRange) => <div className="demo-col"><Caliper finish={finish} label="Price" min={0} max={200} step={5} value={range} onValueChange={setRange} format={(v) => `$${v}`} /><Readout>${range[0]} – ${range[1]}</Readout></div>}</Auto>;
 }
 function CaliperShift({ finish }: { finish: Finish }) {
-  const [range, setRange] = useState<[number, number]>([9, 17]);
-  return <div className="demo-col"><Caliper finish={finish} label="Shift" min={6} max={22} step={1} minGap={2} value={range} onValueChange={setRange} format={(v) => `${v}:00`} /><Readout>{range[0]}:00 – {range[1]}:00 · {range[1] - range[0]} h</Readout></div>;
+  return <Auto init={[9, 17] as [number, number]} next={wanderPair(6, 22, 1, 2)} ms={2200}>{(range, setRange) => <div className="demo-col"><Caliper finish={finish} label="Shift" min={6} max={22} step={1} minGap={2} value={range} onValueChange={setRange} format={(v) => `${v}:00`} /><Readout>{range[0]}:00 – {range[1]}:00 · {range[1] - range[0]} h</Readout></div>}</Auto>;
 }
+const AutoJoystick = ({ finish, label }: { finish: Finish; label: string }) =>
+  <Auto init={{ x: 0, y: 0 }} next={circle} ms={650}>{(v, set) => <Joystick finish={finish} label={label} value={v} onValueChange={set} />}</Auto>;
 function JoystickPan({ finish }: { finish: Finish }) {
-  const [v, setV] = useState({ x: 0, y: 0 });
-  return <div className="demo-row"><Joystick finish={finish} label="Pan camera" value={v} onValueChange={setV} /><Readout>x {v.x.toFixed(2)} · y {v.y.toFixed(2)}</Readout></div>;
+  return <Auto init={{ x: 0, y: 0 }} next={circle} ms={650}>{(v, setV) => <div className="demo-row"><Joystick finish={finish} label="Pan camera" value={v} onValueChange={setV} /><Readout>x {v.x.toFixed(2)} · y {v.y.toFixed(2)}</Readout></div>}</Auto>;
 }
+const aim = () => { const a = Math.random() * Math.PI * 2, r = 0.3 + Math.random() * 0.6; return { x: +(Math.cos(a) * r).toFixed(2), y: +(Math.sin(a) * r).toFixed(2) }; };
 function JoystickHold({ finish }: { finish: Finish }) {
-  const [v, setV] = useState({ x: 0.4, y: -0.3 });
-  return <div className="demo-row"><Joystick finish={finish} label="Aim" returnToCenter={false} value={v} onValueChange={setV} /><Readout>{Math.round(Math.hypot(v.x, v.y) * 100)}% at {Math.round((Math.atan2(v.y, v.x) * 180) / Math.PI)}°</Readout></div>;
+  return <Auto init={{ x: 0.4, y: -0.3 }} next={aim} ms={1800}>{(v, setV) => <div className="demo-row"><Joystick finish={finish} label="Aim" returnToCenter={false} value={v} onValueChange={setV} /><Readout>{Math.round(Math.hypot(v.x, v.y) * 100)}% at {Math.round((Math.atan2(v.y, v.x) * 180) / Math.PI)}°</Readout></div>}</Auto>;
 }
+// any four digits, one wheel turning at a time
+const spin = (pin: string) => { const d = (pin + "0000").slice(0, 4).split(""), k = Math.floor(Math.random() * 4); d[k] = String((+d[k] + 1 + Math.floor(Math.random() * 8)) % 10); return d.join(""); };
+const AutoCombo = ({ finish, label }: { finish: Finish; label: string }) =>
+  <Auto init="0000" next={spin} ms={1100}>{(v, set) => <Combo finish={finish} label={label} value={v} onValueChange={set} />}</Auto>;
 function ComboLocker({ finish }: { finish: Finish }) {
   const [log, setLog] = useState("Try 2468");
-  return <div className="demo-row"><Combo finish={finish} label="Locker PIN" code="2468" onComplete={(pin) => setLog(pin === "2468" ? "Opened" : `${pin} is wrong`)} /><Readout>{log}</Readout></div>;
+  return <Auto init="" next={typing(["2461", "2468"])} ms={700}>{(v, set) => <div className="demo-row"><Combo finish={finish} label="Locker PIN" code="2468" value={v} onValueChange={set} onComplete={(pin) => setLog(pin === "2468" ? "Opened" : `${pin} is wrong`)} /><Readout>{log}</Readout></div>}</Auto>;
 }
 function ComboSix({ finish }: { finish: Finish }) {
-  const [pin, setPin] = useState("");
-  return <div className="demo-col"><Combo finish={finish} label="Verification code" length={6} value={pin} onValueChange={setPin} unlocked={pin === "123456"} /><button className="btn sm" onClick={() => setPin("")}>Clear</button></div>;
+  return <Auto init="" next={typing(["123456"], 4)} ms={600}>{(pin, setPin) => <div className="demo-col"><Combo finish={finish} label="Verification code" length={6} value={pin} onValueChange={setPin} unlocked={pin === "123456"} /><button className="btn sm" onClick={() => setPin("")}>Clear</button></div>}</Auto>;
 }
+const AutoTray = ({ finish, label }: { finish: Finish; label: string }) =>
+  <Auto init={0} next={(n: number) => (n >= 5 ? 0 : n + 1)} ms={1300}>{(n) => <Tray finish={finish} label={label} count={n} />}</Auto>;
 function TrayInvoices({ finish }: { finish: Finish }) {
   const [files, setFiles] = useState<File[]>([]);
   const [note, setNote] = useState("Drop PDFs, or click the tray");
@@ -58,37 +69,32 @@ function TrayInvoices({ finish }: { finish: Finish }) {
     </div>
   );
 }
+const FAN = ["OFF", "LOW", "MED", "HIGH"];
+const AutoSelector = ({ finish, label, init }: { finish: Finish; label: string; init: string }) =>
+  <Auto init={init} next={cycle(FAN, true)} ms={1700}>{(v, set) => <Selector finish={finish} label={label} value={v} onValueChange={set} />}</Auto>;
+const RANGES = ["200m", "2V", "20V", "200V", "2k", "20k"];
 function SelectorRange({ finish }: { finish: Finish }) {
-  const [range, setRange] = useState("20V");
-  return <div className="demo-row"><Selector finish={finish} label="Range" options={["200m", "2V", "20V", "200V", "2k", "20k"]} value={range} onValueChange={setRange} /><Readout>Range {range}</Readout></div>;
+  return <Auto init="20V" next={cycle(RANGES, true)} ms={1500}>{(range, setRange) => <div className="demo-row"><Selector finish={finish} label="Range" options={RANGES} value={range} onValueChange={setRange} /><Readout>Range {range}</Readout></div>}</Auto>;
 }
+const AutoTimer = ({ finish, label, init }: { finish: Finish; label: string; init: number }) =>
+  <Auto init={init} next={wind} ms={500}>{(v, set) => <Timer finish={finish} label={label} value={v} onValueChange={set} />}</Auto>;
 function TimerTea({ finish }: { finish: Finish }) {
-  const [s, setS] = useState(4 * 60);
   const [done, setDone] = useState(false);
-  return <div className="demo-row"><Timer finish={finish} label="Tea" value={s} onValueChange={(v) => { setS(v); setDone(false); }} onDone={() => setDone(true)} /><Readout>{done ? "Ready" : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`}</Readout></div>;
+  return <Auto init={4 * 60} next={wind} ms={500}>{(s, setS) => <div className="demo-row"><Timer finish={finish} label="Tea" value={s} onValueChange={(v) => { setS(v); setDone(false); }} onDone={() => setDone(true)} /><Readout>{done && s === 0 ? "Ready" : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`}</Readout></div>}</Auto>;
 }
 function TimerPaused({ finish }: { finish: Finish }) {
-  const [run, setRun] = useState(false);
-  return <div className="demo-col"><Timer finish={finish} label="Exposure" defaultValue={90} running={run} /><button className="btn sm" onClick={() => setRun((r) => !r)}>{run ? "Pause" : "Start"}</button></div>;
+  return <Auto init={false} next={flip} ms={2600}>{(run, setRun) => <div className="demo-col"><Timer finish={finish} label="Exposure" defaultValue={90} running={run} /><button className="btn sm" onClick={() => setRun(!run)}>{run ? "Pause" : "Start"}</button></div>}</Auto>;
 }
 function TankFill({ finish }: { finish: Finish }) {
-  const [v, setV] = useState(10);
-  useEffect(() => { const t = setInterval(() => setV((x) => (x >= 95 ? 10 : x + 17)), 1600); return () => clearInterval(t); }, []);
-  return <div className="demo-row"><Tank finish={finish} label="Upload" role="progressbar" value={v} format={(x) => `${x}% uploaded`} /><Readout>{v}%</Readout></div>;
+  return <Auto init={10} next={(x: number) => (x >= 95 ? 10 : x + 17)} ms={1600}>{(v) => <div className="demo-row"><Tank finish={finish} label="Upload" role="progressbar" value={v} format={(x) => `${x}% uploaded`} /><Readout>{v}%</Readout></div>}</Auto>;
 }
 function TrackOnboarding({ finish }: { finish: Finish }) {
-  const [step, setStep] = useState(3);
-  return <div className="demo-col"><Track finish={finish} label="Setup" steps={["Account", "Team", "Repo", "Deploy", "Invite"]} current={step} clickable onStepChange={setStep} /><div className="demo-row tight"><button className="btn sm" onClick={() => setStep((s) => Math.max(0, s - 1))}>Back</button><button className="btn sm" onClick={() => setStep((s) => Math.min(4, s + 1))}>Next</button></div></div>;
+  return <Auto init={3} next={(c: number) => (c + 1) % 5} ms={1800}>{(step, setStep) => <div className="demo-col"><Track finish={finish} label="Setup" steps={["Account", "Team", "Repo", "Deploy", "Invite"]} current={step} clickable onStepChange={setStep} /><div className="demo-row tight"><button className="btn sm" onClick={() => setStep(Math.max(0, step - 1))}>Back</button><button className="btn sm" onClick={() => setStep(Math.min(4, step + 1))}>Next</button></div></div>}</Auto>;
 }
+const SERVICES: Lamp[] = [{ id: "api", label: "API", state: "ok" }, { id: "db", label: "DB", state: "ok" }, { id: "queue", label: "QUEUE", state: "warn" }, { id: "auth", label: "AUTH", state: "ok" }];
+const EDGE: Lamp[] = ["CDN", "DNS", "TLS", "WAF", "S3", "LOGS", "CACHE", "SEARCH"].map((n, i) => ({ id: n, label: n, state: (["ok", "ok", "ok", "warn", "ok", "off", "alert", "ok"] as const)[i] }));
 function AnnunciatorLive({ finish }: { finish: Finish }) {
-  const names = ["CDN", "DNS", "TLS", "WAF", "S3", "LOGS", "CACHE", "SEARCH"];
-  const [states, setStates] = useState<("off" | "ok" | "warn" | "alert")[]>(["ok", "ok", "ok", "warn", "ok", "off", "alert", "ok"]);
-  useEffect(() => {
-    const pick = ["ok", "ok", "ok", "warn", "alert", "off"] as const;
-    const t = setInterval(() => setStates((s) => s.map((x, i) => (i === Math.floor(Math.random() * s.length) ? pick[Math.floor(Math.random() * pick.length)] : x))), 2200);
-    return () => clearInterval(t);
-  }, []);
-  return <Annunciator finish={finish} label="Edge cluster" columns={4} items={names.map((n, i) => ({ id: n, label: n, state: states[i] }))} />;
+  return <Auto init={EDGE} next={blink} ms={1400}>{(items) => <Annunciator finish={finish} label="Edge cluster" columns={4} items={items} />}</Auto>;
 }
 
 export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" | "summary" | "group">, base: Base): Doc[] {
@@ -99,7 +105,7 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       native: '<input type="checkbox">',
       keys: [["Space", "Toggle; from mixed it turns on"], ["Click the I half", "Turn on"], ["Click the O half", "Turn off"], ["Click elsewhere", "Toggle"]],
       examples: [
-        { id: "default", title: "Default", text: "Uncontrolled.", code: `<Rocker label="Mains power" />`, render: (f) => <Rocker finish={f} label="Mains power" /> },
+        { id: "default", title: "Default", text: "Uncontrolled.", code: `<Rocker label="Mains power" />`, render: (f) => <AutoRocker finish={f} label="Mains power" /> },
         { id: "controlled", title: "Controlled", text: "The state lives in your component.", code: `const [on, setOn] = useState(false);\n\n<Rocker label="Mains power" checked={on} onCheckedChange={setOn} />`, render: (f) => <RockerMains finish={f} /> },
         { id: "mixed", title: "Select all, with a mixed state", text: "A centre-off rocker for a partly selected list.", code: `const all = selected.length === rows.length;\n\n<Rocker label="Select all rows" checked={all}\n  indeterminate={selected.length > 0 && !all}\n  onCheckedChange={(c) => setSelected(c ? rows : [])} />`, render: (f) => <RockerSelectAll finish={f} /> },
       ],
@@ -117,7 +123,7 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       native: '<input type="range"> × 2',
       keys: [["Tab", "Between the minimum and maximum jaws"], ["← → ↑ ↓", "Step the focused jaw"], ["Page Up / Down", "Large step"], ["Press on the beam", "Move the nearer jaw there and drag it"], ["Drag the lit span", "Move both jaws together"]],
       examples: [
-        { id: "default", title: "Default", text: "0 to 100, starting at 25–75.", code: `<Caliper label="Range" />`, render: (f) => <Caliper finish={f} label="Range" /> },
+        { id: "default", title: "Default", text: "0 to 100, starting at 25–75.", code: `<Caliper label="Range" />`, render: (f) => <AutoCaliper finish={f} label="Range" /> },
         { id: "price", title: "Price filter", text: "Steps of $5 on a 0–200 beam.", code: `const [range, setRange] = useState([40, 120]);\n\n<Caliper label="Price" min={0} max={200} step={5}\n  value={range} onValueChange={setRange}\n  format={(v) => \`$\${v}\`} />`, render: (f) => <CaliperPrice finish={f} /> },
         { id: "gap", title: "A minimum gap", text: "A shift at least two hours long.", code: `<Caliper label="Shift" min={6} max={22} minGap={2}\n  value={range} onValueChange={setRange}\n  format={(v) => \`\${v}:00\`} />`, render: (f) => <CaliperShift finish={f} /> },
       ],
@@ -140,7 +146,7 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       native: '<input type="range"> × 2 (x, y)',
       keys: [["← →", "Nudge x by 10"], ["↑ ↓", "Nudge y by 10"], ["Drag", "Anywhere on the plate; the stick follows, clamped to the gate"], ["Release", "Springs back to centre (unless returnToCenter is false)"]],
       examples: [
-        { id: "default", title: "Default", text: "Returns to centre on release.", code: `<Joystick label="Pan camera" onValueChange={({ x, y }) => pan(x, y)} />`, render: (f) => <Joystick finish={f} label="Pan camera" /> },
+        { id: "default", title: "Default", text: "Returns to centre on release.", code: `<Joystick label="Pan camera" onValueChange={({ x, y }) => pan(x, y)} />`, render: (f) => <AutoJoystick finish={f} label="Pan camera" /> },
         { id: "read", title: "Reading the value", text: "x and y run from −1 to 1.", code: `const [v, setV] = useState({ x: 0, y: 0 });\n\n<Joystick label="Pan camera" value={v} onValueChange={setV} />`, render: (f) => <JoystickPan finish={f} /> },
         { id: "hold", title: "Holding position", text: "With returnToCenter off it stays where you leave it, like an aiming stick.", code: `<Joystick label="Aim" returnToCenter={false}\n  value={v} onValueChange={setV} />`, render: (f) => <JoystickHold finish={f} /> },
       ],
@@ -159,7 +165,7 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       native: '<input inputmode="numeric" autocomplete="one-time-code">',
       keys: [["Digits", "Set the wheels left to right (typing, paste or SMS autofill)"], ["Backspace", "Clear digits"], ["↑ ↓", "Roll the wheel at the caret"], ["Drag or wheel on a wheel", "Roll that digit"]],
       examples: [
-        { id: "default", title: "Default", text: "Four wheels.", code: `<Combo label="PIN" />`, render: (f) => <Combo finish={f} label="PIN" /> },
+        { id: "default", title: "Default", text: "Four wheels.", code: `<Combo label="PIN" />`, render: (f) => <AutoCombo finish={f} label="PIN" /> },
         { id: "code", title: "A known code", text: "The lock opens itself on 2468.", code: `<Combo label="Locker PIN" code="2468"\n  onComplete={(pin) => open(pin)} />`, render: (f) => <ComboLocker finish={f} /> },
         { id: "server", title: "Checked by a server", text: "Six digits; unlocked opens it once the code is accepted. Try 123456.", code: `const [pin, setPin] = useState("");\n\n<Combo label="Verification code" length={6}\n  value={pin} onValueChange={setPin} unlocked={verified} />`, render: (f) => <ComboSix finish={f} /> },
       ],
@@ -180,7 +186,7 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       native: '<input type="file"> opened by a <button>',
       keys: [["Enter / Space", "Open the file picker"], ["Click the tray", "Open the file picker"], ["Drag files over", "The rim lights and a ghost sheet hovers"], ["Drop", "Accepted files fall in; rejected ones shake the tray"]],
       examples: [
-        { id: "default", title: "Default", text: "Any file type, several at once.", code: `<Tray label="Attach files" onFiles={(files) => upload(files)} />`, render: (f) => <Tray finish={f} label="Attach files" /> },
+        { id: "default", title: "Default", text: "Any file type, several at once.", code: `<Tray label="Attach files" onFiles={(files) => upload(files)} />`, render: (f) => <AutoTray finish={f} label="Attach files" /> },
         { id: "invoices", title: "PDFs only, with a size limit", text: "Wrong types and files over 10 MB go to onReject.", code: `<Tray label="Attach invoices" accept=".pdf" maxSize={10_000_000}\n  onFiles={(f) => setFiles((x) => [...x, ...f])}\n  onReject={(f) => warn(f)} />`, render: (f) => <TrayInvoices finish={f} /> },
       ],
       props: [
@@ -199,7 +205,7 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       native: '<input type="radio"> × n',
       keys: [["Arrow keys", "Next or previous position"], ["Click a legend or tick", "Turn straight there"], ["Drag around the knob", "Turn through the detents"], ["Wheel", "One detent"]],
       examples: [
-        { id: "default", title: "Default", text: "Four positions.", code: `<Selector label="Fan" defaultValue="LOW" />`, render: (f) => <Selector finish={f} label="Fan" defaultValue="LOW" /> },
+        { id: "default", title: "Default", text: "Four positions.", code: `<Selector label="Fan" defaultValue="LOW" />`, render: (f) => <AutoSelector finish={f} label="Fan" init="LOW" /> },
         { id: "range", title: "Six positions", text: "A test meter's range switch, controlled.", code: `const [range, setRange] = useState("20V");\n\n<Selector label="Range"\n  options={["200m", "2V", "20V", "200V", "2k", "20k"]}\n  value={range} onValueChange={setRange} />`, render: (f) => <SelectorRange finish={f} /> },
       ],
       props: [
@@ -216,7 +222,7 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       native: '<input type="range"> in whole minutes',
       keys: [["← → ↑ ↓", "Wind by a minute"], ["Drag around the dial", "Wind it"], ["Wheel", "Add or remove a minute"]],
       examples: [
-        { id: "default", title: "Default", text: "Wound to 10 minutes; it runs on its own.", code: `<Timer label="Pasta" defaultValue={600} onDone={() => drain()} />`, render: (f) => <Timer finish={f} label="Pasta" defaultValue={600} /> },
+        { id: "default", title: "Default", text: "Wound to 10 minutes; it runs on its own.", code: `<Timer label="Pasta" defaultValue={600} onDone={() => drain()} />`, render: (f) => <AutoTimer finish={f} label="Pasta" init={600} /> },
         { id: "controlled", title: "Controlled", text: "Your component keeps the seconds; onValueChange fires each whole second.", code: `const [s, setS] = useState(240);\n\n<Timer label="Tea" value={s} onValueChange={setS} onDone={() => ring()} />`, render: (f) => <TimerTea finish={f} /> },
         { id: "paused", title: "Start and pause", text: "running decides whether it counts down.", code: `<Timer label="Exposure" defaultValue={90} running={running} />`, render: (f) => <TimerPaused finish={f} /> },
       ],
@@ -234,9 +240,9 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       ...meta("tank"),
       object: "An upright storage tank on a bolted plinth: banded shell, dome lid with a bolt ring, manway and vent, an inlet through a valve with a handwheel, and a drain. The level rises in the sight glass on a slow, slightly sloshing spring; the meniscus is lit.",
       native: 'role="meter" or role="progressbar"',
-      keys: [],
+      keys: [["Tap", "Sets the level sloshing, away from the side you knock"]],
       examples: [
-        { id: "default", title: "Default", text: "A level within a range, with alarm marks.", code: `<Tank label="Rainwater tank" value={3400} max={5000}\n  low={800} high={4600} format={(v) => \`\${v} litres\`} />`, render: (f) => <Tank finish={f} label="Rainwater tank" value={3400} max={5000} low={800} high={4600} format={(v) => `${v} litres`} /> },
+        { id: "default", title: "Default", text: "A level within a range, with alarm marks.", code: `<Tank label="Rainwater tank" value={3400} max={5000}\n  low={800} high={4600} format={(v) => \`\${v} litres\`} />`, render: (f) => <Auto init={3400} next={wander(300, 4900, 100)} ms={2800}>{(v) => <Tank finish={f} label="Rainwater tank" value={v} max={5000} low={800} high={4600} format={(x) => `${x} litres`} />}</Auto> },
         { id: "progress", title: "Progress", text: "Filling as work goes up.", code: `<Tank role="progressbar" label="Upload" value={percent} />`, render: (f) => <TankFill finish={f} /> },
       ],
       props: [
@@ -254,9 +260,9 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       ...meta("track"),
       object: "A narrow-gauge rail line: rails spiked to sleepers on a ballast bed, station posts with hooded signal lamps and name plates, and a buffer stop. A pump handcar rolls to the current station, its wheels turning and its beam rocking; passed lamps are lit, the current one with the accent.",
       native: 'role="progressbar" + a hidden <ol>',
-      keys: [["Tab", "Each reached step (when clickable)"], ["Enter / Space", "Go back to that step"], ["Click a reached station", "The same, when clickable"]],
+      keys: [["Tap", "Rocks the handcar; it rolls back to its station"], ["Tab", "Each reached step (when clickable)"], ["Enter / Space", "Go back to that step"], ["Click a reached station", "The same, when clickable"]],
       examples: [
-        { id: "default", title: "Default", text: "Checkout, at the third step.", code: `<Track label="Checkout" steps={["Cart", "Ship", "Pay", "Done"]} current={2} />`, render: (f) => <Track finish={f} label="Checkout" steps={["Cart", "Ship", "Pay", "Done"]} current={2} /> },
+        { id: "default", title: "Default", text: "Checkout, at the third step.", code: `<Track label="Checkout" steps={["Cart", "Ship", "Pay", "Done"]} current={2} />`, render: (f) => <Auto init={2} next={(c: number) => (c + 1) % 4} ms={1800}>{(c) => <Track finish={f} label="Checkout" steps={["Cart", "Ship", "Pay", "Done"]} current={c} />}</Auto> },
         { id: "clickable", title: "Going back", text: "With clickable, reached stations are buttons.", code: `const [step, setStep] = useState(3);\n\n<Track label="Setup" current={step} clickable onStepChange={setStep}\n  steps={["Account", "Team", "Repo", "Deploy", "Invite"]} />`, render: (f) => <TrackOnboarding finish={f} /> },
       ],
       props: [
@@ -273,7 +279,7 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       native: 'role="group" + a hidden <ul> and live region',
       keys: [["Tab", "The lamp-test button"], ["Enter / Space", "Lamp test"]],
       examples: [
-        { id: "default", title: "Default", text: "Four services.", code: `<Annunciator label="Service health" items={[\n  { id: "api", label: "API", state: "ok" },\n  { id: "db", label: "DB", state: "ok" },\n  { id: "queue", label: "QUEUE", state: "warn" },\n  { id: "auth", label: "AUTH", state: "ok" },\n]} />`, render: (f) => <Annunciator finish={f} label="Service health" items={[{ id: "api", label: "API", state: "ok" }, { id: "db", label: "DB", state: "ok" }, { id: "queue", label: "QUEUE", state: "warn" }, { id: "auth", label: "AUTH", state: "ok" }]} /> },
+        { id: "default", title: "Default", text: "Four services.", code: `<Annunciator label="Service health" items={[\n  { id: "api", label: "API", state: "ok" },\n  { id: "db", label: "DB", state: "ok" },\n  { id: "queue", label: "QUEUE", state: "warn" },\n  { id: "auth", label: "AUTH", state: "ok" },\n]} />`, render: (f) => <Auto init={SERVICES} next={blink} ms={1500}>{(items) => <Annunciator finish={f} label="Service health" items={items} />}</Auto> },
         { id: "live", title: "Live states", text: "Eight lamps in two rows; states change as your data does. Warn and alert are announced.", code: `<Annunciator label="Edge cluster" columns={4}\n  items={services.map((s) => ({ id: s.id, label: s.name, state: s.state }))} />`, render: (f) => <AnnunciatorLive finish={f} /> },
       ],
       props: [

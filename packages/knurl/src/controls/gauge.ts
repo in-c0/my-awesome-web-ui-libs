@@ -10,7 +10,7 @@ import { disposer, line, mk, register, shadow, solid } from "../core/stage";
  * an accent tip swings to the value on an underdamped spring, so it overshoots
  * a little and settles, the way a damped movement does. A tell-tale hand
  * stays at the highest value seen. Behind the case, a stem and hex fitting
- * come out of the block.
+ * come out of the block. A tap on the glass jogs the needle.
  *
  * Not focusable: the host carries role="progressbar" (or "meter") with its
  * aria values.
@@ -113,6 +113,13 @@ export const gauge = define<GaugeOptions>({
       return m;
     });
     bag.add(B.unregister);
+
+    // a tap on the glass jogs the needle, as on a real gauge: it kicks up the scale and settles back
+    bag.on(host, "pointerdown", (e) => {
+      if (e.button !== 0) return;
+      sp.v += 2.4;
+      B.wake();
+    });
 
     const restore = keepAttrs(host, ["role", "aria-valuemin", "aria-valuemax", "aria-valuenow", "aria-label", "aria-valuetext"]);
     const sync = () => {

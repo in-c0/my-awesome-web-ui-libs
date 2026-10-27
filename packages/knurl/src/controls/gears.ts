@@ -8,7 +8,8 @@ import { disposer, line, mk, register, shadow, solid } from "../core/stage";
  *
  * A driver and two followers mesh at their true ratios (24 : 16 : 12 teeth),
  * so the small one turns twice as fast as the big one and every pair turns
- * opposite ways. Spinning eases up to speed and coasts down when it stops.
+ * opposite ways. Spinning eases up to speed and coasts down when it stops;
+ * a tap flicks the train.
  * Under reduced motion it holds still and only the lamp blinks.
  *
  * The host carries role="status" and its label.
@@ -172,6 +173,13 @@ export const gears = define<GearsOptions>({
       return vel !== 0 || want !== 0;
     });
     bag.add(B.unregister);
+
+    // a flick of the driver: the train spins up and coasts back to its speed, or to a stop
+    bag.on(host, "pointerdown", (e) => {
+      if (e.button !== 0 || reducedMotion()) return;
+      vel += Math.PI * 0.9;
+      B.wake();
+    });
 
     const restore = keepAttrs(host, ["role", "aria-label", "aria-busy"]);
     const sync = () => {

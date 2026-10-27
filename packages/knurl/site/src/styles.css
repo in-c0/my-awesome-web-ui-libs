@@ -329,3 +329,6 @@ td.desc-cell { color: var(--muted-fg); min-width: 240px; }
 .demo-list { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--muted-fg); display: grid; gap: 4px; }
 .demo-list label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
 .sidebar div > h4:first-child { margin-top: 18px; }
+
+/* a preview that plays itself (auto.tsx): no box of its own */
+.auto { display: contents; }

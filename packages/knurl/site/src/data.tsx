@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
+import { Auto, AutoAct, blink, circle, cycle, flip, press, typing, wander, wanderPair, wind, type Lamp } from "./auto";
 import { Annunciator, Caliper, Combo, Counter, Fader, Gauge, Gears, Joystick, Keycap, Knob, Presets, Rocker, Selector, Tank, Timer, Toggle, Track, Tray } from "@in-c0/knurl/react";
 import { newDocs } from "./data-new";
 import type { Finish } from "@in-c0/knurl";
@@ -40,54 +41,56 @@ const RANGE: Prop[] = [
 const Readout = ({ children }: { children: ReactNode }) => <output className="readout">{children}</output>;
 
 function ToggleControlled({ finish }: { finish: Finish }) {
-  const [on, setOn] = useState(true);
-  return <div className="demo-row"><Toggle finish={finish} label="Wi-Fi" checked={on} onCheckedChange={setOn} /><Readout>Wi-Fi {on ? "on" : "off"}</Readout></div>;
+  return <Auto init={true} next={flip} ms={2200}>{(on, setOn) => <div className="demo-row"><Toggle finish={finish} label="Wi-Fi" checked={on} onCheckedChange={setOn} /><Readout>Wi-Fi {on ? "on" : "off"}</Readout></div>}</Auto>;
 }
+const AutoToggle = ({ finish, label, init = true, ms = 2200, style }: { finish: Finish; label: string; init?: boolean; ms?: number; style?: CSSProperties }) =>
+  <Auto init={init} next={flip} ms={ms}>{(on, set) => <Toggle finish={finish} label={label} checked={on} onCheckedChange={set} style={style} />}</Auto>;
 function FaderSteps({ finish }: { finish: Finish }) {
-  const [v, setV] = useState(7);
-  return <div className="demo-col"><Fader finish={finish} label="Brightness" min={0} max={10} step={1} value={v} onValueChange={setV} /><Readout>{v} / 10</Readout></div>;
+  return <Auto init={7} next={wander(0, 10)}>{(v, setV) => <div className="demo-col"><Fader finish={finish} label="Brightness" min={0} max={10} step={1} value={v} onValueChange={setV} /><Readout>{v} / 10</Readout></div>}</Auto>;
 }
 function FaderDb({ finish }: { finish: Finish }) {
-  const [v, setV] = useState(-12);
-  return <div className="demo-col"><Fader finish={finish} label="Channel 1" min={-60} max={6} step={0.5} value={v} onValueChange={setV} format={(x) => `${x} dB`} /><Readout>{v > 0 ? "+" : ""}{v.toFixed(1)} dB</Readout></div>;
+  return <Auto init={-12} next={wander(-48, 6, 0.5)}>{(v, setV) => <div className="demo-col"><Fader finish={finish} label="Channel 1" min={-60} max={6} step={0.5} value={v} onValueChange={setV} format={(x) => `${x} dB`} /><Readout>{v > 0 ? "+" : ""}{v.toFixed(1)} dB</Readout></div>}</Auto>;
 }
+const AutoFader = ({ finish, label, init, style }: { finish: Finish; label: string; init: number; style?: CSSProperties }) =>
+  <Auto init={init} next={wander(8, 92)}>{(v, set) => <Fader finish={finish} label={label} value={v} onValueChange={set} style={style} />}</Auto>;
 function KnobCutoff({ finish }: { finish: Finish }) {
-  const [v, setV] = useState(55);
-  const hz = Math.round(20 * Math.pow(1000, v / 100));
-  return <div className="demo-row"><Knob finish={finish} label="Cutoff" value={v} onValueChange={setV} format={() => `${hz} Hz`} /><Readout>Cutoff {hz >= 1000 ? (hz / 1000).toFixed(1) + " kHz" : hz + " Hz"}</Readout></div>;
+  return <Auto init={55} next={wander(5, 95)} ms={2000}>{(v, setV) => {
+    const hz = Math.round(20 * Math.pow(1000, v / 100));
+    return <div className="demo-row"><Knob finish={finish} label="Cutoff" value={v} onValueChange={setV} format={() => `${hz} Hz`} /><Readout>Cutoff {hz >= 1000 ? (hz / 1000).toFixed(1) + " kHz" : hz + " Hz"}</Readout></div>;
+  }}</Auto>;
 }
+const AutoKnob = ({ finish, label, init, style }: { finish: Finish; label: string; init: number; style?: CSSProperties }) =>
+  <Auto init={init} next={wander(5, 95)} ms={2000}>{(v, set) => <Knob finish={finish} label={label} value={v} onValueChange={set} style={style} />}</Auto>;
 function KeyCount({ finish }: { finish: Finish }) {
   const [n, setN] = useState(0);
-  return <div className="demo-row"><Keycap finish={finish} legend="Enter" units={2.25} onPress={() => setN((x) => x + 1)} style={{ width: 170 }} /><Readout>Pressed {n}×</Readout></div>;
+  return <AutoAct act={press()} ms={1700}><div className="demo-row"><Keycap finish={finish} legend="Enter" units={2.25} onPress={() => setN((x) => x + 1)} style={{ width: 170 }} /><Readout>Pressed {n}×</Readout></div></AutoAct>;
 }
 function KeyChord({ finish }: { finish: Finish }) {
-  return <div className="demo-row tight"><Keycap finish={finish} legend="⌘" label="Command" style={{ width: 96 }} /><Keycap finish={finish} legend="C" label="C" style={{ width: 96 }} /></div>;
+  return <AutoAct act={press(220)} ms={2000}><div className="demo-row tight"><Keycap finish={finish} legend="⌘" label="Command" style={{ width: 96 }} /><Keycap finish={finish} legend="C" label="C" style={{ width: 96 }} /></div></AutoAct>;
 }
+const PRESETS = ["1", "2", "3", "4"];
+const AutoPresets = ({ finish, init, style }: { finish: Finish; init: string; style?: CSSProperties }) =>
+  <Auto init={init} next={cycle(PRESETS)}>{(v, set) => <Presets finish={finish} options={PRESETS} value={v} onValueChange={set} style={style} />}</Auto>;
 function PresetsBand({ finish }: { finish: Finish }) {
-  const [v, setV] = useState("FM");
   const f: Record<string, string> = { FM: "87.5–108 MHz", AM: "530–1700 kHz", LW: "153–279 kHz" };
-  return <div className="demo-col"><Presets finish={finish} label="Band" options={["FM", "AM", "LW"]} value={v} onValueChange={setV} /><Readout>{v} · {f[v]}</Readout></div>;
+  return <Auto init="FM" next={cycle(["FM", "AM", "LW"])}>{(v, setV) => <div className="demo-col"><Presets finish={finish} label="Band" options={["FM", "AM", "LW"]} value={v} onValueChange={setV} /><Readout>{v} · {f[v]}</Readout></div>}</Auto>;
 }
+const bump = (max: number) => (v: number) => (v >= max - 13 ? 0 : v + 1 + Math.floor(Math.random() * 13));
+const AutoCounter = ({ finish, label, init, max, style }: { finish: Finish; label: string; init: number; max?: number; style?: CSSProperties }) =>
+  <Auto init={init} next={bump(max ?? 999)} ms={1500}>{(v, set) => <Counter finish={finish} label={label} max={max} value={v} onValueChange={set} style={style} />}</Auto>;
 function CounterOdo({ finish }: { finish: Finish }) {
-  const [v, setV] = useState(1287);
-  return <div className="demo-col"><Counter finish={finish} label="Trip" max={9999} value={v} onValueChange={setV} /><button className="btn sm" onClick={() => setV((x) => Math.min(9999, x + 13))}>Drive 13 km</button></div>;
+  return <Auto init={1287} next={bump(9999)} ms={1500}>{(v, setV) => <div className="demo-col"><Counter finish={finish} label="Trip" max={9999} value={v} onValueChange={setV} /><button className="btn sm" onClick={() => setV(Math.min(9999, v + 13))}>Drive 13 km</button></div>}</Auto>;
 }
+// an upload that runs, holds at 100% and starts over
+const upload = (_: number, i: number) => { const p = (i + 1) % 22; return p === 0 ? 0 : Math.min(100, p * 6.5 + Math.random() * 4); };
 function GaugeUpload({ finish }: { finish: Finish }) {
-  const [v, setV] = useState(0);
-  useEffect(() => {
-    let x = 0;
-    const t = setInterval(() => { x = Math.min(100, x + 3 + Math.random() * 9); setV(x); if (x >= 100) clearInterval(t); }, 260);
-    return () => clearInterval(t);
-  }, []);
-  return <div className="demo-row"><Gauge finish={finish} label="Uploading report.pdf" value={v} peak={false} /><Readout>{Math.round(v)}% of 4.2 MB</Readout></div>;
+  return <Auto init={0} next={upload} ms={280}>{(v) => <div className="demo-row"><Gauge finish={finish} label="Uploading report.pdf" value={v} peak={false} /><Readout>{Math.round(v)}% of 4.2 MB</Readout></div>}</Auto>;
 }
 function GaugeMeter({ finish }: { finish: Finish }) {
-  const [v, setV] = useState(62);
-  return <div className="demo-row"><Gauge finish={finish} role="meter" label="CPU load" value={v} format={(x) => `${x}%`} /><Fader finish={finish} label="Load" value={v} onValueChange={setV} style={{ width: 200 }} /></div>;
+  return <Auto init={62} next={wander(10, 95)} ms={2000}>{(v, setV) => <div className="demo-row"><Gauge finish={finish} role="meter" label="CPU load" value={v} format={(x) => `${x}%`} /><Fader finish={finish} label="Load" value={v} onValueChange={setV} style={{ width: 200 }} /></div>}</Auto>;
 }
 function GearsSwitch({ finish }: { finish: Finish }) {
-  const [on, setOn] = useState(true);
-  return <div className="demo-row"><Gears finish={finish} spinning={on} label={on ? "Syncing" : "Idle"} /><Toggle finish={finish} label="Sync" checked={on} onCheckedChange={setOn} /></div>;
+  return <Auto init={true} next={flip} ms={3200}>{(on, setOn) => <div className="demo-row"><Gears finish={finish} spinning={on} label={on ? "Syncing" : "Idle"} /><Toggle finish={finish} label="Sync" checked={on} onCheckedChange={setOn} /></div>}</Auto>;
 }
 
 /** A fresh mount on every replay: the parent bumps `key`. */
@@ -103,9 +106,9 @@ export const DOCS: Doc[] = [
     native: '<input type="checkbox" role="switch">',
     keys: [["Space", "Toggle"], ["Click", "Toggle anywhere on the panel"]],
     examples: [
-      { id: "default", title: "Default", text: "Uncontrolled, starting on.", code: `<Toggle label="Airplane mode" defaultChecked />`, render: (f) => <Toggle finish={f} label="Airplane mode" defaultChecked /> },
+      { id: "default", title: "Default", text: "Uncontrolled, starting on.", code: `<Toggle label="Airplane mode" defaultChecked />`, render: (f) => <AutoToggle finish={f} label="Airplane mode" /> },
       { id: "controlled", title: "Controlled", text: "The state lives in your component; the lever moves when the prop does.", code: `const [on, setOn] = useState(true);\n\n<Toggle label="Wi-Fi" checked={on} onCheckedChange={setOn} />`, render: (f) => <ToggleControlled finish={f} /> },
-      { id: "solid", title: "Solid finish", text: "The same geometry with four-tone shaded sides and a contact shadow.", code: `<Toggle finish="solid" label="Heater" />`, render: () => <Toggle finish="solid" label="Heater" /> },
+      { id: "solid", title: "Solid finish", text: "The same geometry with four-tone shaded sides and a contact shadow.", code: `<Toggle finish="solid" label="Heater" />`, render: () => <AutoToggle finish="solid" label="Heater" init={false} /> },
     ],
     props: [
       { name: "checked", type: "boolean", desc: "Controlled state. Pair with onCheckedChange." },
@@ -120,7 +123,7 @@ export const DOCS: Doc[] = [
     native: '<input type="range">',
     keys: [["← →  ↑ ↓", "One step"], ["Page Up / Down", "Ten steps"], ["Home / End", "Min / max"], ["Drag", "Anywhere on the strip"]],
     examples: [
-      { id: "default", title: "Default", text: "0 to 100 in steps of 1.", code: `<Fader label="Volume" defaultValue={60} />`, render: (f) => <Fader finish={f} label="Volume" defaultValue={60} /> },
+      { id: "default", title: "Default", text: "0 to 100 in steps of 1.", code: `<Fader label="Volume" defaultValue={60} />`, render: (f) => <AutoFader finish={f} label="Volume" init={60} /> },
       { id: "steps", title: "Steps", text: "Ten steps: the ruler draws one tick per step.", code: `const [v, setV] = useState(7);\n\n<Fader label="Brightness" min={0} max={10} step={1}\n  value={v} onValueChange={setV} />`, render: (f) => <FaderSteps finish={f} /> },
       { id: "decibels", title: "Decibels", text: "A negative range in half-dB steps, read out to screen readers with format.", code: `<Fader label="Channel 1" min={-60} max={6} step={0.5}\n  value={v} onValueChange={setV}\n  format={(x) => \`\${x} dB\`} />`, render: (f) => <FaderDb finish={f} /> },
     ],
@@ -132,7 +135,7 @@ export const DOCS: Doc[] = [
     native: '<input type="range">',
     keys: [["↑ ↓  ← →", "One step"], ["Drag up / down", "160 px is the whole sweep"], ["Shift + drag", "Fine: one fifth the speed"], ["Wheel", "One step per notch"]],
     examples: [
-      { id: "default", title: "Default", text: "Drag up to turn up.", code: `<Knob label="Gain" defaultValue={35} />`, render: (f) => <Knob finish={f} label="Gain" defaultValue={35} /> },
+      { id: "default", title: "Default", text: "Drag up to turn up.", code: `<Knob label="Gain" defaultValue={35} />`, render: (f) => <AutoKnob finish={f} label="Gain" init={35} /> },
       { id: "cutoff", title: "Log scale readout", text: "The knob stays linear; your component maps it to 20 Hz – 20 kHz.", code: `const [v, setV] = useState(55);\nconst hz = Math.round(20 * Math.pow(1000, v / 100));\n\n<Knob label="Cutoff" value={v} onValueChange={setV}\n  format={() => \`\${hz} Hz\`} />`, render: (f) => <KnobCutoff finish={f} /> },
     ],
     props: [...RANGE, ...BASE],
@@ -143,7 +146,7 @@ export const DOCS: Doc[] = [
     native: "<button>",
     keys: [["Enter / Space", "Press"], ["Click", "Fires on release, inside the key"]],
     examples: [
-      { id: "default", title: "Default", text: "A 1u key with a one-character legend.", code: `<Keycap legend="A" onPress={() => type("a")} />`, render: (f) => <Keycap finish={f} legend="A" /> },
+      { id: "default", title: "Default", text: "A 1u key with a one-character legend.", code: `<Keycap legend="A" onPress={() => type("a")} />`, render: (f) => <AutoAct act={press()} ms={1600}><Keycap finish={f} legend="A" /></AutoAct> },
       { id: "wide", title: "Wide key", text: "2u and wider keys show their stabiliser wire under the cap.", code: `<Keycap legend="Enter" units={2.25}\n  onPress={() => setN((n) => n + 1)} />`, render: (f) => <KeyCount finish={f} /> },
       { id: "chord", title: "A chord", text: "Keys are inline elements; lay them out like text.", code: `<Keycap legend="⌘" label="Command" />\n<Keycap legend="C" />`, render: (f) => <KeyChord finish={f} /> },
     ],
@@ -160,7 +163,7 @@ export const DOCS: Doc[] = [
     native: '<input type="radio"> × n',
     keys: [["← →  ↑ ↓", "Move and select"], ["Tab", "Into and out of the group"]],
     examples: [
-      { id: "default", title: "Default", text: "Four numbered presets.", code: `<Presets defaultValue="2" />`, render: (f) => <Presets finish={f} defaultValue="2" /> },
+      { id: "default", title: "Default", text: "Four numbered presets.", code: `<Presets defaultValue="2" />`, render: (f) => <AutoPresets finish={f} init="2" /> },
       { id: "band", title: "Band selector", text: "Short legends, controlled.", code: `const [band, setBand] = useState("FM");\n\n<Presets label="Band" options={["FM", "AM", "LW"]}\n  value={band} onValueChange={setBand} />`, render: (f) => <PresetsBand finish={f} /> },
     ],
     props: [
@@ -177,7 +180,7 @@ export const DOCS: Doc[] = [
     native: '<input type="number">',
     keys: [["↑ ↓", "One step"], ["Hold − / +", "Repeats, faster the longer you hold"], ["Drag up / down", "10 px per step"], ["Wheel", "One step per notch"]],
     examples: [
-      { id: "default", title: "Default", text: "0 to 99: two drums.", code: `<Counter label="Guests" max={99} defaultValue={4} />`, render: (f) => <Counter finish={f} label="Guests" max={99} defaultValue={4} /> },
+      { id: "default", title: "Default", text: "0 to 99: two drums.", code: `<Counter label="Guests" max={99} defaultValue={4} />`, render: (f) => <AutoCounter finish={f} label="Guests" max={99} init={4} /> },
       { id: "odometer", title: "Odometer", text: "A jump of 13 rolls the ones drum and carries into the tens.", code: `const [km, setKm] = useState(1287);\n\n<Counter label="Trip" max={9999} value={km} onValueChange={setKm} />\n<button onClick={() => setKm((x) => x + 13)}>Drive 13 km</button>`, render: (f) => <CounterOdo finish={f} /> },
     ],
     props: [...RANGE.map((p) => p.name === "max" ? { ...p, def: "999", desc: "Highest value; its digit count sets the number of drums." } : p.name === "min" ? { ...p, desc: "Lowest value, never below 0." } : p), ...BASE],
@@ -186,9 +189,9 @@ export const DOCS: Doc[] = [
     ...meta("gauge"),
     object: "A dial gauge on a bench block: a knurled bezel, a 270° scale with a red zone, and a needle on an underdamped spring that overshoots a little and settles. A tell-tale hand keeps the peak.",
     native: 'role="progressbar" or role="meter"',
-    keys: [],
+    keys: [["Tap", "Jogs the needle; it settles back to the reading"]],
     examples: [
-      { id: "progress", title: "Progress", text: "Bound to an upload. Replay to run it again.", code: `<Gauge label="Uploading report.pdf" value={percent} peak={false} />`, render: (f) => <GaugeUpload finish={f} /> },
+      { id: "progress", title: "Progress", text: "Bound to an upload: it runs, holds at 100% and starts over.", code: `<Gauge label="Uploading report.pdf" value={percent} peak={false} />`, render: (f) => <GaugeUpload finish={f} /> },
       { id: "meter", title: "Meter", text: "A level within a range. The tell-tale stays at the highest value seen.", code: `const [load, setLoad] = useState(62);\n\n<Gauge role="meter" label="CPU load" value={load} />\n<Fader label="Load" value={load} onValueChange={setLoad} />`, render: (f) => <GaugeMeter finish={f} /> },
     ],
     props: [
@@ -205,7 +208,7 @@ export const DOCS: Doc[] = [
     ...meta("gears"),
     object: "A gear train on a plate: a 24-tooth driver and 16- and 12-tooth followers, so the small gear turns twice as fast as the big one. It eases up to speed and coasts down when it stops.",
     native: 'role="status" aria-busy',
-    keys: [],
+    keys: [["Tap", "Flicks the train: it spins up and coasts back"]],
     examples: [
       { id: "default", title: "Default", text: "A quarter turn of the driver per second.", code: `<Gears label="Loading" />`, render: (f) => <Gears finish={f} /> },
       { id: "switch", title: "Start and stop", text: "Turning it off lets the train coast to a stop.", code: `const [on, setOn] = useState(true);\n\n<Gears spinning={on} label={on ? "Syncing" : "Idle"} />\n<Toggle label="Sync" checked={on} onCheckedChange={setOn} />`, render: (f) => <GearsSwitch finish={f} /> },
@@ -221,36 +224,27 @@ export const DOCS: Doc[] = [
 
 /** The live control a gallery cell shows. */
 export function Hero({ id, finish }: { id: string; finish: Finish }) {
-  const ref = useRef<HTMLDivElement>(null);
-  void ref;
   switch (id) {
-    case "toggle": return <Toggle finish={finish} label="Power" defaultChecked style={{ width: 160 }} />;
-    case "fader": return <Fader finish={finish} label="Volume" defaultValue={64} style={{ width: 250 }} />;
-    case "knob": return <Knob finish={finish} label="Gain" defaultValue={40} style={{ width: 176 }} />;
-    case "keycap": return <Keycap finish={finish} legend="Esc" style={{ width: 150 }} />;
-    case "presets": return <Presets finish={finish} options={["1", "2", "3", "4"]} defaultValue="3" style={{ width: 240 }} />;
-    case "counter": return <Counter finish={finish} label="Count" defaultValue={42} style={{ width: 210 }} />;
-    case "gauge": return <GaugeHero finish={finish} />;
+    case "toggle": return <AutoToggle finish={finish} label="Power" style={{ width: 160 }} />;
+    case "fader": return <AutoFader finish={finish} label="Volume" init={64} style={{ width: 250 }} />;
+    case "knob": return <AutoKnob finish={finish} label="Gain" init={40} style={{ width: 176 }} />;
+    case "keycap": return <AutoAct act={press()} ms={1600}><Keycap finish={finish} legend="Esc" style={{ width: 150 }} /></AutoAct>;
+    case "presets": return <AutoPresets finish={finish} init="3" style={{ width: 240 }} />;
+    case "counter": return <AutoCounter finish={finish} label="Count" init={42} style={{ width: 210 }} />;
+    case "gauge": return <Auto init={38} next={wander(20, 88)} ms={2400}>{(v) => <Gauge finish={finish} role="meter" label="Pressure" value={v} style={{ width: 176 }} />}</Auto>;
     case "gears": return <Gears finish={finish} style={{ width: 170 }} />;
-    case "rocker": return <Rocker finish={finish} label="Mains" defaultChecked style={{ width: 160 }} />;
-    case "caliper": return <Caliper finish={finish} label="Range" defaultValue={[30, 65]} style={{ width: 270 }} />;
-    case "joystick": return <Joystick finish={finish} label="Stick" style={{ width: 170 }} />;
-    case "combo": return <Combo finish={finish} label="PIN" code="1234" defaultValue="07" style={{ width: 170 }} />;
-    case "tray": return <Tray finish={finish} label="Drop files" count={3} style={{ width: 200 }} />;
-    case "selector": return <Selector finish={finish} label="Mode" defaultValue="MED" style={{ width: 180 }} />;
-    case "timer": return <Timer finish={finish} label="Timer" defaultValue={7 * 60} style={{ width: 170 }} />;
-    case "tank": return <Tank finish={finish} label="Level" value={62} low={15} high={85} style={{ width: 130 }} />;
-    case "track": return <Track finish={finish} label="Checkout" current={1} style={{ width: 270 }} />;
-    case "annunciator": return <Annunciator finish={finish} label="Services" style={{ width: 260 }} />;
+    case "rocker": return <Auto init={true} next={flip} ms={2400}>{(on, set) => <Rocker finish={finish} label="Mains" checked={on} onCheckedChange={set} style={{ width: 160 }} />}</Auto>;
+    case "caliper": return <Auto init={[30, 65] as [number, number]} next={wanderPair(0, 100)} ms={2200}>{(v, set) => <Caliper finish={finish} label="Range" value={v} onValueChange={set} style={{ width: 270 }} />}</Auto>;
+    case "joystick": return <Auto init={{ x: 0, y: 0 }} next={circle} ms={650}>{(v, set) => <Joystick finish={finish} label="Stick" value={v} onValueChange={set} style={{ width: 170 }} />}</Auto>;
+    case "combo": return <Auto init="" next={typing(["1234"])} ms={700}>{(v, set) => <Combo finish={finish} label="PIN" code="1234" value={v} onValueChange={set} style={{ width: 170 }} />}</Auto>;
+    case "tray": return <Auto init={2} next={(n: number) => (n >= 6 ? 0 : n + 1)} ms={1300}>{(n) => <Tray finish={finish} label="Drop files" count={n} style={{ width: 200 }} />}</Auto>;
+    case "selector": return <Auto init="MED" next={cycle(["OFF", "LOW", "MED", "HIGH"], true)} ms={1700}>{(v, set) => <Selector finish={finish} label="Mode" value={v} onValueChange={set} style={{ width: 180 }} />}</Auto>;
+    case "timer": return <Auto init={7 * 60} next={wind} ms={500}>{(v, set) => <Timer finish={finish} label="Timer" value={v} onValueChange={set} style={{ width: 170 }} />}</Auto>;
+    case "tank": return <Auto init={62} next={wander(18, 92)} ms={2600}>{(v) => <Tank finish={finish} label="Level" value={v} low={15} high={85} style={{ width: 130 }} />}</Auto>;
+    case "track": return <Auto init={1} next={(c: number) => (c + 1) % 4} ms={1800}>{(c) => <Track finish={finish} label="Checkout" current={c} style={{ width: 270 }} />}</Auto>;
+    case "annunciator": return <Auto init={LAMPS} next={blink} ms={1500}>{(items) => <Annunciator finish={finish} label="Services" items={items} style={{ width: 260 }} />}</Auto>;
   }
   return null;
 }
 
-function GaugeHero({ finish }: { finish: Finish }) {
-  const [v, setV] = useState(38);
-  useEffect(() => {
-    const t = setInterval(() => setV(25 + Math.round(Math.random() * 60)), 2400);
-    return () => clearInterval(t);
-  }, []);
-  return <Gauge finish={finish} role="meter" label="Pressure" value={v} style={{ width: 176 }} />;
-}
+const LAMPS: Lamp[] = [{ id: "api", label: "API", state: "ok" }, { id: "db", label: "DB", state: "ok" }, { id: "queue", label: "QUEUE", state: "warn" }, { id: "auth", label: "AUTH", state: "ok" }];

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2
+
+- The readouts answer a tap: the Gauge's needle jogs and settles back, the Tank's level sloshes away from the knock, a read-only Track's handcar rocks and rolls back to its station, and the Gears spin up and coast. None of them takes focus or changes its value.
+- Site: every preview plays itself while nobody is using it, and stops the moment a pointer, focus or key reaches it (again 3 s after it leaves). Nothing plays offscreen, in a background tab or under reduced motion.
+
 ## 0.2.1
 
 - Every input answers a plain click, not only a drag: a click on the Knob's scale turns it to that mark, a click on the Selector's knob turns it one detent, a click on the Counter's housing counts one, a click on a Combo wheel rolls it on by one, a press on the Annunciator's lamps runs the lamp test, and a Rocker click always throws the switch (the half already down toggles it).

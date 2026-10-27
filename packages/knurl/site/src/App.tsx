@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Finish } from "@in-c0/knurl";
 import { Fader, Gauge, Knob, Toggle } from "@in-c0/knurl/react";
+import { Auto, wander } from "./auto";
 import { DOCS, Hero, NPM, REPO, SITE, useReplay, type Doc } from "./data";
 import { Code, Command, CopyButton, Icon, Mark, Seg, Tabs, copyText, useStored } from "./ui";
 import { CASES, type Case } from "./cases";
@@ -208,30 +209,37 @@ function Home({ go, finish, setFinish }: { go: (r: string) => void; finish: Fini
   );
 }
 
+type Rig = { on: boolean; load: number; trim: number };
+/** The bench plays itself: the fader and the knob take turns, and every seventh step the power cycles. */
+const rig = (r: Rig, i: number): Rig => {
+  if (i % 7 === 5) return { ...r, on: false };
+  if (!r.on) return { ...r, on: true };
+  return i % 2 ? { ...r, load: wander(20, 95)(r.load) } : { ...r, trim: wander(5, 95)(r.trim) };
+};
+
 /** Three controls on one bench, wired: the fader sets the knob's limit, the switch powers the gauge. */
 function Specimen({ finish }: { finish: Finish }) {
-  const [on, setOn] = useState(true);
-  const [load, setLoad] = useState(68);
-  const [trim, setTrim] = useState(40);
-  const reading = on ? Math.round(load * (0.5 + trim / 200)) : 0;
-  return (
-    <div className="bench" aria-label="Three controls wired together">
-      <div className="bench-row">
-        <Toggle finish={finish} label="Power" checked={on} onCheckedChange={setOn} style={{ width: 120 }} />
-        <Gauge finish={finish} role="meter" label="Output" value={reading} style={{ width: 150 }} />
-        <Knob finish={finish} label="Trim" value={trim} onValueChange={setTrim} style={{ width: 128 }} />
+  return <Auto init={{ on: true, load: 68, trim: 40 } as Rig} next={rig} ms={1700}>{(r, set) => {
+    const reading = r.on ? Math.round(r.load * (0.5 + r.trim / 200)) : 0;
+    return (
+      <div className="bench" aria-label="Three controls wired together">
+        <div className="bench-row">
+          <Toggle finish={finish} label="Power" checked={r.on} onCheckedChange={(on) => set({ ...r, on })} style={{ width: 120 }} />
+          <Gauge finish={finish} role="meter" label="Output" value={reading} style={{ width: 150 }} />
+          <Knob finish={finish} label="Trim" value={r.trim} onValueChange={(trim) => set({ ...r, trim })} style={{ width: 128 }} />
+        </div>
+        <div className="bench-row" style={{ marginTop: 4 }}>
+          <Fader finish={finish} label="Load" value={r.load} onValueChange={(load) => set({ ...r, load })} style={{ width: 300, maxWidth: "100%" }} />
+        </div>
+        <dl className="titleblock">
+          <div><dt>Output</dt><dd>{String(reading).padStart(3, "0")} / 100</dd></div>
+          <div><dt>Camera</dt><dd>az 45° el 30°</dd></div>
+          <div><dt>Stroke</dt><dd>0.9 px</dd></div>
+          <div><dt>Finish</dt><dd>{finish}</dd></div>
+        </dl>
       </div>
-      <div className="bench-row" style={{ marginTop: 4 }}>
-        <Fader finish={finish} label="Load" value={load} onValueChange={setLoad} style={{ width: 300, maxWidth: "100%" }} />
-      </div>
-      <dl className="titleblock">
-        <div><dt>Output</dt><dd>{String(reading).padStart(3, "0")} / 100</dd></div>
-        <div><dt>Camera</dt><dd>az 45° el 30°</dd></div>
-        <div><dt>Stroke</dt><dd>0.9 px</dd></div>
-        <div><dt>Finish</dt><dd>{finish}</dd></div>
-      </dl>
-    </div>
-  );
+    );
+  }}</Auto>;
 }
 
 function CodeSheet({ doc, close }: { doc: Doc; close: () => void }) {

@@ -13,7 +13,7 @@ import { disposer, line, mk, register, shadow, solid } from "../core/stage";
  * mounting blocks: the liquid column in it rises and falls to the value on a
  * slow, underdamped spring, so it overshoots a touch and the surface tilts
  * as it sloshes. Graduations run beside the glass, and accent pointers mark
- * the optional low and high thresholds.
+ * the optional low and high thresholds. A knock on the tank sets it sloshing.
  *
  * Not focusable: the host carries role="meter" (or "progressbar") with its
  * aria values.
@@ -366,6 +366,14 @@ export const tank = define<TankOptions>({
       return m;
     });
     bag.add(B.unregister);
+
+    // a knock on the shell sets the level sloshing, away from the side that was knocked
+    bag.on(host, "pointerdown", (e) => {
+      if (e.button !== 0) return;
+      const r = host.getBoundingClientRect();
+      sp.v += (e.clientX < r.left + r.width / 2 ? 1 : -1) * 0.16;
+      B.wake();
+    });
 
     // the host's own values for what we set, so destroy can put them back
     const ARIA = ["role", "aria-valuemin", "aria-valuemax", "aria-valuenow", "aria-label", "aria-valuetext"];

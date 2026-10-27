@@ -11,7 +11,7 @@ import { disposer, line, mk, register, shadow, solid, toView, type Solid } from 
  * the step's legend engraved on it. A handcar rides the rails to the current
  * station on a calm spring, its wheels turning as it goes; stations it has
  * passed have their lamp on, the current one is lit with the accent, the
- * rest are dark.
+ * rest are dark. When the line is read-only, a tap rocks the handcar.
  *
  * The host is a progressbar (step n of N), with a visually hidden ordered
  * list of the steps under it; when `clickable`, each reached step in the list
@@ -252,7 +252,14 @@ export const track = define<TrackOptions>({
 
     // pointer: a press on a reached station's post or plate, or the line beside it, picks it
     bag.on(host, "pointerdown", (e) => {
-      if (opts.disabled || !opts.clickable || e.button !== 0) return;
+      if (opts.disabled || e.button !== 0) return;
+      if (!opts.clickable) {
+        // read-only: a push sets the handcar rolling a little toward the press, and it rolls back to its station
+        const [sx] = toView(svg, e, VW, VH);
+        sp.v += sx < P(sp.x, 0, 0)[0] ? -60 : 60;
+        B.wake();
+        return;
+      }
       const [sx, sy] = toView(svg, e, VW, VH);
       const c = cur();
       let best = -1, bd = 1e9;

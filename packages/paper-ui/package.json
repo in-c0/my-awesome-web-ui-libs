@@ -11,7 +11,7 @@
     "dev": "bun --filter @in-c0/paper-ui-studio dev",
     "build": "bun --filter @in-c0/paper-ui build && bun --filter @in-c0/paper-ui-studio build",
     "typecheck": "bun --filter @in-c0/paper-ui build && bun --filter @in-c0/paper-ui-studio typecheck",
-    "test": "bun --filter @in-c0/paper-ui test",
+    "test": "bun --filter @in-c0/paper-ui test && bun --filter @in-c0/paper-ui-studio test",
     "test:browser": "bunx playwright test --config apps/studio/playwright.config.ts",
     "check": "bun run build && bun run test"
   },

@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — component docs in the Studio
+
+- Added a docs page for each public component (`#paper-surface`, `#material-effect`, `#pencil-text`, `#paper-card`, `#paper-button`): page actions (copy as Markdown, open in Claude / ChatGPT), live preview with a Preview / Code switch and replay, install command with remembered npm / pnpm / yarn / bun choice, usage, three examples, keyboard and accessibility notes, and a props table written from the TypeScript source.
+- Added a site header, sidebar, Cmd-K / `/` page palette and `[` / `]` page keys. Routes are plain hashes, so the site works on a sub-path; the Studio's existing `#effect=…` share links still open the Studio.
+- Docs pages run at most one live shader; other material previews show the CSS fallback until chosen.
+- Added `apps/studio/public/llms.txt` with the package, props, rules and alpha status.
+- Studio asset and Device Lab links are now base-relative.
+- A Bun test checks the documented props, defaults and tuning ranges against the package source; Playwright covers the docs pages, palette, copy buttons and 390px layout.
+- No change to the package, its version, the published `0.1.0-alpha.1` tarball, publish config or deploy targets.
+
 ## Unreleased — physical-device field testing readiness
 
 - Added opt-in, no-backend Device Lab with live WebGL material, RAF cadence/interval diagnostics, optional Long Task observation and JSON export.

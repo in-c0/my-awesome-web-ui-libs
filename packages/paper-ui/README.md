@@ -6,17 +6,21 @@ A small independent, experimental library for surfaces that feel like paper and 
 
 **Status:** experimental public npm alpha **0.1.0-alpha.1** (under the `alpha` dist-tag, not `latest`). Released on 2026-10-24. Mobile/browser interaction and real-registry React consumer tests pass; real-device GPU, accessibility, and visual-fidelity audits are still required.
 
-**[Explore the interactive Studio →](https://paper-ui-react-lab.vercel.app/)** · [Source code](https://github.com/in-c0/paper-ui) · [Release readiness](docs/RELEASE_CHECKLIST.md) · [npm alpha staging](docs/NPM_ALPHA_STAGING.md)
+**[Explore the interactive Studio →](https://paper-ui-react-lab.vercel.app/)** · [Source code](https://github.com/in-c0/paper-ui) · [Release readiness](docs/RELEASE_CHECKLIST.md) · [npm alpha staging](docs/NPM_ALPHA_STAGING.md) · [llms.txt](https://paper-ui-react-lab.vercel.app/llms.txt)
 
 ## Components
 
-| Component | Purpose |
-| --- | --- |
-| `PaperSurface` | A semantic DOM container with optional paper shader, warm light treatment, and CSS fallback |
-| `MaterialEffect` | A single GPU material layer selected from six presets |
-| `PencilText` | Stroke-order animated handwriting using Tegaki |
-| `PaperCard` | Tactile-but-subtle card with reduced-motion-friendly interaction |
-| `PaperButton` | Native accessible button with ink / quiet / outline treatments |
+Each component has a docs page in the Studio: live preview, install, usage, examples, keyboard notes and a props table taken from the source.
+
+| Component | Purpose | Docs |
+| --- | --- | --- |
+| `PaperSurface` | A semantic DOM container with optional paper shader, warm light treatment, and CSS fallback | [#paper-surface](https://paper-ui-react-lab.vercel.app/#paper-surface) |
+| `MaterialEffect` | A single GPU material layer selected from six presets | [#material-effect](https://paper-ui-react-lab.vercel.app/#material-effect) |
+| `PencilText` | Stroke-order animated handwriting using Tegaki | [#pencil-text](https://paper-ui-react-lab.vercel.app/#pencil-text) |
+| `PaperCard` | Tactile-but-subtle card with reduced-motion-friendly interaction | [#paper-card](https://paper-ui-react-lab.vercel.app/#paper-card) |
+| `PaperButton` | Native accessible button with ink / quiet / outline treatments | [#paper-button](https://paper-ui-react-lab.vercel.app/#paper-button) |
+
+The docs follow this repository's source; anything marked *unreleased* there is not in `0.1.0-alpha.1` yet.
 
 Six material modes: **Paper Texture**, **Grain Gradient Sphere**, **Blob**, **Wave**, **Dithering**, and **Halftone Dots**. Presets preserve the creator-selected source values and expose optional tuning.
 
@@ -92,7 +96,7 @@ First alpha was staged and approved manually with npm 2FA. The published registr
 ## Repository layout
 
 - `packages/paper-ui` — React components, materials, design tokens and distributable ESM package
-- `apps/studio` — interactive shader/handwriting laboratory and browser tests
+- `apps/studio` — interactive shader/handwriting laboratory, component docs (`src/docs`), `public/llms.txt` and browser tests
 - `docs/` — implementation architecture and pre-release QA gates
 
 ## Upstream projects

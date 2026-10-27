@@ -11,6 +11,7 @@ import {
 } from '@in-c0/paper-ui';
 import { useEffect, useState } from 'react';
 import koreanFont from 'tegaki/fonts/nanum-pen-script';
+import { DOCS } from './docs/pages.tsx';
 import './studio.css';
 
 type Mode = 'material' | 'handwriting';
@@ -277,28 +278,10 @@ export function StudioApp() {
     }
   }
 
-  const previewImage = imageUrl ?? '/halftone-study.svg';
+  const previewImage = imageUrl ?? `${import.meta.env.BASE_URL}halftone-study.svg`;
 
   return (
     <div className="studio-app">
-      <a className="studio-skip-link" href="#main">Skip to material preview</a>
-      <header className="studio-header">
-        <div className="studio-brand">
-          <span className="studio-brand__mark">w.</span>
-          <div>
-            <strong>paper / graphite</strong>
-            <span>an interactive material study</span>
-          </div>
-        </div>
-        <div className="studio-header__meta">
-          <span className="studio-status-dot" />
-          Whispers material library <span className="studio-header__division">/</span> 01
-        </div>
-        <a className="studio-header__source" href="https://github.com/in-c0/paper-ui" target="_blank" rel="noreferrer">
-          Source <span aria-hidden="true">↗</span>
-        </a>
-      </header>
-
       <div className="studio-layout">
         <nav className="studio-nav" aria-label="Components and materials">
           <div className="studio-nav__eyebrow">THE COLLECTION</div>
@@ -359,6 +342,19 @@ export function StudioApp() {
               ↗
             </span>
           </button>
+          <div className="studio-nav__group-title studio-nav__group-title--second studio-nav__docs-title">
+            COMPONENTS <span>{String(DOCS.length).padStart(2, '0')}</span>
+          </div>
+          <ul className="studio-nav__docs">
+            {DOCS.map((doc) => (
+              <li key={doc.id}>
+                <a href={'#' + doc.id}>
+                  <span>{doc.name}</span>
+                  <small>{doc.role}</small>
+                </a>
+              </li>
+            ))}
+          </ul>
           <div className="studio-nav__footer">
             <span className="studio-status-dot" /> experimental / open source
           </div>
@@ -453,6 +449,10 @@ export function StudioApp() {
               A work in progress, with actual materials.
               <br />
               Accessible DOM controls; a single shader canvas.
+              <br />
+              <a href={'#' + DOCS[0].id}>
+                Read the component docs <span aria-hidden="true">→</span>
+              </a>
             </p>
           </div>
         </main>
@@ -640,7 +640,7 @@ export function StudioApp() {
             <p className="studio-inspector__fineprint">
               Material studies using Paper Shaders and Tegaki. Experimental; not production-certified.
             </p>
-            <a className="studio-inspector__device-link" href="/?device-lab=1">
+            <a className="studio-inspector__device-link" href="?device-lab=1">
               Test on this device <span aria-hidden="true">↗</span>
             </a>
           </div>

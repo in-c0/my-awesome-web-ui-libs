@@ -1,0 +1,142 @@
+# Paper UI
+
+> Material-aware React components: one optional paper or gradient shader behind ordinary accessible DOM, and handwriting drawn stroke by stroke. npm package `@in-c0/paper-ui`, published as an experimental alpha (0.1.0-alpha.1, dist-tag `alpha`). Not production-certified.
+
+Status, stated plainly:
+- Experimental public alpha. Install with the explicit `@alpha` tag; `latest` points at a 0.0.0-stage placeholder.
+- Chromium browser tests cover mobile layout, keyboard, no-WebGL fallback and simulated context loss. Real-device GPU (iOS Safari, low-end Android), screen-reader, contrast and visual-regression audits are still open.
+- These docs follow the repository source. Items marked "unreleased" are in the source but not in the 0.1.0-alpha.1 tarball: `MaterialEffect` `renderMode`, offscreen/background-tab suspension, `data-shader-status`, context-loss recovery, the mobile pixel budget, forced-colours styles and `aria-pressed` button styling.
+- Paper UI is independent. It depends on Paper Shaders (`@paper-design/shaders-react` 0.0.81, Apache-2.0) for WebGL materials and Tegaki (`tegaki` 1.0.3, MIT) for handwriting. It is not a fork of either, and not a shadcn/ui registry.
+- The shaders are artistic: no physical lighting, paper physics or graphite simulation.
+
+## Install
+
+```sh
+npm install @in-c0/paper-ui@alpha react
+```
+
+Peer dependency: `react` >=18 <21. Import the stylesheet once in the app entry, or components render unstyled:
+
+```tsx
+import '@in-c0/paper-ui/styles.css';
+```
+
+To import a Tegaki font bundle yourself (for example `tegaki/fonts/nanum-pen-script` for Korean), also add `tegaki@1.0.3` to your own dependencies.
+
+## Rules
+
+- At most one live shader per view. Never mount one WebGL canvas per list item or card: use `PaperSurface texture={false}` or plain `PaperCard`s for anything repeated, and one `PaperSurface` or `MaterialEffect` behind a group.
+- Shader layers are `aria-hidden` and ignore the pointer. Controls and text stay in the DOM above them.
+- Without WebGL, the CSS fallback renders. `prefers-reduced-motion: reduce` sets animated shader speed to 0 and draws handwriting complete.
+- The six presets (`MATERIAL_PRESETS`, `WHISPERS_PAPER_PRESET`) are owner-approved source values, including alpha-bearing hex colours and seed 893. Do not edit them; override per instance with `material` or `tuning`.
+
+## Components
+
+### PaperSurface
+
+A `<div>` container with an optional Paper Shaders `PaperTexture` behind its content, a fixed CSS light wash and a CSS fibre fallback. Forwards all other `HTMLAttributes<HTMLDivElement>`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | | Content above the material. |
+| `texture` | `boolean` | `true` | Mount the shader when WebGL is available. Use on one large surface; `false` for repeated ones. |
+| `material` | `Partial<PaperTextureSettings>` | | Overrides spread over `WHISPERS_PAPER_PRESET` for this surface. |
+| `light` | `'desk' \| 'diffuse' \| 'none'` | `'desk'` | Fixed CSS overlay, not a lamp simulation. |
+| `tone` | `'paper' \| 'charcoal'` | `'paper'` | `'charcoal'` is dark with light ink and never mounts the shader. |
+| `className` | `string` | `''` | Extra classes. |
+| `style` | `CSSProperties` | | Inline style. |
+
+### MaterialEffect
+
+One decorative GPU material from six presets, behind DOM children. A `<div>` with `data-material-kind`; does not forward other attributes. Give it a height.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `kind` (required) | `MaterialKind` | | `'paper-texture'`, `'grain-sphere'`, `'grain-blob'`, `'grain-wave'`, `'dithering'` or `'halftone'`. |
+| `tuning` | `MaterialTuning` | | Numeric overrides, clamped; keys depend on kind (below). |
+| `image` | `string` | | Image URL, required for `'halftone'` to render; also shown as a decorative fallback `<img>`. |
+| `paused` | `boolean` | `false` | Speed 0. Forced on under reduced motion. |
+| `renderMode` (unreleased) | `'auto' \| 'fallback'` | `'auto'` | `'fallback'` never requests a GPU context. |
+| `className` | `string` | `''` | Extra classes. |
+| `style` | `CSSProperties` | | Inline style. |
+| `children` | `ReactNode` | | Content above the material. |
+
+Tuning keys and clamps:
+- paper-texture: `angle` 0–360, `roughness` 0–1, `wrinkles` 0–1, `blending` 0–1, `distortion` 0–1 (`blending` and `distortion` act on an image, which MaterialEffect does not pass, so they have no visible effect).
+- grain-sphere, grain-blob, grain-wave: `speed` 0–2, `intensity` 0–1, `noise` 0–1, `scale` 0.2–3.
+- dithering: `speed` 0–2, `size` 1–20, `scale` 0.2–3.
+- halftone: `size` 0–1, `contrast` 0–1, `scale` 0.2–3.
+
+### PencilText
+
+Handwriting drawn in stroke order by Tegaki's `TegakiRenderer`, as a `<span>`: an `aria-hidden` 2D canvas for the ink plus a transparent, selectable text layer. Does not forward other props.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` (required) | `string` | | The text. A plain string. |
+| `font` | `TegakiRendererProps['font']` | Caveat bundle | A Tegaki bundle or registered name, e.g. `tegaki/fonts/nanum-pen-script` for Korean. No automatic font substitution. |
+| `animate` | `boolean` | `true` | `false` draws the text complete. |
+| `size` | `number \| string` | `'2.2rem'` | CSS font-size. |
+| `color` | `string` | `'var(--paper-ui-ink)'` | Ink colour. |
+| `pressure` | `number` | `0.8` | 0–1, how far width follows the bundle's recorded pen pressure. |
+| `seed` | `number` | `893` | Seed for per-glyph variation. |
+| `className` | `string` | | Class for the root. |
+| `style` | `CSSProperties` | | Merged after size and colour. |
+
+The default Caveat bundle (~340 KB of font files) is always bundled with PencilText; Nanum Pen Script adds ~3.6 MB.
+
+### PaperCard
+
+An `<article>` with a hairline border and soft shadow, CSS only (no GPU). Forwards all other `HTMLAttributes<HTMLElement>`. Sets no padding.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` (required) | `ReactNode` | | Card content. |
+| `interactive` | `boolean` | `false` | Lift on hover (and, unreleased, focus-within). Visual only: adds no role, tabIndex or click handler. |
+| `raised` | `boolean` | `false` | Deeper resting shadow. |
+| `className` | `string` | `''` | Extra classes. |
+
+### PaperButton
+
+A native `<button>` with a forwarded ref; all other `ButtonHTMLAttributes` pass through.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `'ink' \| 'quiet' \| 'outline'` | `'quiet'` | Filled ink, no fill until hover, or a stone border. |
+| `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | Never submits a form unless set to `'submit'`. |
+| `className` | `string` | `''` | Extra classes. |
+| `ref` | `Ref<HTMLButtonElement>` | | Forwarded to the button. |
+
+## Other exports
+
+- `MATERIAL_KINDS`, `MATERIAL_PRESETS`, `WHISPERS_PAPER_PRESET`: read-only preset data.
+- `clampTuning(value, min, max)`: clamp helper; non-finite values return `min`.
+- `QUIET_TOKENS`, `PAPER_CSS_VARS`: colour tokens and the CSS variable names (`--paper-ui-paper`, `--paper-ui-ink`, `--paper-ui-stone`, `--paper-ui-accent`).
+- Types: `MaterialKind`, `MaterialTuning`, `PaperTextureSettings` and each component's props interface.
+
+## Example
+
+```tsx
+import '@in-c0/paper-ui/styles.css';
+import { PaperButton, PaperCard, PaperSurface, PencilText } from '@in-c0/paper-ui';
+
+export function Journal() {
+  return (
+    <PaperSurface light="desk" style={{ minHeight: 320, padding: 32 }}>
+      <PaperCard style={{ padding: 24, maxWidth: 360 }}>
+        <PencilText size="2rem">A little, over time.</PencilText>
+        <PaperButton variant="ink">Save note</PaperButton>
+      </PaperCard>
+    </PaperSurface>
+  );
+}
+```
+
+## Docs
+
+Component pages on this site: `#paper-surface`, `#material-effect`, `#pencil-text`, `#paper-card`, `#paper-button`. The home page is the interactive material Studio.
+
+- Source: https://github.com/in-c0/paper-ui
+- npm: https://www.npmjs.com/package/@in-c0/paper-ui
+- Release checklist: https://github.com/in-c0/paper-ui/blob/HEAD/docs/RELEASE_CHECKLIST.md
+- Third-party notices: https://github.com/in-c0/paper-ui/blob/HEAD/THIRD_PARTY_NOTICES.md

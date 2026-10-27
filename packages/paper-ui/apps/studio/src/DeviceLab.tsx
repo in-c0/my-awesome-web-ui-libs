@@ -245,7 +245,7 @@ export function DeviceLab() {
     <div className="device-lab">
       <a className="device-lab__skip" href="#device-lab-main">Skip to device test</a>
       <header className="device-lab__header">
-        <a href="/" className="device-lab__back">← Paper UI Studio</a>
+        <a href="./" className="device-lab__back">← Paper UI Studio</a>
         <span>WHISPERS / PAPER UI</span>
       </header>
       <main className="device-lab__main" id="device-lab-main">

@@ -47,7 +47,7 @@ export function highlight(code: string, lang: Lang = 'tsx'): string {
     else if (m[8])
       out += KW.has(m[8])
         ? `<span class="t-k">${m[8]}</span>`
-        : /^[A-Z]/.test(m[8])
+        : /^[A-Z][a-z\d]*[A-Z]|^[A-Z][A-Z_\d]+$/.test(m[8]) // a TypeName or CONSTANT, not a capitalised word in JSX text
           ? `<span class="t-t">${m[8]}</span>`
           : inTag
             ? `<span class="t-a">${m[8]}</span>`

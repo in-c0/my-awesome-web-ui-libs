@@ -10,8 +10,10 @@ import { disposer, line, mk, register, shadow, solid } from "../core/stage";
  * and its boss slide with the shaft, and a square restrictor gate engraved
  * round them shows how far it can go. Push past four tenths and the lamp of
  * that direction (one of eight, like the microswitches under a real stick)
- * lights. The shaft leans toward the pointer while dragging and, on release,
- * springs back to centre with a little overshoot.
+ * lights. Hovering, the stick leans a few percent toward the mouse; a press
+ * pushes the ball down on its shaft at once. The shaft follows the pointer
+ * while dragging and, on release, springs back to centre and wobbles a
+ * little past it before it settles.
  *
  * Semantics come from two visually hidden `<input type="range">`, one per
  * axis (-100…100), so each axis is a slider of its own to the keyboard,
@@ -72,9 +74,9 @@ export const joystick = define<JoystickOptions>({
 
     /** The world direction of a value: x along +x, y away from the viewer along -y. */
     const world = (v: JoystickValue): Vec2 => [v.x * D, -v.y * D];
-    /** Where the shaft's axis crosses height z, for a ball offset h. */
-    const axisAt = (h: Vec2, z: number): Vec3 => {
-      const up = Math.sqrt(Math.max(1, L * L - h[0] * h[0] - h[1] * h[1]));
+    /** Where the shaft's axis crosses height z, for a ball offset h (and the shaft `len` long, shorter while pressed). */
+    const axisAt = (h: Vec2, z: number, len = L): Vec3 => {
+      const up = Math.sqrt(Math.max(1, len * len - h[0] * h[0] - h[1] * h[1]));
       const t = (z - ZP) / up;
       return [h[0] * t, h[1] * t, z];
     };
@@ -135,11 +137,14 @@ export const joystick = define<JoystickOptions>({
     }));
     const DARK: Vec2 = [Math.SQRT1_2, Math.SQRT1_2]; // the shadow side of a round part, on screen
 
-    function drawStick(v: JoystickValue) {
-      const h = world(v);
-      const up = Math.sqrt(L * L - h[0] * h[0] - h[1] * h[1]);
+    // `press` 0…1 pushes the ball down its shaft (the spring under the plate gives a little)
+    const SINK = 2.4;
+    function drawStick(v: JoystickValue, press = 0) {
+      const len = L - press * SINK, h0 = world(v), k0 = len / L;
+      const h: Vec2 = [h0[0] * k0, h0[1] * k0];
+      const up = Math.sqrt(Math.max(1, len * len - h[0] * h[0] - h[1] * h[1]));
       const b: Vec3 = [h[0], h[1], ZP + up];
-      const o3 = axisAt(h, ZO);
+      const o3 = axisAt(h, ZO, len);
       // the shadow straight under the ball
       ballShadow.setAttribute("d", flat(P, circle(b[0] + 1, b[1] + 2, RB * 0.8, 24), PZ));
       washer.put(cyl(C, P, o3[0], o3[1], RW, PZ, ZW, 48));
@@ -159,7 +164,7 @@ export const joystick = define<JoystickOptions>({
       shades[3] = poly([at(A, -0.25), at(Bp, -0.25), at(Bp, -0.75), at(A, -0.75)]);
       shaft.put({ sil: s.sil, shades, top: "", crease: seg(at(A, -0.5), at(Bp, -0.5)) });
       // the collar the ball screws down onto
-      const w: Vec3 = [b[0] / L, b[1] / L, (b[2] - ZP) / L];
+      const w: Vec3 = [b[0] / len, b[1] / len, (b[2] - ZP) / len];
       const c0: Vec3 = [b[0] - w[0] * (RB + 1.1), b[1] - w[1] * (RB + 1.1), b[2] - w[2] * (RB + 1.1)];
       const c1: Vec3 = [b[0] - w[0] * (RB - 1), b[1] - w[1] * (RB - 1), b[2] - w[2] * (RB - 1)];
       const cb = bar(P, c0, c1, RS + 0.9, RS + 0.9, 24);
@@ -184,7 +189,12 @@ export const joystick = define<JoystickOptions>({
     const iy = nativeInput(ctx, { type: "range", min: "-100", max: "100", step: "10" });
     let value = clampV(o.value ?? o.defaultValue);
     let asked = value;
-    const sx = spring(value.x, { k: 260, c: 17, eps: 0.001 }), sy = spring(value.y, { k: 260, c: 17, eps: 0.001 });
+    // the return spring (ζ ≈ 0.4): back to centre with a small wobble past it
+    const REST = { k: 300, c: 14 }, HAND = { k: 900, c: 60 };
+    const sx = spring(value.x, { ...REST, eps: 0.001 }), sy = spring(value.y, { ...REST, eps: 0.001 });
+    const dip = spring(0, { k: 520, c: 22, eps: 0.003 }); // a press: quick, with a little bounce on release
+    let lean: JoystickValue = { x: 0, y: 0 }; // the hover lean, a few percent of travel toward the mouse
+    const LEAN = 0.07;
     const word = (n: number, plus: string, minus: string) => (n === 0 ? "centre" : `${Math.round(Math.abs(n) * 100)}% ${n > 0 ? plus : minus}`);
     const sync = () => {
       ix.value = String(Math.round(value.x * 100)); iy.value = String(Math.round(value.y * 100));
@@ -199,11 +209,13 @@ export const joystick = define<JoystickOptions>({
     };
     sync();
 
+    let drag = false;
     const B = register(host, (dt) => {
-      sx.t = value.x; sy.t = value.y;
-      const m = stepS(sx, dt), n = stepS(sy, dt);
-      drawStick({ x: sx.x, y: sy.x });
-      return m || n;
+      sx.t = value.x + (drag ? 0 : lean.x); sy.t = value.y + (drag ? 0 : lean.y);
+      dip.t = drag ? 1 : 0;
+      const m = stepS(sx, dt), n = stepS(sy, dt), q = stepS(dip, dt);
+      drawStick({ x: sx.x, y: sy.x }, dip.x);
+      return m || n || q;
     });
     bag.add(B.unregister);
 
@@ -222,7 +234,6 @@ export const joystick = define<JoystickOptions>({
 
     // pointer: the ball goes where the pointer is, on the plane through its centre, clamped to the gate
     host.setAttribute("data-knurl-hit", "");
-    let drag = false;
     const ptr = (e: PointerEvent, z: number): Vec2 => {
       const r = svg.getBoundingClientRect();
       return unproj(C, ((e.clientX - r.left) / (r.width || 1)) * VW, ((e.clientY - r.top) / (r.height || 1)) * VH, z);
@@ -234,18 +245,27 @@ export const joystick = define<JoystickOptions>({
       const onPlate = Math.abs(px) <= PH && Math.abs(py) <= PH, onBall = Math.abs(bx) <= D + RB && Math.abs(by) <= D + RB;
       if (!onPlate && !onBall) return;
       drag = true;
+      lean = { x: 0, y: 0 };
       host.setPointerCapture?.(e.pointerId);
       (Math.abs(by) > Math.abs(bx) ? iy : ix).focus({ preventScroll: true });
-      sx.k = sy.k = 900; sx.c = sy.c = 60; // follow a hand closely
+      sx.k = sy.k = HAND.k; sx.c = sy.c = HAND.c; // follow a hand closely
       ball.lit(true);
       ask(valueAt(e));
       e.preventDefault();
     });
-    bag.on(host, "pointermove", (e) => { if (drag) ask(valueAt(e)); });
+    bag.on(host, "pointermove", (e) => {
+      if (drag) { ask(valueAt(e)); return; }
+      if (e.pointerType !== "mouse" || opts.disabled) return;
+      // anticipation: lean toward the mouse, more the further out it is, never past LEAN
+      const p = valueAt(e), m = Math.hypot(p.x - value.x, p.y - value.y), f = m > 0.02 ? (LEAN * Math.min(1, m)) / m : 0;
+      lean = { x: (p.x - value.x) * f, y: (p.y - value.y) * f };
+      B.wake();
+    });
+    bag.on(host, "pointerleave", () => { if (lean.x || lean.y) { lean = { x: 0, y: 0 }; B.wake(); } });
     const end = () => {
       if (!drag) return;
       drag = false;
-      sx.k = sy.k = 260; sx.c = sy.c = 17; // the return spring: a little overshoot
+      sx.k = sy.k = REST.k; sx.c = sy.c = REST.c; // the return spring: a little wobble
       ball.lit(false);
       if (opts.returnToCenter !== false) ask({ x: 0, y: 0 });
       commit();

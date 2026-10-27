@@ -12,7 +12,10 @@ import { disposer, line, mk, register, shadow, solid, type Solid } from "../core
  * lands; the stack grows to ten sheets and then only shifts. Every sheet
  * carries its file's type on its corner. While a drag hovers over it the rim
  * lights and a ghost sheet hangs over the stack where the next will land; a
- * file it can't take makes the tray shake its head.
+ * file it can't take makes the tray shake its head. Hovering with the mouse
+ * lifts the top sheet a hair (an empty tray shows where one would land); a
+ * press sinks the tray onto its rubber feet at once, the top sheets hop, and
+ * on release it bounces back up.
  *
  * Semantics come from a visually hidden `<input type="file">`, opened by a
  * visually hidden "Choose files" `<button>`, and a polite live region.
@@ -131,12 +134,14 @@ export const tray = define<TrayOptions>({
     fit(C, ext, VW / 2, VH / 2, VW - 16, VH - 14);
     const P = proj(C);
     const root = mk("g", {}, svg);
+    // the shadow and the feet stay on the desk; the tray above them sinks onto them when pressed
+    const baseG = mk("g", {}, root);
     const g = mk("g", {}, root);
 
     // feet, floor, the back panel and the left side
-    shadow(g, flat(P, rrect(-TX, -TY + 3, TX, TY + 3, 2), 0));
+    shadow(baseG, flat(P, rrect(-TX, -TY + 3, TX, TY + 3, 2), 0));
     for (const [x, y] of [[-TX + 3, -TY + 3], [TX - 3, -TY + 3], [-TX + 3, TY - 3], [TX - 3, TY - 3]]) {
-      solid(g).put(cyl(C, P, x, y, 1.7, 0, Z0, 20));
+      solid(baseG).put(cyl(C, P, x, y, 1.7, 0, Z0, 20));
     }
     solid(g).put(slab(C, P, -TX + WT - 0.2, -TY + WT - 0.2, TX - WT + 0.2, TY - WT + 0.2, 0.6, Z0, FZ));
     const backPanel = solid(g);
@@ -214,14 +219,15 @@ export const tray = define<TrayOptions>({
       return { ord, legend, z: spring(z, { k: 150, c: 22, eps: 0.004 }), t0, g: sg, body, print, text, key: "" };
     }
 
-    function drawSheet(s: Sheet, rest: number) {
-      const air = Math.max(0, s.z.x - rest);
+    /** `up` lifts it off its place without moving its spring: a hover or a hop. */
+    function drawSheet(s: Sheet, rest: number, up = 0) {
+      const z = s.z.x + up, air = Math.max(0, z - rest);
       const a = turnOf(s.ord) + air * 0.022 * (rnd(s.ord, 5) > 0.5 ? 1 : -1);
-      const [ox, oy] = offOf(s.ord), cx = ox + air * 0.08, cy = oy - air * 0.05, zt = s.z.x + TH;
+      const [ox, oy] = offOf(s.ord), cx = ox + air * 0.08, cy = oy - air * 0.05, zt = z + TH;
       const key = [a, cx, cy, zt].map((n) => n.toFixed(3)).join();
       if (key === s.key) return;
       s.key = key;
-      const b = cuboid([cx, cy, s.z.x + TH / 2], SX, SY, TH / 2, rot("z", a));
+      const b = cuboid([cx, cy, z + TH / 2], SX, SY, TH / 2, rot("z", a));
       s.body.put(poly3(C, P, b.verts, b.faces));
       const ca = Math.cos(a), sa = Math.sin(a);
       const o: Vec3 = [cx - SX * ca + SY * sa, cy - SX * sa - SY * ca, zt];
@@ -253,7 +259,12 @@ export const tray = define<TrayOptions>({
     let depthN = 0, over = false;
     const hov = spring(0, { k: 200, c: 26, eps: 0.004 });
     const wob = spring(0, { k: 700, c: 9, eps: 0.004 });
-    const thump = spring(0, { k: 600, c: 16, eps: 0.004 }); // a press: the tray dips on its feet and bounces
+    // a press: the tray sinks onto its feet at once (0…1) and bounces back up past rest on release (ζ ≈ 0.39)
+    const thump = spring(0, { k: 520, c: 18, eps: 0.004 });
+    const hop = spring(0, { k: 300, c: 9, eps: 0.004 }); // the top sheets' hop off the stack when the tray drops under them (ζ ≈ 0.26)
+    const hv = spring(0, { k: 300, c: 16, eps: 0.004 }); // mouse hover, 0…1
+    let pressed = false, hovered = false;
+    const SINK = 1.1, HOVER_LIFT = 0.7; // world units
 
     const restOf = (i: number) => FZ + i * TH;
     /** Brings the sheets in line with the count: new ones fall in from above, staggered; gone ones lift off the top. */
@@ -286,23 +297,33 @@ export const tray = define<TrayOptions>({
     }
 
     const wx = P(1, 0, 0), w0 = P(0, 0, 0), foot = P(0, TY, 0), WX: Vec2 = [wx[0] - w0[0], wx[1] - w0[1]];
-    let lastWob = NaN, lit = false;
+    const z1 = P(0, 0, 1), UP: Vec2 = [z1[0] - w0[0], z1[1] - w0[1]];
+    let lastWob = NaN, lastThump = NaN, lit = false;
     const B = register(host, (dt, now) => {
       let moving = false;
+      thump.t = pressed ? 1 : 0;
+      hv.t = hovered && !over ? 1 : 0;
+      for (const sp of [thump, hop, hv]) if (stepS(sp, dt)) moving = true;
       sheets.forEach((s, i) => {
         if (now < s.t0) { s.g.style.display = "none"; moving = true; return; }
         s.g.style.display = "";
         const rest = restOf(i);
         if (stepS(s.z, dt)) moving = true;
+        // the top sheet answers a hover; the top three hop on a press, less the lower they are (they only ever leave the stack upward)
+        const fromTop = sheets.length - 1 - i;
+        const up = (fromTop === 0 ? hv.x * HOVER_LIFT : 0) + (fromTop < 3 ? Math.max(0, hop.x) * 0.55 ** fromTop : 0);
         // over the front panel's top it is in front of that panel; over the back's, in front of the sides too
-        const parent = s.z.x > HB + 0.3 ? airG : s.z.x > HF + 0.3 ? midG : stackG;
+        const z = s.z.x + up;
+        const parent = z > HB + 0.3 ? airG : z > HF + 0.3 ? midG : stackG;
         if (s.g.parentNode !== parent) parent.appendChild(s.g);
-        drawSheet(s, rest);
+        drawSheet(s, rest, up);
       });
       // the ghost over the stack, and a dashed outline where it will land
       hov.t = over ? 1 : 0;
       if (stepS(hov, dt)) moving = true;
       const top = restOf(Math.min(sheets.length, STACK));
+      // an empty tray under the mouse shows, faintly, where a sheet would land
+      const hint = sheets.length ? 0 : hv.x * 0.4;
       if (hov.x > 0.002) {
         const bob = over && !reducedMotion() ? Math.sin(now / 420) * 0.5 : 0;
         if (over && !reducedMotion()) moving = true;
@@ -316,15 +337,24 @@ export const tray = define<TrayOptions>({
         land.setAttribute("d", flat(P, rrect(-SX, -SY, SX, SY, 0.2), top));
         ghost.style.opacity = hov.x.toFixed(3);
         land.style.opacity = hov.x.toFixed(3);
-      } else if (ghost.style.opacity !== "0") { ghost.style.opacity = "0"; land.setAttribute("d", ""); }
+      } else if (hint > 0.002) {
+        if (ghost.style.opacity !== "0") ghost.style.opacity = "0";
+        land.setAttribute("d", flat(P, rrect(-SX, -SY, SX, SY, 0.2), top));
+        land.style.opacity = hint.toFixed(3);
+      } else if (ghost.style.opacity !== "0" || land.getAttribute("d")) { ghost.style.opacity = "0"; land.setAttribute("d", ""); }
       if (lit !== over) { lit = over; for (const s of [backPanel, leftPanel, rightPanel, front]) s.lit(over); }
       // a head-shake along the tray's width
       if (stepS(wob, dt)) moving = true;
-      if (stepS(thump, dt)) moving = true;
-      if (wob.x + thump.x * 7 !== lastWob) {
-        lastWob = wob.x + thump.x * 7;
+      if (wob.x !== lastWob) {
+        lastWob = wob.x;
         // slides along its width and rocks a little on its feet
-        root.setAttribute("transform", wob.x === 0 && thump.x === 0 ? "" : `translate(${(WX[0] * wob.x).toFixed(2)} ${(WX[1] * wob.x + thump.x).toFixed(2)}) rotate(${(wob.x * 0.9).toFixed(2)} ${foot[0].toFixed(2)} ${foot[1].toFixed(2)})`);
+        root.setAttribute("transform", wob.x === 0 ? "" : `translate(${(WX[0] * wob.x).toFixed(2)} ${(WX[1] * wob.x).toFixed(2)}) rotate(${(wob.x * 0.9).toFixed(2)} ${foot[0].toFixed(2)} ${foot[1].toFixed(2)})`);
+      }
+      // the press: the tray sinks onto its feet (they stay put) and, let go, bounces up past rest
+      if (thump.x !== lastThump) {
+        lastThump = thump.x;
+        const d = -thump.x * SINK;
+        if (thump.x === 0) g.removeAttribute("transform"); else g.setAttribute("transform", `translate(${(UP[0] * d).toFixed(2)} ${(UP[1] * d).toFixed(2)})`);
       }
       return moving;
     });
@@ -382,11 +412,26 @@ export const tray = define<TrayOptions>({
     });
     const pick = () => { if (!opts.disabled) input.click(); };
     bag.on(button, "click", pick);
+    // the press: the tray gives way the moment it is touched; the paper, left behind, hops
+    const press = (on: boolean) => {
+      if (pressed === on) return;
+      pressed = on;
+      if (!reducedMotion()) hop.v += on ? 16 : 6;
+      B.wake();
+    };
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0) return;
       button.focus({ preventScroll: true });
-      if (!reducedMotion()) { thump.v += 30; B.wake(); }
+      press(true);
     });
+    bag.on(host, "pointerup", () => press(false));
+    bag.on(host, "pointercancel", () => press(false));
+    bag.on(host, "pointerenter", (e) => { if (e.pointerType === "mouse") { hovered = true; B.wake(); } });
+    bag.on(host, "pointerleave", () => { press(false); if (hovered) { hovered = false; B.wake(); } });
+    // the keyboard presses it too, as a key would
+    bag.on(button, "keydown", (e) => { if (!opts.disabled && (e.key === " " || e.key === "Enter")) press(true); });
+    bag.on(button, "keyup", () => press(false));
+    bag.on(button, "blur", () => press(false));
     bag.on(host, "click", (e) => { if (e.target === input || e.target === button) return; pick(); });
 
     bag.add(() => {

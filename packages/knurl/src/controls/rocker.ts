@@ -7,12 +7,15 @@ import { disposer, line, mk, register, shadow, solid, toView } from "../core/sta
  * Rocker — a checkbox, built as a panel-mount rocker switch.
  *
  * A moulded bezel on a flange, screwed to a plate; the paddle sits in the
- * bezel's opening and rocks on its axle about 12° each way, the pressed end
+ * bezel's opening and rocks on its axle 15° each way, the pressed end
  * dipping under the bezel's lip and the other standing proud. "I" and "O"
  * are engraved on its two ends, and a lens window beside the axle lights
  * with the accent when on. Indeterminate sets the paddle level: a centre-off
- * rocker. Pressing either half throws it to that end; hovering a raised half
- * leans the paddle a little toward it.
+ * rocker. Hovering leans the paddle a few degrees toward the way a click
+ * would throw it; pressing pushes it most of the way there at once, and
+ * letting go throws it home against its stop, where it rebounds a little.
+ * Pressing either half throws it to that end; Space presses it from the
+ * keyboard.
  *
  * Semantics come from a visually hidden `<input type="checkbox">` (with its
  * `indeterminate` state).
@@ -29,7 +32,9 @@ export type RockerOptions = BaseOptions & {
 };
 
 const VW = 200, VH = 140;
-const TILT = 12; // degrees each way from level
+const TILT = 15; // degrees each way from level
+const LEAN = 4.5; // how far a hover tips it toward a click's throw
+const PUSH = 0.65; // how much of the throw a held press takes
 let uid = 0;
 
 /** Even-odd point-in-polygon, in screen units. */
@@ -58,7 +63,7 @@ export const rocker = define<RockerOptions>({
     const FX = 24, FY = 16, FZ = PZ + 1.1;               // flange
     const BX = 21, BY = 13, BR = 2.6, ZT = FZ + 3.4;     // bezel and its top
     const OX = 17.2, OY = 9.4, DEP = 3.4;                // opening, and how far its walls show
-    const L = 16, W = 8.1, H = 3.4, D = 4.4, CH = 1.5;   // paddle half-length, half-width, height above and below the axle, end chamfer
+    const L = 16, W = 8.1, H = 3.4, D = 5.2, CH = 1.5;   // paddle half-length, half-width, height above and below the axle, end chamfer
     const ZA = ZT + 0.6;                                 // the axle
     const ext: Vec3[] = [[-PX, -PY, 0], [PX, PY, 0], [-PX, PY, 0], [PX, -PY, 0], [-PX, -PY, PZ], [-L, -W, ZA + 7.2], [-L, W, ZA + 7.2], [L, -W, ZA + 7.2]];
     fit(C, ext, VW / 2, VH / 2 + 3, VW - 22, VH - 18);
@@ -145,13 +150,21 @@ export const rocker = define<RockerOptions>({
     let opts = o;
     let on = !!(o.checked ?? o.defaultChecked);
     let mixed = !!o.indeterminate;
-    let hover = 0; // +1 over the I half, −1 over the O half
+    let over = false, hover = 0; // the mouse is on the switch; +1 over the I half, −1 over the O half, 0 the bezel
+    let held: boolean | null = null; // the state a press in progress would throw it to
+    let still: { x: number; y: number } | null = null; // where a press was let go: no lean until the mouse moves on, so the throw lands on its stop
     const base = () => (mixed ? 0 : on ? TILT : -TILT);
+    /** Where a click with the pointer over half `h` throws it: the raised half to its end, the lowered half or the bezel the other way. */
+    const would = (h: number) => (mixed ? h >= 0 : !on);
+    const end = (s: boolean) => (s ? TILT : -TILT);
     const target = () => {
-      const down = !mixed && ((hover > 0 && on) || (hover < 0 && !on));
-      return base() + (hover && !down ? hover * 2.5 : 0);
+      const b = base();
+      if (held !== null) return b + (end(held) - b) * PUSH;
+      return over && !still ? b + Math.sign(end(would(hover)) - b) * LEAN : b;
     };
+    // a throw: a lively spring, with the stop at each end turning its overshoot into a rebound; a held press: a firmer one, so it gives way without bouncing
     const sp = spring(base(), { k: 400, c: 16, eps: 0.02 });
+    const stop = (x: number) => (x > TILT ? 2 * TILT - x : x < -TILT ? -2 * TILT - x : x);
 
     const sync = () => {
       input.checked = on;
@@ -168,8 +181,9 @@ export const rocker = define<RockerOptions>({
 
     const B = register(host, (dt) => {
       sp.t = target();
+      sp.c = held !== null ? 30 : 16;
       const moving = stepS(sp, dt);
-      drawPaddle(sp.x);
+      drawPaddle(stop(sp.x));
       return moving;
     });
     bag.add(B.unregister);
@@ -194,8 +208,22 @@ export const rocker = define<RockerOptions>({
       const wants = h > 0 ? true : h < 0 ? false : null;
       ask(mixed ? wants ?? true : wants === null || wants === on ? !on : wants);
     });
-    bag.on(host, "pointermove", (e) => { if (e.pointerType !== "mouse") return; const h = halfAt(e); if (h !== hover) { hover = h; B.wake(); } });
-    bag.on(host, "pointerleave", () => { hover = 0; B.wake(); });
+    const hold = (s: boolean | null) => { if (s !== held) { held = s; B.wake(); } };
+    bag.on(host, "pointermove", (e) => {
+      if (e.pointerType !== "mouse") return;
+      if (still && Math.hypot(e.clientX - still.x, e.clientY - still.y) > 6) { still = null; B.wake(); }
+      const h = halfAt(e);
+      if (h !== hover || !over) { hover = h; over = true; B.wake(); }
+    });
+    bag.on(host, "pointerleave", () => { hover = 0; over = false; still = null; hold(null); B.wake(); });
+    // a press gives way at once toward the end it will throw to; the click on release commits it
+    bag.on(host, "pointerdown", (e) => { if (opts.disabled || e.button !== 0 || e.target === input) return; hold(would(halfAt(e))); });
+    bag.on(host, "pointerup", (e) => { if (held !== null) still = { x: e.clientX, y: e.clientY }; hold(null); });
+    bag.on(host, "pointercancel", () => hold(null));
+    // Space: held down while the key is (the native checkbox then flips `checked` on keyup, from mixed too)
+    bag.on(input, "keydown", (e) => { if (e.key === " " && !opts.disabled) hold(!on); });
+    bag.on(input, "keyup", (e) => { if (e.key === " ") hold(null); });
+    bag.on(input, "blur", () => hold(null));
 
     bag.add(() => { input.remove(); host.removeAttribute("data-knurl-hit"); host.removeAttribute("data-state"); svg.replaceChildren(); });
 

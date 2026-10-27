@@ -14,6 +14,13 @@ import { disposer, line, mk, register, shadow, solid } from "../core/stage";
  * The dial follows the clock, not the frames, so it turns smoothly between
  * whole-second updates even when the value is controlled.
  *
+ * Winding is a ratchet: the dial clicks on to each whole minute with a small
+ * overshoot, rebounding off its stops at zero and a full turn, and the
+ * striker twitches at each click. Hovering eases the dial a degree or two
+ * the way it winds; pressing sinks it under the hand and takes up a little
+ * more, and it settles back when let go. A large jump set from outside
+ * glides there instead of overshooting.
+ *
  * Semantics: the host carries role="timer"; winding is a visually hidden
  * `<input type="range">` in whole minutes whose `aria-valuetext` is the time
  * left ("12 minutes 30 seconds").
@@ -64,6 +71,7 @@ export const timer = define<TimerOptions>({
     const C = camera(45, 34);
     // body radius, foot height, deck height; dial ring radius and top; cap radius and top
     const RB = 32, ZF = 2.4, ZK = 14, RD = 25, ZD = ZK + 2.6, RC = 12.5, ZC = ZD + 1.4;
+    const ZD0 = ZD, ZC0 = ZC; // the dial's face and cap at rest (a press sinks them)
     const ext: Vec3[] = [[0, 0, ZC + 7.2], [-20, -20, ZK + 8]]; // the grip's top, the bell's knop
     for (let k = 0; k < 16; k++) { const a = (k / 16) * TAU; ext.push([Math.cos(a) * RB, Math.sin(a) * RB, 0], [Math.cos(a) * RB, Math.sin(a) * RB, ZK]); }
     fit(C, ext, VW / 2, VH / 2 + 2, VW - 18, VH - 14);
@@ -133,17 +141,15 @@ export const timer = define<TimerOptions>({
     }
 
     // the dial ring: its side, ribbed, turning; its face with the minutes; the arc of time left
-    solid(g).put(cyl(C, P, 0, 0, RD, ZK, ZD, 96));
+    const ring = solid(g);
     const ribs = line(g, "lo");
-    mk("path", { class: "k-face", d: flat(P, circle(0, 0, RD - 0.9, 96), ZD) }, g);
+    const face = mk("path", { class: "k-face" }, g);
     const minor = line(g, "mid"), major = line(g, "hi"), zero = line(g, "hi");
     const left = line(g, "accent");
     const digits = mk("g", {}, g);
     let labels: { el: SVGTextElement; m: number }[] = [];
     // the cap and its winding grip, turning with the dial
-    solid(g).put(cyl(C, P, 0, 0, RC + 0.8, ZD, ZD + 0.4, 64));
-    solid(g).put(cyl(C, P, 0, 0, RC, ZD + 0.4, ZC, 64));
-    line(g, "lo").setAttribute("d", flat(P, circle(0, 0, RC - 2, 56), ZC));
+    const flange = solid(g), cap = solid(g), capRim = line(g, "lo");
     const grip = solid(g), dimples = line(g, "lo");
     // the fixed index: a post on the deck and a pointer plate reaching over the dial's edge
     const iR = rot("z", AI);
@@ -172,9 +178,15 @@ export const timer = define<TimerOptions>({
       return { mm, step: mm <= 60 ? 1 : every / 5, every };
     }
 
-    /** The dial turned to φ: minute m sits at φ − 2π·m/mm, so winding turns it clockwise on screen. */
-    function drawDial(phi: number) {
+    /** The dial turned to φ and pushed down by `dz`: minute m sits at φ − 2π·m/mm, so winding turns it clockwise on screen. */
+    function drawDial(phi: number, dz: number) {
       const { mm, step, every } = scale();
+      const ZD = ZD0 - dz, ZC = ZC0 - dz;
+      ring.put(cyl(C, P, 0, 0, RD, ZK, ZD, 96));
+      face.setAttribute("d", flat(P, circle(0, 0, RD - 0.9, 96), ZD));
+      flange.put(cyl(C, P, 0, 0, RC + 0.8, ZD, ZD + 0.4, 64));
+      cap.put(cyl(C, P, 0, 0, RC, ZD + 0.4, ZC, 64));
+      capRim.setAttribute("d", flat(P, circle(0, 0, RC - 2, 56), ZC));
       const mi: string[] = [], ma: string[] = [];
       for (let m = 0; m < mm - 1e-6; m += step) {
         const a = phi - (TAU * m) / mm, c = Math.cos(a), s = Math.sin(a), big = Math.abs(m / every - Math.round(m / every)) < 1e-6;
@@ -283,25 +295,40 @@ export const timer = define<TimerOptions>({
       B.wake();
     }
 
-    const sp = spring(AI + (TAU * held) / max, { k: 300, c: 34, eps: 0.0004 });
-    let drawn = NaN;
+    // the ratchet: a lively spring (ζ ≈ 0.45) that carries a little past each minute and settles back; a jump of more than a few
+    // minutes from outside the hand (a new value, a long keyboard step) glides there on a damped one instead
+    const LIVELY = 17, GLIDE = 34;
+    const sp = spring(AI + (TAU * held) / max, { k: 360, c: LIVELY, eps: 0.0004 });
+    const sink = spring(0, { k: 520, c: 22, eps: 0.005 }); // the dial under a pressing hand
+    const SINK = 0.9, SLACK = rad(1.6); // how far a press sinks it; how far a hover eases it round (a press, twice that)
+    let hover = false, pressed = false, glide = false, clickAt = -1e9;
+    let drawn = NaN, drawnZ = NaN;
+    const stops = () => [AI, AI + (TAU * Math.floor(max / 60) * 60) / max];
+    const stop = (x: number) => { const [a0, a1] = stops(); return x < a0 ? 2 * a0 - x : x > a1 ? 2 * a1 - x : x; };
     const B = register(host, (dt, now) => {
       clock(now);
       const r = rem(now);
       // controlled: shown between the value and a second below it, however late the next value is
       const shown = ctrl() ? Math.min(prop, Math.max(r, prop - 1)) : r;
-      sp.t = AI + (TAU * shown) / max;
-      const m = stepS(sp, dt);
-      if (!(Math.abs(sp.x - drawn) < 1e-4)) { drawn = sp.x; drawDial(sp.x); }
+      const t = AI + (TAU * shown) / max;
+      if (Math.abs(t - (sp.t - slack())) > rad(13) && !dragging) glide = true;
+      sp.t = t + slack();
+      sp.c = glide ? GLIDE : LIVELY;
+      sink.t = pressed ? SINK : 0;
+      const m = stepS(sp, dt), n = stepS(sink, dt);
+      if (!m) glide = false;
+      if (!(Math.abs(sp.x - drawn) < 1e-4) || sink.x !== drawnZ) { drawn = sp.x; drawnZ = sink.x; drawDial(stop(sp.x), sink.x); }
       // the bell: a fast rattle that dies away
       const ra = (now - ringAt) / RING_MS, was = ringing;
       ringing = ra >= 0 && ra < 1;
       const w = ringing && !reducedMotion() ? Math.sin(((now - ringAt) / 1000) * TAU * 14) * (1 - ra) : 0;
-      drawBell(w * 0.3, Math.max(0, w) ** 0.6);
+      // each click of the ratchet flicks the striker toward the bell and lets it go
+      const ck = (now - clickAt) / 140, flick = ck >= 0 && ck < 1 && !reducedMotion() ? 0.22 * Math.sin(ck * Math.PI) * (1 - ck) : 0;
+      drawBell(w * 0.3, Math.max(Math.max(0, w) ** 0.6, flick));
       bell.lit(ringing);
       if (ringing !== was) sync();
       const stalled = ctrl() && r <= prop - 2 + HOLD + 1e-6;
-      return (endAt !== null && !stalled) || m || ringing;
+      return (endAt !== null && !stalled) || m || n || flick > 0 || ringing;
     });
     bag.add(B.unregister);
     bag.add(() => { if (to) clearTimeout(to); to = 0; });
@@ -313,6 +340,7 @@ export const timer = define<TimerOptions>({
       const next = Math.min(Math.floor(max / 60) * 60, Math.round(clampS(v) / 60) * 60);
       if (next === cur) { sync(); return; }
       if (opts.controlled) { sync(); emit(opts.onValueChange, next); return; }
+      if (Math.abs(next - cur) <= 180) { glide = false; clickAt = now0(); }
       set(next, now0());
       emit(opts.onValueChange, next);
     };
@@ -325,12 +353,15 @@ export const timer = define<TimerOptions>({
       return Math.hypot(x, y) > RB + 6 ? null : Math.atan2(y, x);
     };
     let drag: { a: number; turn: number; v: number } | null = null;
+    /** How far the dial is eased round the way it winds: a little under a hovering mouse, more under a press; none at the full-turn stop. */
+    function slack() { return cur >= Math.floor(max / 60) * 60 ? 0 : pressed ? 2 * SLACK : hover ? SLACK : 0; }
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0) return;
       const a = angleAt(e);
       if (a === null) return;
       const now = now0();
       dragging = true;
+      pressed = true; glide = false;
       restart(now); // holds the clock while a hand is on the dial
       drag = { a, turn: 0, v: Math.round(held / 60) * 60 };
       host.setPointerCapture?.(e.pointerId);
@@ -340,14 +371,20 @@ export const timer = define<TimerOptions>({
       B.wake();
     });
     bag.on(host, "pointermove", (e) => {
-      if (!drag) return;
+      if (!drag) {
+        if (e.pointerType !== "mouse" || opts.disabled) return;
+        const h = angleAt(e) !== null;
+        if (h !== hover) { hover = h; B.wake(); }
+        return;
+      }
       const a = angleAt(e) ?? drag.a;
       let d = a - drag.a;
       if (d > Math.PI) d -= TAU; else if (d < -Math.PI) d += TAU;
       drag.turn += d; drag.a = a;
       ask(drag.v + (drag.turn / TAU) * max);
     });
-    const end = () => { if (!drag) return; drag = null; dragging = false; restart(now0()); sync(); B.wake(); };
+    const end = () => { if (!drag) return; drag = null; dragging = false; pressed = false; restart(now0()); sync(); B.wake(); };
+    bag.on(host, "pointerleave", () => { if (hover) { hover = false; B.wake(); } });
     bag.on(host, "pointerup", end);
     bag.on(host, "pointercancel", end);
     bag.on(host, "wheel", (e) => {
@@ -366,6 +403,7 @@ export const timer = define<TimerOptions>({
           const v = clampS(next.value), r = rem(now);
           prop = v;
           // a value the running clock agrees with (within the second it last reported) keeps the clock going
+          if (dragging && Math.abs(v - cur) <= 180 && whole(v) !== cur) clickAt = now; // a controlled wind clicks too
           if (dragging || !(r > v - 1 && r <= v + 1e-6)) set(v, now);
           else cur = whole(v);
         } else prop = NaN;

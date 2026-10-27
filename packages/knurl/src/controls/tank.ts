@@ -1,5 +1,5 @@
 import { add3, camera, circle, cross3, cuboid, cyl, dot3, fit, flat, hull, lighting, loft, planeMatrix, poly, poly3, proj, rad, rot, rrect, scale3, seg, slab, sub3, toViewer, SHADES, type Camera, type Projector, type SolidPaths, type Vec2, type Vec3 } from "../core/iso";
-import { spring, stepS } from "../core/motion";
+import { reducedMotion, spring, stepS } from "../core/motion";
 import { define, num, type BaseOptions } from "../core/control";
 import { disposer, line, mk, register, shadow, solid } from "../core/stage";
 
@@ -11,9 +11,13 @@ import { disposer, line, mk, register, shadow, solid } from "../core/stage";
  * through a gate valve with a handwheel, and a drain valve stands off the
  * bottom. On the near side a gauge board carries a sight glass between two
  * mounting blocks: the liquid column in it rises and falls to the value on a
- * slow, underdamped spring, so it overshoots a touch and the surface tilts
- * as it sloshes. Graduations run beside the glass, and accent pointers mark
- * the optional low and high thresholds. A knock on the tank sets it sloshing.
+ * slow, underdamped spring, so it overshoots and the surface tilts as it
+ * sloshes, settling in about a second and a half. Graduations run beside the
+ * glass, and accent pointers mark the optional low and high thresholds. A
+ * knock on the tank sets the surface rocking away from the knocked side and
+ * runs a ripple across the meniscus. Hovering with a mouse widens the glint
+ * on the glass and sets the meniscus trembling, as if the tank had been
+ * touched. Neither changes the value or takes focus.
  *
  * Not focusable: the host carries role="meter" (or "progressbar") with its
  * aria values.
@@ -204,8 +208,8 @@ export const tank = define<TankOptions>({
     const glass = mk("g", { "clip-path": `url(#${id})` }, plane);
     const liquid = mk("path", { class: "k-dot lo" }, glass);
     const surface = mk("path", { class: "k-line mid" }, glass);
-    // the glass tube's highlight, over the liquid
-    mk("path", { class: "k-line lo", d: `M${WW * 0.28} 0.8V${WH - 0.8}M${WW * 0.78} 0.8V${WH - 0.8}` }, glass);
+    // the glass tube's highlight, over the liquid; it brightens under a hovering mouse
+    const shine = mk("path", { class: "k-line lo", d: `M${WW * 0.28} 0.8V${WH - 0.8}M${WW * 0.78} 0.8V${WH - 0.8}` }, glass);
     const meniscus = mk("path", { class: "k-line accent" }, plane);
     const scale = mk("g", {}, plane);
     const minor = mk("path", { class: "k-line mid" }, scale);
@@ -318,7 +322,11 @@ export const tank = define<TankOptions>({
     const lim = () => { const a = num(opts.min, 0), b = num(opts.max, 100); return [Math.min(a, b), Math.max(a, b)] as const; };
     const tOf = (v: number) => { const [a, b] = lim(); return b > a ? Math.max(0, Math.min(1, (v - a) / (b - a))) : 0; };
     let t = tOf(num(opts.value, lim()[0]));
-    const sp = spring(t, { k: 30, c: 7.6, eps: 0.0006 });
+    // ζ = 6 / (2·√36) = 0.5: it overshoots about 16% and settles inside 1.4 s
+    const sp = spring(t, { k: 36, c: 6, eps: 0.0006 });
+    // the surface's own motion: a slosh that tilts it (about 1.6 Hz, ζ 0.2) and a quicker ripple across it (about 4.5 Hz)
+    const sl = spring(0, { k: 100, c: 4, eps: 0.01 });
+    const rp = spring(0, { k: 800, c: 5.6, eps: 0.004 });
 
     function drawScale() {
       const [a, b] = lim(), span = b - a;
@@ -346,34 +354,57 @@ export const tank = define<TankOptions>({
     }
     drawScale();
 
-    let lastY = NaN, lastTilt = NaN;
-    function drawLevel(x: number, v: number) {
+    let lastY = NaN, lastTilt = NaN, lastRip = NaN;
+    /** The column at level x: its surface tilted (up on the right when positive) and rippled, both in glass units. */
+    function drawLevel(x: number, tilt: number, rip: number) {
       const y = WH * (1 - Math.max(0, Math.min(1, x)));
-      const tilt = Math.max(-0.9, Math.min(0.9, v * 3.2));
-      if (Math.abs(y - lastY) < 0.004 && Math.abs(tilt - lastTilt) < 0.004) return;
-      lastY = y; lastTilt = tilt;
-      const yl = y - tilt, yr = y + tilt, sag = 0.45;
-      liquid.setAttribute("d", `M-1 ${yl.toFixed(2)}Q${(WW / 2).toFixed(2)} ${(y + sag).toFixed(2)} ${WW + 1} ${yr.toFixed(2)}V${WH + 1}H-1Z`);
-      const top = `M0 ${(yl - 0.25).toFixed(2)}Q${(WW / 2).toFixed(2)} ${(y + sag).toFixed(2)} ${WW} ${(yr - 0.25).toFixed(2)}`;
-      surface.setAttribute("d", top);
-      meniscus.setAttribute("d", `M-0.5 ${(yl - 0.25).toFixed(2)}L0 ${(yl - 0.25).toFixed(2)}Q${(WW / 2).toFixed(2)} ${(y + sag).toFixed(2)} ${WW} ${(yr - 0.25).toFixed(2)}L${WW + 0.5} ${(yr - 0.25).toFixed(2)}`);
+      tilt = Math.max(-1.1, Math.min(1.1, tilt));
+      rip = Math.max(-0.7, Math.min(0.7, rip));
+      if (Math.abs(y - lastY) < 0.004 && Math.abs(tilt - lastTilt) < 0.004 && Math.abs(rip - lastRip) < 0.004) return;
+      lastY = y; lastTilt = tilt; lastRip = rip;
+      const f = (n: number) => n.toFixed(2);
+      const yl = y + tilt, yr = y - tilt, sag = 0.45;
+      // the meniscus's sag, with a ripple standing across it: one control point up, the other down
+      const curve = (d: number) => `C${f(WW / 3)} ${f(y + sag + rip + d)} ${f((2 * WW) / 3)} ${f(y + sag - rip + d)}`;
+      liquid.setAttribute("d", `M-1 ${f(yl)}${curve(0)} ${f(WW + 1)} ${f(yr)}V${WH + 1}H-1Z`);
+      surface.setAttribute("d", `M0 ${f(yl - 0.25)}${curve(-0.1)} ${f(WW)} ${f(yr - 0.25)}`);
+      meniscus.setAttribute("d", `M-0.5 ${f(yl - 0.25)}L0 ${f(yl - 0.25)}${curve(-0.1)} ${f(WW)} ${f(yr - 0.25)}L${f(WW + 0.5)} ${f(yr - 0.25)}`);
     }
 
     const B = register(host, (dt) => {
       sp.t = t;
+      const v0 = sp.v;
       const m = stepS(sp, dt);
-      drawLevel(sp.x, m ? sp.v : 0);
-      return m;
+      // the level's acceleration rocks the surface, which keeps rocking a moment after the level stops
+      if (dt > 0) sl.v -= ((sp.v - v0) / dt) * 4 * dt;
+      const ms = stepS(sl, dt), mr = stepS(rp, dt);
+      drawLevel(sp.x, (m ? sp.v * 1.6 : 0) + sl.x, rp.x);
+      return m || ms || mr;
     });
     bag.add(B.unregister);
 
-    // a knock on the shell sets the level sloshing, away from the side that was knocked
+    // a knock on the shell sets the level bobbing and the surface rocking, away from the side that was knocked,
+    // and runs a ripple across the meniscus; it never changes the value or takes focus
     bag.on(host, "pointerdown", (e) => {
       if (e.button !== 0) return;
-      const r = host.getBoundingClientRect();
-      sp.v += (e.clientX < r.left + r.width / 2 ? 1 : -1) * 0.16;
+      const r = host.getBoundingClientRect(), s = e.clientX < r.left + r.width / 2 ? 1 : -1;
+      sp.v += s * 0.16;
+      sl.v += s * 9;
+      rp.v += 14;
       B.wake();
     });
+    // a mouse over the tank: the glint on the glass widens as it catches the light, and the meniscus trembles a little
+    const glint = (on: boolean) => {
+      shine.style.transition = reducedMotion() ? "none" : "stroke-width 240ms cubic-bezier(0.32,0.72,0,1)";
+      shine.style.strokeWidth = on ? "calc(var(--k-sw) * 2.4)" : "";
+    };
+    bag.on(host, "pointerenter", (e) => {
+      if (e.pointerType !== "mouse") return;
+      glint(true);
+      rp.v += 4;
+      B.wake();
+    });
+    bag.on(host, "pointerleave", () => glint(false));
 
     // the host's own values for what we set, so destroy can put them back
     const ARIA = ["role", "aria-valuemin", "aria-valuemax", "aria-valuenow", "aria-label", "aria-valuetext"];

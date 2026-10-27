@@ -9,8 +9,12 @@ import { disposer, line, mk, register, shadow, solid, type Solid } from "../core
  * A body with a row of knurled number wheels behind a window, the digit above
  * and below each reading foreshortened on the wheel's curve, and accent
  * arrows marking the reading row. Typing sets the wheels left to right and
- * each one rolls to its digit. When the code is right (or `unlocked` is set)
- * the shackle springs up out of its hole and swings open on its long leg.
+ * each one rolls to its digit, clicking past its detent with a little
+ * overshoot while the shackle ticks in its hole. Hovering a wheel turns it a
+ * few degrees, the way a thumb takes up its slack; pressing it rolls it
+ * partway at once and letting go completes the roll. A drag ratchets digit by
+ * digit. When the code is right (or `unlocked` is set) the shackle pops up
+ * out of its hole and swings open on its long leg.
  *
  * Semantics come from one visually hidden `<input inputmode="numeric"
  * autocomplete="one-time-code">`, so typing, pasting, autofill from an SMS
@@ -115,7 +119,8 @@ export const combo = define<ComboOptions>({
     // geometry, set by build
     const R = 6, WW = 6.2, GAP = 1.1, FL = 0.9, BD = 8.6, BH = 25, ZC = 11.5, WIN = 0.72 * R, ROD = 1.9;
     let BX = 0, SX = 0, SA = 0, X0 = 0;
-    type Wheel = { x0: number; x1: number; fl0: Solid; band: Solid; fl1: Solid; ribs: SVGPathElement; seps: SVGPathElement; digits: SVGTextElement[]; sp: Spring; last: number; set: boolean };
+    /** `d` is the detent it rests on (a digit, counted round past 9); `sp` follows it plus any hover or thumb nudge. */
+    type Wheel = { x0: number; x1: number; fl0: Solid; band: Solid; fl1: Solid; ribs: SVGPathElement; seps: SVGPathElement; digits: SVGTextElement[]; sp: Spring; d: number; last: number; set: boolean };
     let wheels: Wheel[] = [];
     let shortLeg: ReturnType<typeof tubeSolid>, longLeg: ReturnType<typeof tubeSolid>;
 
@@ -138,11 +143,12 @@ export const combo = define<ComboOptions>({
       SA = BH + 7; // where the legs turn into the bow
       // fit the drawing to the lock closed and open, so it never rescales as it moves
       const ext: Vec3[] = [[-BX, -BD, 0], [BX, BD, 0], [-BX, BD, 0], [BX, -BD, 0], [-BX, -BD, BH], [BX, BD, BH]];
+      // with room for the pop's overshoot, up and round
       for (let k = 0; k <= 8; k++) {
-        const t = (k / 8) * SWING, c = Math.cos(t), sn = Math.sin(t);
+        const t = (k / 8) * (SWING + rad(14)), c = Math.cos(t), sn = Math.sin(t);
         for (let j = 0; j <= 8; j++) {
           const u = (j / 8) * Math.PI, dx = SX + SX * Math.cos(u);
-          ext.push([-SX + dx * c, dx * sn, SA + LIFT + Math.sin(u) * SX + ROD]);
+          ext.push([-SX + dx * c, dx * sn, SA + LIFT * 1.2 + Math.sin(u) * SX + ROD]);
         }
       }
       fit(C, ext, VW / 2, VH / 2, VW - 20, VH - 16);
@@ -183,7 +189,8 @@ export const combo = define<ComboOptions>({
         const fl1 = solid(wg);
         const ribs = line(wg, "lo");
         const d0 = Number(value[i] ?? 0);
-        return { x0, x1, fl0, band, fl1, ribs, seps, digits, sp: spring(d0, { k: 260, c: 24, eps: 0.004 }), last: NaN, set: i < value.length };
+        // a detent spring (ζ ≈ 0.46): each roll lands with a small overshoot
+        return { x0, x1, fl0, band, fl1, ribs, seps, digits, sp: spring(d0, { k: 300, c: 16, eps: 0.004 }), d: d0, last: NaN, set: i < value.length };
       });
       // the frame round the window, and the accent arrows on the reading row
       line(g, "edge").setAttribute("d", face([[X0 - 0.9, z0 - 0.9], [-X0 + 0.9, z0 - 0.9], [-X0 + 0.9, z1 + 0.9], [X0 - 0.9, z1 + 0.9]]));
@@ -275,12 +282,22 @@ export const combo = define<ComboOptions>({
       if (want.parentNode!.lastChild !== want) want.parentNode!.appendChild(want);
     }
 
-    // motion: the shackle springs up first, then swings; closing, it swings home, then drops
-    const lift = spring(0, { k: 320, c: 15, eps: 0.01 }), sw = spring(0, { k: 120, c: 17, eps: 0.002 });
+    // motion: the shackle pops up first (ζ ≈ 0.41, it overshoots and settles), then swings round with a small overshoot (ζ ≈ 0.55); closing, it swings home, then drops
+    const lift = spring(0, { k: 420, c: 17, eps: 0.01 }), sw = spring(0, { k: 130, c: 12.5, eps: 0.002 });
     let opened = false;
+    // the anticipation: the wheel under the mouse, and the wheel held down (with how far a drag has turned it toward the next digit)
+    let hoverW = -1;
+    let drag: { y: number; i: number; acc: number; moved: boolean; frac: number } | null = null;
+    const HOVER = 0.12, THUMB = 0.32, PULL = 0.42; // in digits: a few degrees on hover, a third of a roll under the thumb, how far a drag leads
     const B = register(host, (dt) => {
       let m = false;
-      for (const w of wheels) { if (stepS(w.sp, dt)) m = true; drawWheel(w); }
+      wheels.forEach((w, i) => {
+        let off = i === hoverW && !drag ? HOVER : 0;
+        if (drag && drag.i === i) off = (drag.moved ? 0 : THUMB) + Math.max(-1, Math.min(1, drag.frac)) * PULL;
+        w.sp.t = w.d + off;
+        if (stepS(w.sp, dt)) m = true;
+        drawWheel(w);
+      });
       lift.t = opened || Math.abs(sw.x) > rad(4) ? LIFT : 0;
       sw.t = opened && lift.x > INS + 1 ? SWING : 0;
       const a = stepS(lift, dt), b = stepS(sw, dt);
@@ -303,16 +320,20 @@ export const combo = define<ComboOptions>({
       const was = opened;
       opened = isOpen();
       host.setAttribute("data-state", opened ? "open" : "locked");
+      let ticked = false;
       wheels.forEach((w, i) => {
         const d = Number(value[i] ?? 0);
         // roll the short way round to the new digit
-        const cur = w.sp.t, k = Math.round(cur / 10) * 10 + d;
+        const cur = w.d, k = Math.round(cur / 10) * 10 + d;
         const opts10 = [k - 10, k, k + 10];
-        w.sp.t = opts10.reduce((b, x) => (Math.abs(x - cur) < Math.abs(b - cur) ? x : b));
+        w.d = opts10.reduce((b, x) => (Math.abs(x - cur) < Math.abs(b - cur) ? x : b));
+        if (w.d !== cur) ticked = true;
         const set = i < value.length;
         if (set !== w.set) { w.set = set; w.digits.forEach((t) => t.setAttribute("class", set ? "k-text hi" : "k-text")); }
       });
       if (value.length < n) done = "";
+      // each detent a wheel clicks past knocks the locked shackle in its hole
+      if (ticked && !opened && !was && shortLeg) lift.v += 9;
       B?.wake();
       return opened && !was;
     }
@@ -352,7 +373,6 @@ export const combo = define<ComboOptions>({
       if (z < ZC - R - 1.5 || z > ZC + R + 1.5) return -1;
       return wheels.findIndex((w) => x >= w.x0 - GAP / 2 && x <= w.x1 + GAP / 2);
     };
-    let drag: { y: number; i: number; acc: number; moved: boolean } | null = null;
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0) return;
       input.focus({ preventScroll: true });
@@ -363,17 +383,29 @@ export const combo = define<ComboOptions>({
         B.wake();
         return;
       }
-      drag = { y: e.clientY, i, acc: 0, moved: false };
+      // the thumb takes the wheel at once: it rolls a third of the way before the release completes it
+      drag = { y: e.clientY, i, acc: 0, moved: false, frac: 0 };
       host.setPointerCapture?.(e.pointerId);
+      B.wake();
       e.preventDefault();
     });
     bag.on(host, "pointermove", (e) => {
-      if (!drag) return;
-      const r = svg.getBoundingClientRect(), px = (STEP * R * C.S * r.width) / VW; // a digit's height on screen
-      const steps = Math.trunc((drag.y - e.clientY) / Math.max(6, px)) - drag.acc;
+      if (!drag) {
+        if (e.pointerType !== "mouse" || opts.disabled) return;
+        const h = wheelAt(e);
+        if (h !== hoverW) { hoverW = h; B.wake(); }
+        return;
+      }
+      const r = svg.getBoundingClientRect(), px = Math.max(6, (STEP * R * C.S * r.width) / VW); // a digit's height on screen
+      const dist = (drag.y - e.clientY) / px;
+      const steps = Math.trunc(dist) - drag.acc;
+      // between detents the wheel leads the hand a little; past one it snaps on to the next digit
+      drag.frac = dist - Math.trunc(dist);
       if (steps) { drag.moved = true; drag.acc += steps; roll(drag.i, steps); pick(drag.i); }
+      B.wake();
     });
-    const end = () => { drag = null; };
+    bag.on(host, "pointerleave", () => { if (hoverW >= 0) { hoverW = -1; B.wake(); } });
+    const end = () => { drag = null; B.wake(); };
     // a click on a wheel, with no drag, rolls it on by one
     bag.on(host, "pointerup", () => { if (drag && !drag.moved && !opts.disabled) { roll(drag.i, 1); pick(drag.i); } end(); });
     bag.on(host, "pointercancel", end);

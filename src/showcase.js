@@ -313,11 +313,11 @@ function renderActivityDetails(bin, types, window) {
   }
   for (const grouped of dayGroups.values()) {
     if (grouped.type === 'commit') {
-      grouped.title = 'Public code pushes';
-      grouped.summary = `${grouped.activityCount} recorded push events on this day. This is not a commit count.`;
+      grouped.title = grouped.activityCount === 1 ? 'Public code push' : 'Public code pushes';
+      grouped.summary = `${grouped.activityCount} recorded push ${grouped.activityCount === 1 ? 'event' : 'events'} on this day. This is not a commit count.`;
     } else {
-      grouped.title = 'Repository creations';
-      grouped.summary = `${grouped.activityCount} repository creations on this day. Unfeatured titles are not shown.`;
+      grouped.title = grouped.activityCount === 1 ? 'Repository created' : 'Repositories created';
+      grouped.summary = `${grouped.activityCount} ${grouped.activityCount === 1 ? 'repository creation' : 'repository creations'} on this day. Unfeatured titles are not shown.`;
     }
   }
   events.sort((a, b) => +new Date(b.date) - +new Date(a.date));

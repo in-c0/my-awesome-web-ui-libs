@@ -1,14 +1,22 @@
 # Profile Atlas
 
-[![Profile Atlas animated preview: projects and GitHub activity](https://raw.githubusercontent.com/in-c0/profile-atlas/main/assets/profile-atlas-preview.gif)](https://profile-atlas-showcase.wldud5192.chatgpt.site/)
+[![Explore the current Profile Atlas showcase — projects, public activity, and found ideas](assets/showcase-banner.svg)](https://profile-atlas-showcase.wldud5192.chatgpt.site/)
 
-[Explore the interactive version](https://profile-atlas-showcase.wldud5192.chatgpt.site/) · *Lightweight illustrated preview; the live cards and icons are interactive.*
+[Explore the interactive version](https://profile-atlas-showcase.wldud5192.chatgpt.site/) · *Static banner linking to the live interactive showcase.*
 
 [Live showcase](https://profile-atlas-showcase.wldud5192.chatgpt.site/) · [Standalone activity timeline](https://profile-atlas-showcase.wldud5192.chatgpt.site/activity-demo)
 
-A buildless, open-source Web Component set for a GitHub profile that is more than six pinned repositories. Display public projects, stars, forks, recent push activity, stories, and inspiration without an account or GitHub access token.
+A buildless, open-source profile showcase and Web Component set for a GitHub profile that is more than six pinned repositories. Display selected projects, starred and forked repositories, public activity, personal notes, and visual inspiration without an account or GitHub access token.
 
-## Design
+## The live showcase
+
+The deployed Site (and its equivalent repository demo) now uses `demo/index.html`, `src/showcase.css`, and `src/showcase.js`: an editorial, readable layout with an immediately visible project grid rather than overlapping splay cards. The gallery shows all seven curated projects, real captured images when verified, and readable text-first entries when a verified capture is unavailable. Visitors can filter and search projects, expand notes, view all ten inspiration references, and open actual product links.
+
+The activity section supports **This week / This month / This year / Past 5 years / All**, category filtering and per-period record lists. Repeated same-day push events are grouped for readability without changing recorded counts. Monthly counts are separately selectable. Month-only historical snapshots are never assigned fabricated days or names.
+
+The original custom elements remain in `src/` and are still available for other sites. The appearance and behavior below describe those optional reusable components, not the current homepage.
+
+## Reusable components (original design)
 
 - **Projects, stars, forks, inspiration — Splay Cards.** Based on [Mellow UI Splay Cards](https://mellowui.com/r/splay-cards.json): overlapping 3D plates fan apart on hover/focus. A bounded card window navigates hundreds of entries without mounting hundreds of plates. Curated projects can show genuine captured public product pages; selecting one opens a larger preview linked to the live demo.
 - **Stories — Toss Deck.** Based on [Mellow UI Toss Deck](https://mellowui.com/r/toss-deck.json): swipe the top card out of the stack or use the navigation arrows.

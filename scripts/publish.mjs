@@ -38,7 +38,8 @@ for (const p of list) {
   if (direct.status === 0) { note(`✅ ${p.name}@${p.version} published${tag ? ` under ${tag}` : ""}.`); continue; }
 
   const text = direct.stdout + direct.stderr;
-  const stageOnly = /E_STAGE_REQUIRED|staging area|EOTP|one-time password/i.test(text);
+  // a stage-only token is refused a direct publish with a staging hint, an OTP demand, or (for a scoped package) a bare 403/404
+  const stageOnly = /E_STAGE_REQUIRED|staging area|EOTP|one-time password|code E40[34]/i.test(text);
   if (!stageOnly) { note(`❌ ${p.name}@${p.version}: publish failed (see the log).`); failed = true; continue; }
 
   if (!exists(p.name) && !p.name.startsWith("@")) {
@@ -49,7 +50,13 @@ for (const p of list) {
   const staged = spawnSync("npm", ["stage", "publish", tgz, "--access", "public", "--provenance", ...tagArgs], { encoding: "utf8" });
   process.stdout.write(staged.stdout); process.stderr.write(staged.stderr);
   if (staged.status === 0) note(`🕓 ${p.name}@${p.version} staged${tag ? ` under ${tag}` : ""}. Approve it on npmjs.com → Staged Packages to make it live.`);
-  else { note(`❌ ${p.name}@${p.version}: staging failed (see the log).`); failed = true; }
+  else {
+    const why = /E404|not found|Scope not found/i.test(staged.stdout + staged.stderr)
+      ? " npm could not find the scope or the token cannot write to it: check that the npm account owns the scope and that the token has write (or stage) access to it."
+      : " See the log.";
+    note(`❌ ${p.name}@${p.version}: direct publish and staging both failed.${why}`);
+    failed = true;
+  }
 }
 
 if (!summary.length) note("Nothing to publish: every package's version is already on npm.");

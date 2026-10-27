@@ -416,7 +416,7 @@ export const tray = define<TrayOptions>({
     const press = (on: boolean) => {
       if (pressed === on) return;
       pressed = on;
-      if (!reducedMotion()) hop.v += on ? 16 : 6;
+      if (!reducedMotion()) hop.v += on ? 24 : 8;
       B.wake();
     };
     bag.on(host, "pointerdown", (e) => {

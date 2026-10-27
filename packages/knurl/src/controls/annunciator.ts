@@ -87,7 +87,7 @@ export const annunciator = define<AnnunciatorOptions>({
     type Lamp = {
       item: AnnunciatorItem; i: number; x0: number; y0: number;
       body: Solid; top: SVGGElement; rim: SVGPathElement; glow: SVGPathElement; lens: SVGPathElement; okL: SVGPathElement; litL: SVGPathElement; text: SVGTextElement; li: HTMLLIElement;
-      ok: number; lit: number; gl: number; okT: number; litT: number; glT: number; from: number; until: number; dip: Spring; dz: number; cls: string;
+      ok: number; lit: number; gl: number; okT: number; litT: number; glT: number; from: number; until: number; dip: Spring; dz: number; cls: string; shown: string;
     };
     let lamps: Lamp[] = [];
     let hovered: Lamp | null = null, pushed: Lamp | null = null, hoverCap = false;
@@ -165,7 +165,7 @@ export const annunciator = define<AnnunciatorOptions>({
         text.setAttribute("transform", planeMatrix(P, [cx, (y0 + y1) / 2, zt], [1, 0, 0], [0, 1, 0]) + " translate(0 1.4)");
         byIndex.set(item, {
           item, i: 0, x0, y0, body, top, rim, glow, lens, okL, litL, text, li: doc.createElement("li"),
-          ok: 0, lit: 0, gl: 0, okT: 0, litT: 0, glT: 0, from: -1, until: -1, dip: spring(0, { k: 520, c: 22, eps: 0.01 }), dz: NaN, cls: "",
+          ok: 0, lit: 0, gl: 0, okT: 0, litT: 0, glT: 0, from: -1, until: -1, dip: spring(0, { k: 520, c: 22, eps: 0.01 }), dz: NaN, cls: "", shown: "",
         });
       }
       lamps = its.map((it) => byIndex.get(it)!);
@@ -230,6 +230,9 @@ export const annunciator = define<AnnunciatorOptions>({
     };
     const o3 = (x: number) => String(Math.round(x * 1000) / 1000);
     function show(l: Lamp) {
+      const key = `${l.ok} ${l.lit} ${l.gl} ${l === hovered}`;
+      if (key === l.shown) return;
+      l.shown = key;
       const b = Math.max(l.ok, l.lit);
       l.okL.style.opacity = o3(l.ok);
       l.litL.style.opacity = o3(l.lit);

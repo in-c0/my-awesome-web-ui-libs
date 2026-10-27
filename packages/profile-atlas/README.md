@@ -1,80 +1,66 @@
 # Profile Atlas
 
-[![Explore the current Profile Atlas showcase — projects, public activity, and found ideas](assets/showcase-banner.svg)](https://profile-atlas-showcase.wldud5192.chatgpt.site/)
+Two framework-free Web Components for a personal site that shows more of a GitHub profile than six pinned repositories:
 
-[Explore the interactive version](https://profile-atlas-showcase.wldud5192.chatgpt.site/) · *Static banner linking to the live interactive showcase.*
+- **`<profile-atlas>`**: a gallery of what you made, starred and forked, with a searchable index, a details view and the activity timeline.
+- **`<github-activity-timeline>`**: stars, forks, new repositories and pushes in four lanes on one time scale, from a username or any dated `events` array.
 
-[Live showcase](https://profile-atlas-showcase.wldud5192.chatgpt.site/) · [Standalone activity timeline](https://profile-atlas-showcase.wldud5192.chatgpt.site/activity-demo)
+Plain ES modules and CSS in shadow roots. No framework, no build step, no runtime dependency and no GitHub token. Five files, about 31 kB gzipped.
 
-A buildless, open-source profile showcase and Web Component set for a GitHub profile that is more than six pinned repositories. Display selected projects, starred and forked repositories, public activity, personal notes, and visual inspiration without an account or GitHub access token.
+**[Documentation and live examples](https://in-c0.github.io/my-awesome-web-ui-libs/profile-atlas/)** · [llms.txt](https://in-c0.github.io/my-awesome-web-ui-libs/profile-atlas/docs/llms.txt) · [The owner’s showcase](https://profile-atlas-showcase.wldud5192.chatgpt.site/)
 
-## The live showcase
-
-The deployed Site (and its equivalent repository demo) now uses `demo/index.html`, `src/showcase.css`, and `src/showcase.js`: an editorial, readable layout with an immediately visible project grid rather than overlapping splay cards. The gallery shows all seven curated projects, real captured images when verified, and readable text-first entries when a verified capture is unavailable. Visitors can filter and search projects, expand notes, view all ten inspiration references, and open actual product links.
-
-The activity section supports **This week / This month / This year / Past 5 years / All**, category filtering and per-period record lists. Repeated same-day push events are grouped for readability without changing recorded counts. Monthly counts are separately selectable. Month-only historical snapshots are never assigned fabricated days or names.
-
-The original custom elements remain in `src/` and are still available for other sites. The appearance and behavior below describe those optional reusable components, not the current homepage.
-
-## Reusable components (original design)
-
-- **Projects, stars, forks, inspiration — Splay Cards.** Based on [Mellow UI Splay Cards](https://mellowui.com/r/splay-cards.json): overlapping 3D plates fan apart on hover/focus. A bounded card window navigates hundreds of entries without mounting hundreds of plates. Curated projects can show genuine captured public product pages; selecting one opens a larger preview linked to the live demo.
-- **Stories — Toss Deck.** Based on [Mellow UI Toss Deck](https://mellowui.com/r/toss-deck.json): swipe the top card out of the stack or use the navigation arrows.
-- **Activity — a functional four-lane timeline.** Select **This week / This month / This year / Past 5 years / All**. Star, Fork, New repo, and Push share the same daily/monthly time scale; bars show relative activity, and clicking a bar opens an item-level drilldown. Click a row label to focus a type. Quantities are displayed separately in **Monthly analysis**, with a month selector.
-- **Honest historical resolution.** A month-only historical snapshot can contribute to monthly/yearly views, but it will never be assigned a fabricated day. The panel explains when daily data is incomplete. GitHub's public event API exposes only recent Push events, not lifetime commits.
-- **Browse all** opens a searchable, progressively rendered, one-sentence index without replacing the gallery.
-- **Motion references — native video.** Inspiration cards accept `mediaType: "video"`, `image: "https://…/clip.mp4"`, and a `poster` thumbnail. Only the currently focused/hovered video plays silently; reduced-motion preferences keep the still preview. Clicking opens a video with controls. The six sample videos ship with local first-frame poster images instead of broken image placeholders.
-- **No empty cards.** Items without a verified thumbnail receive a typographic cover with the actual title, category, and language or destination domain. The ten sample inspiration references have content-specific titles rather than numbered placeholders.
-
-The named Mellow UI designs are **adapted from their published React + Motion behavior into framework-free Custom Elements**, not installed as React/shadcn components into this buildless package. To use the original React implementations in a React/Tailwind project, run:
+## Install
 
 ```sh
-npx shadcn@latest add https://mellowui.com/r/splay-cards.json
-npx shadcn@latest add https://mellowui.com/r/toss-deck.json
+npm i @in-c0/profile-atlas
 ```
 
-## Quick start
+```js
+import '@in-c0/profile-atlas'; // defines both elements
+```
 
-Serve this repository over HTTP and open `demo/index.html`. For an existing website, copy the files in `src/` next to one another and use:
+Or with no install:
 
 ```html
-<script type="module" src="/src/profile-atlas.js"></script>
-<profile-atlas username="in-c0" manifest-url="/data/in-c0.json" max-pages="10"></profile-atlas>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@in-c0/profile-atlas/src/profile-atlas.js"></script>
 ```
 
-The module imports adjacent `timeline-math.js` and loads three adjacent stylesheets: `profile-atlas.css`, `github-activity-timeline.css`, and `mellow-overrides.css`. Preserve their relative paths.
+Or copy `profile-atlas.js`, `timeline-math.js`, `profile-atlas.css`, `github-activity-timeline.css` and `mellow-overrides.css` from `src/` into one folder. Keep them next to each other: the module loads its stylesheets by their path beside it. With Vite, add `optimizeDeps: { exclude: ['@in-c0/profile-atlas'] }` so the dev server does not separate them.
 
-### Standalone activity timeline
+## Use
 
 ```html
-<script type="module" src="/src/profile-atlas.js"></script>
-<github-activity-timeline username="your-username" max-pages="10"></github-activity-timeline>
+<profile-atlas username="your-github-name" manifest-url="/atlas.json"></profile-atlas>
+
+<github-activity-timeline username="your-github-name" range="five"></github-activity-timeline>
 ```
 
-Or provide your own dated array, including multiple different activity types on the same month:
+Either attribute is enough for `<profile-atlas>`: a username reads public repositories, stars and recent pushes; a [manifest](https://in-c0.github.io/my-awesome-web-ui-libs/profile-atlas/docs/#manifest) curates projects, stories, inspiration and month-level history, and on its own makes no GitHub request. The timeline also takes records of your own:
 
 ```js
 document.querySelector('github-activity-timeline').events = [
-  { id: 's1', type: 'star', title: 'Interesting project', date: '2025-05-04T00:00:00Z', url: 'https://github.com/' },
-  { id: 'f1', type: 'fork', title: 'Fork', date: '2025-05-05T00:00:00Z' },
-  { id: 'r1', type: 'project', title: 'New repository', date: '2025-05-11T00:00:00Z' },
-  { id: 'p1', type: 'commit', title: 'Push event', date: '2025-05-22T00:00:00Z' }
+  { id: 'a', type: 'star', title: 'lit/lit', date: '2026-10-04T09:30:00Z', url: 'https://github.com/lit/lit' },
+  { id: 'b', type: 'commit', title: 'Release', date: new Date(), activityCount: 4 },
 ];
 ```
 
-Optional `activityCount` and `aggregate: true` support month-only records. An aggregate should have a date within its recorded month; it is bucketed by month only, never by a specific day. Each recorded bar opens a progressively rendered detail list; intercept the cancellable `activity-open` event to provide your own details UI.
+| Element | Attributes | Properties | Events |
+| --- | --- | --- | --- |
+| `<profile-atlas>` | `username`, `manifest-url`, `max-pages`, `row`, `compact`, `theme` | `items`, `kind`, `load()` | `atlas-ready`, `activity-open` |
+| `<github-activity-timeline>` | `username`, `max-pages`, `range`, `theme` | `events`, `range`, `load()`, `showDetails()` | `activity-open` (cancellable) |
 
-### Separate horizontal rows
+`theme` is `light` (default), `dark` or `auto`. Seventeen `--profile-atlas-*` custom properties restyle both elements; see [Theming](https://in-c0.github.io/my-awesome-web-ui-libs/profile-atlas/docs/#theming). `@in-c0/profile-atlas/timeline-math.js` exports the date bucketing (`activityWindow`, `reconcileMonthlySnapshots`) as pure functions for Node or the browser.
 
-```html
-<profile-atlas compact row="project" username="in-c0" manifest-url="/data/in-c0.json"></profile-atlas>
-<profile-atlas compact row="story" username="in-c0" manifest-url="/data/in-c0.json"></profile-atlas>
-<profile-atlas compact row="inspiration" username="in-c0" manifest-url="/data/in-c0.json"></profile-atlas>
-```
+See [data/in-c0.json](data/in-c0.json) for a complete manifest.
 
-`row` accepts `project`, `star`, `fork`, `story`, or `inspiration`. `username` is the GitHub username; `max-pages` fetches 100 entries per page (default 10, maximum 30); `manifest-url` supplies optional curated `projects`, `stories`, `inspirations`, and `excludeRepos`. Items can include `title`, `summary`, `body`, `url`, `demoUrl`, `preview: "iframe" | "video" | "image" | "link"`, `image`, `poster`, `mediaType: "video"`, and `repo`. See [data/in-c0.json](data/in-c0.json) for a complete example.
+## This folder
 
-Image paths may be absolute HTTPS URLs or relative to the manifest JSON file (for example `../assets/project-previews/paper-ui.webp`). The showcase's four product thumbnails are captured public product/demo pages from 2026-10-25, not live iframes. A screenshot is never silently substituted with a security-verification page; entries without a verified image use a real-text cover. Real screenshots are still subject to the original sites' branding and content rights.
+- `src/`: the published library.
+- `docs/`: the documentation site (plain HTML and JS modules, no build). Served with the rest of this folder, it opens at `docs/index.html`.
+- `demo/`: the owner’s personal showcase, built on the same data with its own `src/showcase.js` and `src/showcase.css` (not published). It is deployed at [profile-atlas-showcase.wldud5192.chatgpt.site](https://profile-atlas-showcase.wldud5192.chatgpt.site/) and linked from the [GitHub profile README](https://github.com/in-c0) through `assets/showcase-banner.svg`.
+- `data/in-c0.json`: the owner’s manifest, used by the showcase and the docs.
+
+`pnpm test` runs the tests in `tests/`.
 
 ## Data, limits, and privacy
 
@@ -89,4 +75,4 @@ Image paths may be absolute HTTPS URLs or relative to the manifest JSON file (fo
 
 GitHub profile READMEs cannot execute JavaScript. Embed `assets/profile-atlas-preview.gif` as a linked image, and point it at the live interactive Atlas. Rebuild the compact animated illustration with `python scripts/make_readme_preview.py` (requires Pillow). The GitHub six-pin limit is independent of what you can display on the hosted page.
 
-MIT licensed. This release is an early public Web Component prototype; automated cross-browser interaction tests, package publishing, and static pre-generated feed support are future work.
+MIT licensed. Tests cover the date bucketing and the element lifecycle in Node; there are no automated cross-browser interaction tests yet, and static pre-generated feeds are future work.

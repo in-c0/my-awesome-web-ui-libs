@@ -113,7 +113,7 @@ button { font: inherit; color: inherit; }
 .kicker { font: 500 11.5px/1 var(--mono); letter-spacing: .04em; color: var(--muted-fg); text-transform: uppercase; }
 .hero h1 { margin-top: 22px; font-family: var(--serif); font-weight: 400; font-size: clamp(40px, 6.4vw, 80px); line-height: .98; letter-spacing: -.035em; max-width: 14ch; }
 .hero h1 em { font-style: italic; color: var(--muted-fg); }
-.lede { margin-top: 22px; font-size: 17px; line-height: 1.55; color: var(--muted-fg); max-width: 56ch; text-wrap: pretty; }
+.lede { margin-top: 22px; font-size: 17px; line-height: 1.55; color: var(--muted-fg); max-width: 62ch; text-wrap: pretty; }
 .cta { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .install-chip { display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 3px 0 13px; border-radius: var(--radius); background: var(--muted); font-size: 13px; max-width: 100%; }
 .install-chip code { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -306,3 +306,5 @@ td:not(:first-child):not(.desc-cell) code { white-space: normal; color: var(--t-
   .specimen figcaption { align-items: flex-start; padding: 12px 10px 12px 14px; }
   .specimen figcaption span { font-size: 12.5px; }
 }
+.code-copy .icon-btn, .cmd-bar .icon-btn { background: var(--surface); }
+.code-copy .icon-btn:hover, .cmd-bar .icon-btn:hover { background: var(--muted); }

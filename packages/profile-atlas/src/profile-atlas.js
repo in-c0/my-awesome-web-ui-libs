@@ -155,7 +155,7 @@ class GithubActivityTimeline extends HTMLElement{
   labels.append(E('span','activity-axis-spacer',''));
   const axis=E('div','activity-bin-axis');axis.style.gridTemplateColumns='repeat('+columns+',minmax(0,1fr))';
   state.bins.forEach((bin,index)=>{
-   const d=bin.start,show=state.grain==='year'||(state.grain==='month'?(columns<=12||(columns<=24?d.getMonth()%3===0:d.getMonth()===0)):columns<=7||index===0||d.getDate()%5===0);
+   const d=bin.start,show=state.grain==='year'||(state.grain==='month'?(columns<=12||(columns<=36?d.getMonth()%3===0:d.getMonth()===0)):columns<=7||index===0||d.getDate()%5===0);
    const tick=E('span','activity-bin-label',show?(state.grain==='day'?String(d.getDate()):state.grain==='year'?String(d.getFullYear()):d.getMonth()===0?String(d.getFullYear()):d.toLocaleDateString('en',{month:'short'})):'');
    tick.title=bin.label;axis.append(tick);
   });

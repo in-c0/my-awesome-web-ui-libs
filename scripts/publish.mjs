@@ -50,7 +50,9 @@ for (const p of list) {
   const staged = spawnSync("npm", ["stage", "publish", tgz, "--access", "public", "--provenance", ...tagArgs], { encoding: "utf8" });
   process.stdout.write(staged.stdout); process.stderr.write(staged.stderr);
   if (staged.status === 0) note(`🕓 ${p.name}@${p.version} staged${tag ? ` under ${tag}` : ""}. Approve it on npmjs.com → Staged Packages to make it live.`);
-  else {
+  else if (/already (been )?staged|already exists|EPUBLISHCONFLICT|cannot publish over|E409/i.test(staged.stdout + staged.stderr)) {
+    note(`🕓 ${p.name}@${p.version} is already staged and waiting for approval on npmjs.com → Staged Packages.`);
+  } else {
     const why = /E404|not found|Scope not found/i.test(staged.stdout + staged.stderr)
       ? " npm could not find the scope or the token cannot write to it: check that the npm account owns the scope and that the token has write (or stage) access to it."
       : " See the log.";

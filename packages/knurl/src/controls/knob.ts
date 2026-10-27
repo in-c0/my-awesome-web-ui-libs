@@ -1,8 +1,8 @@
-import { camera, circle, cyl, facing, fit, flat, loft, open, proj, rad, radialTicks, rrect, seg, slab, type Vec2, type Vec3 } from "../core/iso";
+import { camera, circle, cyl, facing, fit, flat, loft, open, proj, rad, radialTicks, rrect, seg, slab, unproj, type Vec2, type Vec3 } from "../core/iso";
 import { spring, stepS } from "../core/motion";
 import { define } from "../core/control";
 import { range, RANGE_KEYS, type RangeOptions } from "../core/range";
-import { disposer, line, mk, register, shadow, solid } from "../core/stage";
+import { disposer, line, mk, register, shadow, solid, toView } from "../core/stage";
 
 /**
  * Knob — a rotary value, built as a knurled knob on a panel.
@@ -98,23 +98,40 @@ export const knob = define<KnobOptions>({
     });
     bag.add(B.unregister);
 
-    // pointer: drag up to turn up; 160px is the whole sweep
+    // pointer: drag up to turn up (160px is the whole sweep); a click on the scale turns the knob to that mark
     host.setAttribute("data-knurl-hit", "");
-    let drag: { y: number; v: number } | null = null;
+    let drag: { y: number; v: number; x0: number; y0: number; moved: boolean } | null = null;
+    const valueAt = (e: PointerEvent): number | null => {
+      const [sx, sy] = toView(svg, e, VW, VH);
+      // on the knob, read the direction on its cap; off it, on the panel
+      const onCap = unproj(C, sx, sy, zC1);
+      const [x, y] = Math.hypot(onCap[0], onCap[1]) < RS ? onCap : unproj(C, sx, sy, PZ);
+      if (Math.hypot(x, y) < 3) return null; // the cap's centre has no direction
+      let a = Math.atan2(y, x);
+      while (a < A0 - 0.6) a += Math.PI * 2;
+      const t = (a - A0) / SPAN;
+      if (t > 1.12) return null; // in the gap below the scale
+      return r.min + Math.max(0, Math.min(1, t)) * (r.max - r.min);
+    };
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0) return;
-      drag = { y: e.clientY, v: r.value };
+      drag = { y: e.clientY, v: r.value, x0: e.clientX, y0: e.clientY, moved: false };
       host.setPointerCapture?.(e.pointerId);
       r.input.focus({ preventScroll: true });
       e.preventDefault();
     });
     bag.on(host, "pointermove", (e) => {
       if (!drag) return;
+      if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 4) return;
+      drag.moved = true;
       const fine = e.shiftKey ? 0.2 : 1;
       r.ask(drag.v + ((drag.y - e.clientY) / 160) * (r.max - r.min) * fine);
     });
     const end = () => { if (drag) { drag = null; r.commit(); } };
-    bag.on(host, "pointerup", end);
+    bag.on(host, "pointerup", (e) => {
+      if (drag && !drag.moved) { const v = valueAt(e); if (v !== null) r.ask(v); }
+      end();
+    });
     bag.on(host, "pointercancel", end);
     bag.on(host, "wheel", (e) => {
       if (opts.disabled) return;

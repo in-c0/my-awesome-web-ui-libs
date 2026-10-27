@@ -189,8 +189,10 @@ export const rocker = define<RockerOptions>({
     bag.on(host, "click", (e) => {
       if (opts.disabled || e.target === input) return;
       input.focus({ preventScroll: true });
+      // the raised half throws the switch to it; the half already down, or the bezel, toggles it, so every click answers
       const h = halfAt(e);
-      ask(h > 0 ? true : h < 0 ? false : mixed ? true : !on);
+      const wants = h > 0 ? true : h < 0 ? false : null;
+      ask(mixed ? wants ?? true : wants === null || wants === on ? !on : wants);
     });
     bag.on(host, "pointermove", (e) => { if (e.pointerType !== "mouse") return; const h = halfAt(e); if (h !== hover) { hover = h; B.wake(); } });
     bag.on(host, "pointerleave", () => { hover = 0; B.wake(); });

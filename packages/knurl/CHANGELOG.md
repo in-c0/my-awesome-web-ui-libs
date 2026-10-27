@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Every input answers a plain click, not only a drag: a click on the Knob's scale turns it to that mark, a click on the Selector's knob turns it one detent, a click on the Counter's housing counts one, a click on a Combo wheel rolls it on by one, a press on the Annunciator's lamps runs the lamp test, and a Rocker click always throws the switch (the half already down toggles it).
+- The frame loop survives an environment that disappears under a pending frame.
+
 ## 0.2.0
 
 - Published as `@in-c0/knurl` (0.1.0 was never published as `knurl-ui`), from the `in-c0/my-awesome-web-ui-libs` workspace.

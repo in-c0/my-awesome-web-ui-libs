@@ -142,7 +142,7 @@ export const counter = define<CounterOptions>({
       });
     }
 
-    let pressed = -1, repeat = 0, drag: { y: number; v: number } | null = null;
+    let pressed = -1, repeat = 0, drag: { y: number; v: number; moved: boolean } | null = null;
     const B = register(host, (dt) => {
       vs.t = r.value;
       let m = stepS(vs, dt);
@@ -179,11 +179,12 @@ export const counter = define<CounterOptions>({
         pressed = k; fire(); B.wake();
         const go = (ms: number) => { repeat = window.setTimeout(() => { fire(); go(Math.max(40, ms * 0.82)); }, ms); };
         go(420);
-      } else drag = { y: e.clientY, v: r.value };
+      } else drag = { y: e.clientY, v: r.value, moved: false };
     });
-    bag.on(host, "pointermove", (e) => { if (drag) r.ask(drag.v + Math.round((drag.y - e.clientY) / 10) * step()); });
+    bag.on(host, "pointermove", (e) => { if (!drag) return; if (Math.abs(drag.y - e.clientY) >= 4) drag.moved = true; if (drag.moved) r.ask(drag.v + Math.round((drag.y - e.clientY) / 10) * step()); });
     const end = () => { stopRepeat(); if (pressed >= 0 || drag) r.commit(); pressed = -1; drag = null; B.wake(); };
-    bag.on(host, "pointerup", end);
+    // a click on the housing, with no drag, counts one, as a tally counter's plunger does
+    bag.on(host, "pointerup", () => { if (drag && !drag.moved) r.ask(r.value + step()); end(); });
     bag.on(host, "pointercancel", end);
     bag.on(host, "wheel", (e) => { if (opts.disabled) return; e.preventDefault(); r.ask(r.value + (e.deltaY < 0 ? step() : -step())); }, { passive: false });
     bag.add(stopRepeat);

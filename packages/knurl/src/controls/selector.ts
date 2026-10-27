@@ -211,13 +211,13 @@ export const selector = define<SelectorOptions>({
       return { i: best, d };
     };
     const choose = (i: number) => { const p = pos[i]; if (!p) return; p.input.focus({ preventScroll: true }); ask(p.v); };
-    let drag: { a: number; turn: number; i: number } | null = null;
+    let drag: { a: number; turn: number; i: number; moved: boolean } | null = null;
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0 || !pos.length) return;
       const [x, y] = at(e, DZ), r = Math.hypot(x, y);
       const [kx, ky] = at(e, zH1), rk = Math.hypot(kx, ky);
       if (rk <= RS + 3 || r <= RS + 2) {
-        drag = { a: Math.atan2(ky, kx), turn: 0, i: index() };
+        drag = { a: Math.atan2(ky, kx), turn: 0, i: index(), moved: false };
         host.setPointerCapture?.(e.pointerId);
         pos[index()].input.focus({ preventScroll: true });
         e.preventDefault();
@@ -234,11 +234,13 @@ export const selector = define<SelectorOptions>({
       // add up the turn a little at a time, so a long drag doesn't wrap at half a turn
       const a = Math.atan2(y, x);
       drag.turn += wrap(a - drag.a); drag.a = a;
+      if (Math.abs(drag.turn) > rad(4)) drag.moved = true;
       const i = Math.max(0, Math.min(pos.length - 1, Math.round(drag.i + drag.turn / STEP)));
       if (pos[i].v !== value) { pos[i].input.focus({ preventScroll: true }); ask(pos[i].v); }
     });
     const end = () => { drag = null; };
-    bag.on(host, "pointerup", end);
+    // a click on the knob, with no turn, clicks it round one detent (back to the first after the last)
+    bag.on(host, "pointerup", () => { if (drag && !drag.moved && pos.length > 1) choose((index() + 1) % pos.length); end(); });
     bag.on(host, "pointercancel", end);
     bag.on(host, "wheel", (e) => {
       if (opts.disabled || !pos.length) return;

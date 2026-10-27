@@ -230,10 +230,11 @@ export const annunciator = define<AnnunciatorOptions>({
       return false;
     };
     bag.on(host, "pointerdown", (e) => {
-      if (opts.disabled || e.button !== 0 || !onButton(e)) return;
+      if (opts.disabled || e.button !== 0) return;
       host.setPointerCapture?.(e.pointerId);
       button.focus({ preventScroll: true });
-      down = true;
+      // the TEST button dips; a press on the lamps is a push-to-test, as on a real panel
+      down = onButton(e);
       test();
       e.preventDefault();
     });

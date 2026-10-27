@@ -352,13 +352,13 @@ export const combo = define<ComboOptions>({
       if (z < ZC - R - 1.5 || z > ZC + R + 1.5) return -1;
       return wheels.findIndex((w) => x >= w.x0 - GAP / 2 && x <= w.x1 + GAP / 2);
     };
-    let drag: { y: number; i: number; acc: number } | null = null;
+    let drag: { y: number; i: number; acc: number; moved: boolean } | null = null;
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0) return;
       input.focus({ preventScroll: true });
       const i = wheelAt(e);
       if (i < 0) return;
-      drag = { y: e.clientY, i, acc: 0 };
+      drag = { y: e.clientY, i, acc: 0, moved: false };
       host.setPointerCapture?.(e.pointerId);
       e.preventDefault();
     });
@@ -366,10 +366,11 @@ export const combo = define<ComboOptions>({
       if (!drag) return;
       const r = svg.getBoundingClientRect(), px = (STEP * R * C.S * r.width) / VW; // a digit's height on screen
       const steps = Math.trunc((drag.y - e.clientY) / Math.max(6, px)) - drag.acc;
-      if (steps) { drag.acc += steps; roll(drag.i, steps); pick(drag.i); }
+      if (steps) { drag.moved = true; drag.acc += steps; roll(drag.i, steps); pick(drag.i); }
     });
     const end = () => { drag = null; };
-    bag.on(host, "pointerup", end);
+    // a click on a wheel, with no drag, rolls it on by one
+    bag.on(host, "pointerup", () => { if (drag && !drag.moved && !opts.disabled) { roll(drag.i, 1); pick(drag.i); } end(); });
     bag.on(host, "pointercancel", end);
     bag.on(host, "wheel", (e) => {
       if (opts.disabled) return;

@@ -3,126 +3,116 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#ece8dc">
-  <meta name="description" content="Profile Atlas turns GitHub projects, stars, forks, recent code pushes, personal stories, and inspiration into an interactive gallery and activity timeline.">
-  <title>Profile Atlas — An endless shelf of work and curiosity</title>
-  <style>
-  :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#27302a;background:#f7f8f4}
-  *{box-sizing:border-box}body{margin:0}a{color:inherit}button,input{font:inherit}button{cursor:pointer}
-  .wrap{max-width:1280px;margin:auto;padding:0 34px}
-  .topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:24px 0;border-bottom:1px solid #dce2dc}
-  .identity{display:flex;align-items:center;gap:11px;font-size:15px;font-weight:700;letter-spacing:-.03em}.logo{display:grid;place-items:center;width:33px;height:33px;border-radius:10px;background:#244e40;color:#e7f1e6;font-family:Georgia,serif;font-size:21px}.links{display:flex;gap:22px;color:#6d766e;font-size:12px}.links a{text-decoration:none}.links a:hover{text-decoration:underline}
-  .hero{display:grid;grid-template-columns:1.4fr .6fr;gap:36px;padding:68px 0 52px;align-items:end}
-  .eyebrow{display:block;color:#477c61;font-size:11px;letter-spacing:.2em;font-weight:700;margin-bottom:16px}
-  h1{font-family:Georgia,"Iowan Old Style",serif;font-weight:500;font-size:clamp(2.5rem,5.6vw,5.1rem);line-height:1.06;letter-spacing:-.065em;margin:0;max-width:860px}
-  .hero p{max-width:630px;font-size:15px;color:#677268;line-height:1.7;margin:22px 0 0}
-  .reader{border:1px solid #d7ded7;background:#fff;border-radius:20px;padding:22px;box-shadow:0 12px 33px #36503d0a}
-  .reader label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#688070}
-  .reader form{display:flex;gap:8px;margin-top:14px}.reader input{border:1px solid #d6ded5;border-radius:10px;padding:11px 12px;min-width:0;width:100%;font-size:13px}
-  .reader button{border:0;background:#244e40;color:white;border-radius:10px;padding:11px 13px;font-size:12px;white-space:nowrap}
-  .reader p{font-size:11px;color:#808983;margin:11px 0 0;line-height:1.5}
-  .section-head{margin:44px 0 18px;display:flex;justify-content:space-between;align-items:baseline;gap:16px}
-  .section-head h2{font-family:Georgia,serif;font-size:31px;font-weight:500;letter-spacing:-.03em;margin:0}
-  .section-head span{color:#7c857e;font-size:12px}
-  profile-atlas{display:block}
-  .narrative{padding-top:12px}
-  .row-shell{border-top:1px solid #d9e0da;padding-top:5px}
-  .purpose{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:50px 0 70px}
-  .purpose>div{background:white;border:1px solid #e0e5df;border-radius:16px;padding:22px}
-  .purpose strong{font-size:13px}.purpose p{font-size:12px;line-height:1.6;color:#768077;margin:8px 0 0}
-  footer{border-top:1px solid #dce2dc;padding:24px 0 42px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:#858e87;font-size:11px}
-  @media(max-width:800px){.wrap{padding:0 16px}.hero{display:block;padding:46px 0 18px}.reader{margin-top:28px}.topbar{padding:17px 0}.links{gap:10px;font-size:11px}.section-head{margin-top:28px}.section-head h2{font-size:25px}.purpose{grid-template-columns:1fr;margin:30px 0}}
-  @media(prefers-color-scheme:dark){:root{background:#171e19;color:#eaf0e8}.topbar,footer,.row-shell{border-color:#38493d}.reader,.purpose>div{background:#253027;border-color:#3a4b3e}.reader input{background:#1a251e;color:white;border-color:#455749}.hero p,.reader p,.purpose p,.section-head span,.links,footer{color:#a1b0a3}}
-  /* Editorial shell: clear hierarchy outside the interactive Web Component. */
-  :root{color:#242923;background:#ece8dc;font-family:"Trebuchet MS",Arial,sans-serif}
-  .wrap{max-width:1370px;padding:0 48px}.topbar{padding:23px 0;border-color:#c7c3b6}.identity{font-size:12px;letter-spacing:.1em;text-transform:uppercase}.logo{width:34px;height:34px;background:#e86b42;border-radius:50%;color:#fff;font-size:23px;font-weight:400}.links{color:#62695f;font-size:11px}
-  .hero{grid-template-columns:minmax(0,1.65fr) minmax(230px,.65fr);gap:50px;padding:54px 0 41px}.eyebrow{color:#b85939;letter-spacing:.21em;font-size:10px}.hero h1{font-weight:400;font-size:clamp(3.1rem,6vw,6.4rem);letter-spacing:-.075em;max-width:980px;line-height:.98}.hero h1 em{font-weight:400;color:#b95e40}.hero p{color:#717267;font-size:14px;max-width:600px;line-height:1.75;margin-top:24px}
-  .reader{border-radius:3px;padding:24px;border-color:#cac5b6;background:#f5f2e8;box-shadow:9px 9px 0 #dad5c7}.reader label{color:#7c7b69;font-size:10px;letter-spacing:.17em}.reader form{margin-top:18px}.reader input{border-radius:3px;background:#fcfaf4;border-color:#ccc7b9}.reader button{border-radius:3px;background:#293d30;font-weight:700}.reader p{color:#858274}
-  .section-head{margin:34px 0 23px}.section-head h2{font-size:clamp(29px,3vw,43px);letter-spacing:-.06em}.section-head span{letter-spacing:.03em;color:#8b887d}.narrative{padding-top:30px}.row-shell{padding-top:16px;border-color:#c9c5b8}.purpose{gap:0;border:1px solid #d1ccbd;margin:65px 0 84px}.purpose>div{border:0;border-right:1px solid #d1ccbd;background:transparent;border-radius:0;padding:25px 22px}.purpose>div:last-child{border-right:0}.purpose strong{font-family:Georgia,serif;font-size:20px;letter-spacing:-.03em;font-weight:400}.purpose p{color:#77786c;font-size:12px}footer{border-color:#c9c5b8;color:#87867a}
-  @media(max-width:800px){.wrap{padding:0 18px}.hero{display:block;padding:53px 0 34px}.hero h1{font-size:clamp(3rem,11vw,5.3rem)}.reader{margin-top:32px}.section-head{margin-top:26px}.section-head h2{font-size:30px}.purpose{grid-template-columns:1fr;margin:38px 0}.purpose>div{border-right:0;border-bottom:1px solid #d1ccbd}.purpose>div:last-child{border:0}.links{gap:9px}.topbar{padding:18px 0}}
-  @media(prefers-color-scheme:dark){:root{background:#ece8dc;color:#242923}.topbar,footer,.row-shell{border-color:#c7c3b6}.reader{background:#f5f2e8;border-color:#cac5b6}.reader input{background:#fcfaf4;color:#242923;border-color:#ccc7b9}.hero p,.reader p,.purpose p,.section-head span,.links,footer{color:#77786c}.purpose>div{background:transparent}}
-  /* Quiet gallery shell: clear navigation, no ornamental panels. */
-  :root{background:#f5f3ec;color:#272a24}
-  .wrap{max-width:1350px}
-  .topbar{padding:20px 0;border-color:#dfdbcf}
-  .logo{background:#565e53;border-radius:50%;font-size:18px}
-  .hero{padding:53px 0 29px;grid-template-columns:minmax(0,1.7fr) minmax(190px,.55fr);gap:45px}
-  .hero h1{font-size:clamp(2.9rem,5.2vw,5.6rem);letter-spacing:-.07em;max-width:870px}
-  .hero h1 em{color:#8d897c}
-  .hero p{margin-top:15px;line-height:1.6;color:#88897d}
-  .reader{background:transparent;border:0;border-bottom:1px solid #d5d0c3;box-shadow:none;padding:6px 0 17px}
-  .reader form{margin-top:14px}
-  .reader input{background:transparent;border:0;border-bottom:1px solid #aaa99c;padding:10px 1px;border-radius:0}
-  .reader button{background:#343c34;border-radius:2px}
-  .reader p{font-size:10px}
-  .section-head{margin:30px 0 16px}
-  .section-head h2{font-size:clamp(24px,2.5vw,34px)}
-  .section-head span{font-size:11px;color:#9b9b8f}
-  .row-shell{border-color:#d9d5c9;padding-top:13px}
-  .narrative{padding-top:23px}
-  .purpose{display:block;margin:40px 0 28px;border:0;color:#898c80;font-size:12px}
-  footer{border-color:#dfdbcf}
-  @media(max-width:800px){.hero{padding:37px 0 19px}.reader{margin-top:28px}.hero h1{font-size:clamp(2.7rem,11vw,4.9rem)}.section-head{margin:25px 0 13px}.purpose{margin:30px 0 24px}}
-  </style>
-  <script type="module" src="../src/profile-atlas.js"></script>
+  <meta name="theme-color" content="#f7f7f2">
+  <meta name="description" content="Ava Kim's working archive — selected products, open-source experiments, public GitHub activity and collected ideas.">
+  <title>Ava Kim — Work &amp; Curiosity</title>
+  <link rel="stylesheet" href="../src/showcase.css">
+  <script type="module" src="../src/showcase.js"></script>
 </head>
 <body>
-  <div class="wrap">
+  <div class="container">
     <nav class="topbar" aria-label="Main navigation">
-      <div class="identity"><span class="logo" aria-hidden="true">A</span> Profile Atlas</div>
-      <div class="links"><a href="#work">Work</a><a href="#journey">Journey</a><a href="#about">About</a><a href="https://github.com/in-c0/profile-atlas" target="_blank" rel="noopener noreferrer">Source ↗</a></div>
-    </nav>
-    <header class="hero">
-      <div>
-        <h1>Made things.<br><em>Found things.</em></h1>
-        <p>An open collection of work, discoveries and ideas.</p>
+      <a class="wordmark" href="#top"><span class="mark" aria-hidden="true">A</span>Ava Kim</a>
+      <div class="toplinks">
+        <a href="#work">Work</a><a href="#activity">Activity</a><a href="#collected">Collected</a>
+        <a class="github-link" href="https://github.com/in-c0" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
       </div>
-      <aside class="reader">
-        <label for="username">Explore a GitHub profile</label>
-        <form id="lookup">
-          <input id="username" name="username" value="in-c0" autocapitalize="off" autocomplete="off" spellcheck="false" required maxlength="39" aria-label="GitHub username">
-          <button type="submit">Explore →</button>
-        </form>
-        <p>Public GitHub activity only. No sign-in.</p>
+    </nav>
+    <header class="hero" id="top">
+      <div>
+        <span class="hero-overline">A working archive / Sydney, Australia</span>
+        <h1>Making things.<br><em>Finding out.</em></h1>
+        <p class="hero-intro">I'm Ava — a software engineer, AI researcher and independent builder. These are some of the products I've made, questions I'm following, and ideas I keep coming back to.</p>
+      </div>
+      <aside class="hero-side">
+        <span>Why I keep building</span>
+        <p>I want useful ideas to have the time and resources to prove themselves — in products, scientific research and work that makes people's lives better.</p>
+        <a href="https://ava.kim" target="_blank" rel="noopener noreferrer">More about me at ava.kim ↗</a>
       </aside>
     </header>
-    <section id="work">
-      <div class="section-head"><h2>Projects</h2><span id="profile-summary">Explore the collection</span></div>
-      <profile-atlas id="primary" username="in-c0" manifest-url="../data/in-c0.json" max-pages="10"></profile-atlas>
-    </section>
-    <div id="journey" class="narrative"></div>
-    <section id="about" class="purpose" aria-label="About Profile Atlas">A reusable, open-source gallery and activity timeline. <a href="https://github.com/in-c0/profile-atlas" target="_blank" rel="noopener noreferrer">Get the components ↗</a></section>
-    <footer><span>Profile Atlas · public Web Components</span><span>GitHub public API · recent push events only</span></footer>
+    <main>
+      <section id="work" class="section">
+        <div class="section-header">
+          <div><span class="section-number">01 / Made</span><h2>Selected work</h2><p>A few things you can visit, try or inspect. Each has a different reason for existing.</p></div>
+          <span class="section-index" id="project-count">Selected projects</span>
+        </div>
+        <div class="tool-row">
+          <div class="filter-group" id="project-filters" aria-label="Filter projects"></div>
+          <label class="search-field"><span aria-hidden="true">⌕</span><input id="work-search" type="search" aria-label="Search projects" placeholder="Find a project…"></label>
+        </div>
+        <div id="projects-grid" class="projects-grid" aria-live="polite"><p class="empty-state">Loading projects…</p></div>
+        <p class="section-footnote">Images are captured product pages where available; text-only cards lead directly to the actual service. This is a selected portfolio, not a claim that every project is finished.</p>
+      </section>
+    </main>
   </div>
-<script>
-(function(){
- const input=document.querySelector('#username'),form=document.querySelector('#lookup'),atlas=document.querySelector('#primary'),extra=document.querySelector('#journey'),summary=document.querySelector('#profile-summary');
- const p=new URLSearchParams(location.search);if(p.get('user'))input.value=p.get('user');
- function mount(){
-   const u=input.value.trim();
-   if(!/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(u)){input.setCustomValidity('Enter a valid GitHub username');input.reportValidity();return}
-   input.setCustomValidity('');extra.replaceChildren();
-   if(u.toLowerCase()==='in-c0')atlas.setAttribute('manifest-url','../data/in-c0.json');else atlas.removeAttribute('manifest-url');
-   atlas.setAttribute('username',u);
-   const search=new URL(location.href);search.searchParams.set('user',u);history.replaceState(null,'',search);
- }
- form.addEventListener('submit',e=>{e.preventDefault();mount()});
- atlas.addEventListener('atlas-ready',()=>{
-   const rows=atlas.items;
-   summary.textContent='Select a card to explore';
-   extra.replaceChildren();
-   if(atlas.username.toLowerCase()!=='in-c0')return;
-   for(const [kind,title] of [['story','Stories'],['inspiration','Inspiration']]){
-     const shell=document.createElement('section');shell.className='row-shell';
-     const heading=document.createElement('div');heading.className='section-head';
-     const h2=document.createElement('h2');h2.textContent=title;
-     heading.append(h2);
-     const child=document.createElement('profile-atlas');child.setAttribute('compact','');child.setAttribute('row',kind);child.setAttribute('username',atlas.username);child.setAttribute('manifest-url','../data/in-c0.json');child.setAttribute('max-pages','10');
-     shell.append(heading,child);extra.append(shell);
-   }
- });
- if(p.get('user'))mount();
-})();
-</script>
+  <div class="statement-wrap" id="about">
+    <section class="container statement" aria-labelledby="about-title">
+      <div>
+        <span class="section-number">02 / In my own words</span>
+        <h2 id="about-title">A little more than a list of repos.</h2>
+        <p>Some of the reasons I do this. Open a note if you'd like to read more.</p>
+      </div>
+      <div id="story-list" class="story-list"></div>
+    </section>
+  </div>
+  <div class="container">
+    <section id="activity" class="section">
+      <div class="section-header">
+        <div><span class="section-number">03 / Public record</span><h2>Along the way</h2><p>A navigable view of public GitHub activity. Choose a period, a type or a column to see the underlying records.</p></div>
+        <span class="section-index">GitHub / partial history</span>
+      </div>
+      <div class="timeline-layout">
+        <div class="timeline-toolbar">
+          <div id="period-controls" class="range-controls" aria-label="Select activity time range"></div>
+          <span id="period-label" class="period-caption"></span>
+        </div>
+        <div class="timeline-main">
+          <div class="timeline-chart-meta">
+            <div id="activity-type-filters" class="activity-type-filters" aria-label="Filter activity type"></div>
+            <span id="activity-total" class="recorded-total">Loading public record…</span>
+          </div>
+          <div class="chart-scroll" role="region" aria-label="Activity by time, scroll horizontally to explore" tabindex="0">
+            <div id="activity-chart" class="activity-chart"></div>
+          </div>
+          <div class="chart-footer"><span id="activity-density-note"></span><span>Choose a column to read its events ↓</span></div>
+        </div>
+        <div class="activity-details">
+          <div class="activity-details-header"><h3 id="activity-details-heading">Recorded activity</h3></div>
+          <div id="activity-details" aria-live="polite"></div>
+        </div>
+        <div class="monthly-panel">
+          <div class="monthly-top"><h3>Month at a glance</h3><select id="month-selector" aria-label="Select a month to view totals"></select></div>
+          <div id="month-metrics" class="month-metrics"></div>
+          <p id="coverage-message" class="coverage-message"></p>
+        </div>
+      </div>
+    </section>
+    <section id="collected" class="section">
+      <div class="section-header">
+        <div><span class="section-number">04 / Looking around</span><h2>Collected inspiration</h2><p>Objects, motion and ideas that caught my attention. These are references, not projects I claim to have made.</p></div>
+        <span class="section-index" id="inspiration-count"></span>
+      </div>
+      <div id="inspiration-grid" class="inspiration-grid"></div>
+    </section>
+    <section class="section">
+      <div class="collection-grid">
+        <div class="collection-intro"><span class="section-number">05 / On the radar</span><h2>Elsewhere on GitHub</h2><p>Repositories I've starred or forked. Less a trophy case, more a trail of technical curiosity.</p></div>
+        <div class="collection-side">
+          <div class="collection-head"><div id="collection-tabs" class="filter-group"></div><span id="collection-count" class="tiny-count"></span></div>
+          <div id="collection-list" aria-live="polite"></div>
+          <button id="collection-more" class="text-button" type="button" hidden>Show more</button>
+          <p class="section-footnote">Starred and forked entries come from GitHub's public API and may be incomplete.</p>
+        </div>
+      </div>
+    </section>
+    <footer class="footer">
+      <span>Built by Ava. A living collection, not a finished biography.</span>
+      <div class="footer-links"><a href="https://ava.kim" target="_blank" rel="noopener noreferrer">Portfolio</a><a href="https://github.com/in-c0/profile-atlas" target="_blank" rel="noopener noreferrer">Open-source components ↗</a><a href="https://github.com/in-c0" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+    </footer>
+  </div>
+  <dialog class="detail-dialog" id="detail-dialog" aria-label="Project or inspiration details">
+    <button type="button" id="dialog-close" class="dialog-close" aria-label="Close details">×</button>
+    <div id="dialog-content"></div>
+  </dialog>
 </body>
 </html>

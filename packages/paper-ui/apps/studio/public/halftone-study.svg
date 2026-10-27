@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-label="Branch drawn in graphite">
+  <rect width="640" height="480" fill="#f2f1e8"/>
+  <g stroke-linecap="round" fill="none">
+    <g stroke="#817b73" stroke-width="2.2" opacity=".6">
+      <path d="M242 477 Q267 341 300 241 Q336 138 442 31"/>
+      <path d="M301 253 Q245 191 160 154 M329 171 Q399 164 494 202 M354 130 Q321 59 310 10"/>
+      <path d="M269 346 Q204 313 143 333 M356 145 Q419 96 514 107"/>
+    </g>
+    <g stroke="#3d3a35" stroke-width="3.1">
+      <path d="M242 477 Q267 341 300 241 Q336 138 442 31"/>
+      <path d="M301 253 Q245 191 160 154 M329 171 Q399 164 494 202 M354 130 Q321 59 310 10"/>
+      <path d="M269 346 Q204 313 143 333 M356 145 Q419 96 514 107"/>
+    </g>
+    <g stroke="#514d46" stroke-width="2.1">
+      <path d="M195 188 Q126 121 94 151 Q125 210 195 188Z M241 210 Q226 126 174 116 Q170 173 241 210Z"/>
+      <path d="M319 207 Q359 121 408 139 Q389 199 319 207Z M386 170 Q476 130 511 165 Q484 209 386 170Z"/>
+      <path d="M361 124 Q363 58 400 36 Q426 96 361 124Z M292 98 Q245 27 264 8 Q319 23 292 98Z"/>
+      <path d="M228 331 Q181 278 130 292 Q152 351 228 331Z M300 263 Q322 315 377 323 Q392 270 300 263Z"/>
+    </g>
+  </g>
+  <g fill="#7d7972" opacity=".18">
+    <ellipse cx="185" cy="183" rx="32" ry="7" transform="rotate(30 185 183)"/>
+    <ellipse cx="385" cy="170" rx="26" ry="8" transform="rotate(-20 385 170)"/>
+    <ellipse cx="365" cy="91" rx="17" ry="7" transform="rotate(-44 365 91)"/>
+  </g>
+</svg>

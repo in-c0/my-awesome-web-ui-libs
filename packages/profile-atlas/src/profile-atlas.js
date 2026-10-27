@@ -2,6 +2,17 @@
 import {ACTIVITY_TYPES,activityWindow,reconcileMonthlySnapshots} from './timeline-math.js';
 const E=(tag,cls='',label)=>{const n=document.createElement(tag);n.className=cls;if(label!==undefined)n.textContent=String(label);return n};
 const ACTIVITY_LABELS={star:'Star',fork:'Fork',project:'New repo',commit:'Push'};
+const RANGES=['week','month','year','five','all'],KINDS=['project','star','fork','story','inspiration'];
+const USERNAME=/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i;
+const reducedMotion=()=>typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* A property set on an element before its class was defined shadows the accessor; re-apply it through the setter. */
+const upgradeProperty=(el,prop)=>{if(Object.prototype.hasOwnProperty.call(el,prop)){const value=el[prop];delete el[prop];el[prop]=value}};
+/* Several attribute callbacks arrive together during an upgrade; collapse them into one load. */
+const queueLoad=el=>{if(el._queued)return;el._queued=true;queueMicrotask(()=>{el._queued=false;if(el.isConnected)el.load()})};
+const unreachable=e=>e instanceof TypeError?'GitHub\u2019s public API could not be reached. Try again later, or set the events property yourself.':(e.message||'Unable to load GitHub activity.');
+const isoDate=value=>{if(typeof value==='string')return value;const d=new Date(value);return Number.isNaN(+d)?'':d.toISOString()};
+/* Keep Tab inside an open dialog. */
+function trapFocus(e,panel,root){if(e.key!=='Tab')return;const focusable=[...panel.querySelectorAll('a[href],button:not([disabled]),input,select,textarea,video[controls],iframe,[tabindex]:not([tabindex="-1"])')].filter(x=>!x.hidden);if(!focusable.length)return;const first=focusable[0],last=focusable[focusable.length-1],active=root.activeElement;if(e.shiftKey&&(active===first||!panel.contains(active))){e.preventDefault();last.focus()}else if(!e.shiftKey&&(active===last||!panel.contains(active))){e.preventDefault();first.focus()}}
 function activityIcon(type){
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('width','25');svg.setAttribute('height','25');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.65');svg.setAttribute('stroke-linejoin','round');svg.setAttribute('stroke-linecap','round');svg.setAttribute('aria-hidden','true');
  const make=(tag,attributes)=>{const node=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [key,value] of Object.entries(attributes))node.setAttribute(key,value);svg.append(node)};
@@ -56,15 +67,19 @@ function unfeaturedMonthlyCounts(repos,manifest){
 const sorted=(items,kind)=>{const a=kind==='all'?[...items]:items.filter(x=>x.type===kind);return kind==='story'||kind==='inspiration'?a:a.sort((x,y)=>kind==='project'?(Number(y.featured)-Number(x.featured)||(x.curatedOrder??Infinity)-(y.curatedOrder??Infinity)||+new Date(y.date||0)-+new Date(x.date||0)):+new Date(y.date||0)-+new Date(x.date||0))};
 /** Independent, framework-free GitHub activity railway. Set .events or use username. */
 class GithubActivityTimeline extends HTMLElement{
- static get observedAttributes(){return ['username','max-pages']}
- constructor(){super();this.attachShadow({mode:'open'});this._events=[];this._loadId=0;this._ready=false;this.range='year';this.activeType=null;const css=E('link'),graphcss=E('link');css.rel='stylesheet';css.href=new URL('./profile-atlas.css',import.meta.url).href;graphcss.rel='stylesheet';graphcss.href=new URL('./github-activity-timeline.css',import.meta.url).href;this.surface=E('section','timeline-section graph-section');this.shadowRoot.append(css,graphcss,this.surface)}
- set events(value){this._events=Array.isArray(value)?value:[];this._ready=true;this._loadId++;if(this.isConnected)this.render()}
+ static get observedAttributes(){return ['username','max-pages','range']}
+ constructor(){super();this.attachShadow({mode:'open'});this._events=[];this._loadId=0;this._ready=false;this._explicit=false;this._range='year';this.activeType=null;const css=E('link'),graphcss=E('link');css.rel='stylesheet';css.href=new URL('./profile-atlas.css',import.meta.url).href;graphcss.rel='stylesheet';graphcss.href=new URL('./github-activity-timeline.css',import.meta.url).href;this.surface=E('section','timeline-section graph-section');this.shadowRoot.append(css,graphcss,this.surface)}
+ set events(value){this._events=Array.isArray(value)?value:[];this._explicit=true;this._ready=true;this._loadId++;this.controller?.abort();if(this.isConnected)this.render()}
  get events(){return this._events}
- connectedCallback(){if(this._ready)this.render();else this.load()}
+ get range(){return this._range}
+ set range(value){if(!RANGES.includes(value)||value===this._range)return;this._range=value;this.activeType=null;this.metricMonth=undefined;if(this._ready&&this.isConnected)this.render()}
+ connectedCallback(){upgradeProperty(this,'events');upgradeProperty(this,'range');if(this._ready)this.render();else this.requestLoad()}
  disconnectedCallback(){this._loadId++;this.controller?.abort()}
- attributeChangedCallback(){if(this.isConnected&&!this._ready)this.load()}
+ attributeChangedCallback(name,old,value){if(old===value)return;if(name==='range'){this.range=value;return}if(!this._explicit&&this.isConnected)this.requestLoad()}
+ requestLoad(){queueLoad(this)}
  async load(){
-  const username=(this.getAttribute('username')||'').trim();if(!/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(username)){this.surface.replaceChildren(E('p','notice','Set a GitHub username or provide an events array.'));return}
+  if(this._explicit)return;
+  const username=(this.getAttribute('username')||'').trim();if(!USERNAME.test(username)){this.surface.replaceChildren(E('p','notice','Set a GitHub username or provide an events array.'));return}
   const id=++this._loadId;this.controller?.abort();this.controller=new AbortController();this.surface.replaceChildren(E('p','notice','Loading public activity…'));
   try{
    const max=Math.max(1,Math.min(30,Number(this.getAttribute('max-pages')||10)||10));
@@ -77,18 +92,18 @@ class GithubActivityTimeline extends HTMLElement{
    if(!('pushes' in data)){try{const p=await pages('/users/'+encodeURIComponent(username)+'/events/public',{},this.controller.signal,3);data.pushes=p.items.filter(x=>x.type==='PushEvent');cacheWrite(key,data)}catch{data.pushes=[]}}
    if(id!==this._loadId)return;
    const owned=data.repos.map(repoToItem),starred=data.stars.map(x=>({...repoToItem(x.repo||x),id:'star:'+((x.repo||x).full_name),type:'star',date:x.starred_at||''})),pushes=(data.pushes||[]).map(eventToCommit);this._events=[...owned,...starred,...pushes];this._ready=true;this.render();
-  }catch(e){if(id===this._loadId&&e.name!=='AbortError')this.surface.replaceChildren(E('p','notice',e.message||'Unable to load GitHub activity.'))}
+  }catch(e){if(id===this._loadId&&e.name!=='AbortError')this.surface.replaceChildren(E('p','notice',unreachable(e)))}
  }
  open(items,label){const event=new CustomEvent('activity-open',{detail:{items,label},bubbles:true,composed:true,cancelable:true});this.dispatchEvent(event);if(!event.defaultPrevented)this.showDetails(items,label)}
  showDetails(items,label){
   this.surface.querySelector('.graph-drawer')?.remove();const drawer=E('div','graph-drawer');drawer.setAttribute('role','region');drawer.setAttribute('aria-label',label);const head=E('div','graph-drawer-head'),close=E('button','','×');close.setAttribute('aria-label','Close activity details');close.onclick=()=>drawer.remove();head.append(E('strong','',label),close);drawer.append(head);
   const list=E('div','activity-detail-list'),more=E('button','activity-details-more','Show more');let limit=12;
   const draw=()=>{list.replaceChildren();for(const item of items.slice(0,limit)){const row=E('div','graph-drawer-item');const link=item.url?E('a','',item.title):E('strong','',item.title);if(item.url){link.href=item.url;link.target='_blank';link.rel='noopener noreferrer'}const date=E('small','',item.aggregate?'Month-only record':item.date?when(item.date):'');row.append(link,E('small','',item.summary||item.type),date);list.append(row)}more.hidden=limit>=items.length};more.onclick=()=>{limit+=30;draw()};
-  drawer.append(list,more);const analysis=this.surface.querySelector('.activity-monthly-analysis');if(analysis)analysis.before(drawer);else this.surface.append(drawer);draw();drawer.scrollIntoView({block:'nearest',behavior:'smooth'});
+  drawer.append(list,more);const analysis=this.surface.querySelector('.activity-monthly-analysis');if(analysis)analysis.before(drawer);else this.surface.append(drawer);draw();drawer.scrollIntoView({block:'nearest',behavior:reducedMotion()?'auto':'smooth'});
  }
  render(){
   this.surface.replaceChildren();
-  const events=this._events.filter(x=>ACTIVITY_TYPES.includes(x.type)&&x.date&&!Number.isNaN(+new Date(x.date)));
+  const events=this._events.filter(x=>x&&ACTIVITY_TYPES.includes(x.type)&&x.date!=null&&x.date!==''&&!Number.isNaN(+new Date(x.date))).map(x=>typeof x.date==='string'?x:{...x,date:isoDate(x.date)});
   const state=activityWindow(this.range,events);
   const heading=E('div','activity-heading'),headingCopy=E('div');
   headingCopy.append(E('h2','','GitHub activity'),E('p','activity-period',state.label));
@@ -101,7 +116,7 @@ class GithubActivityTimeline extends HTMLElement{
   for(const [key,label] of [['week','This week'],['month','This month'],['year','This year'],['five','Past 5 years'],['all','All']]){
    const button=E('button','activity-range'+(key===this.range?' selected':''),label);
    button.type='button';button.setAttribute('aria-pressed',String(key===this.range));
-   button.onclick=()=>{this.range=key;this.activeType=null;this.metricMonth=undefined;this.render()};
+   button.onclick=()=>{this.range=key};
    ranges.append(button);
   }
   this.surface.append(ranges);
@@ -180,21 +195,23 @@ class GithubActivityTimeline extends HTMLElement{
 }
 if(!customElements.get('github-activity-timeline'))customElements.define('github-activity-timeline',GithubActivityTimeline);
 class ProfileAtlas extends HTMLElement{
- static get observedAttributes(){return['username','manifest-url','max-pages']}
+ static get observedAttributes(){return['username','manifest-url','max-pages','row','compact','theme']}
  constructor(){super();this.attachShadow({mode:'open'});this.items=[];this.hiddenMonthly=[];this.kind='project';this.pos={};this.pending=true;this.message='';this.loadId=0;this.lastWidth=0;this.root=E('div','atlas');const link=E('link'),newStyles=E('link');link.rel=newStyles.rel='stylesheet';link.href=new URL('./profile-atlas.css',import.meta.url).href;newStyles.href=new URL('./mellow-overrides.css',import.meta.url).href;this.shadowRoot.append(link,newStyles,this.root);this.keydown=this.keydown.bind(this)}
- connectedCallback(){if(['project','star','fork','story','inspiration'].includes(this.getAttribute('row')))this.kind=this.getAttribute('row');this.root.addEventListener('keydown',this.keydown);this.resize=new ResizeObserver(entries=>{const width=entries[0]?.contentRect.width||0;if(Math.abs(width-this.lastWidth)>3){this.lastWidth=width;if(!this.pending)this.gallery()}});this.resize.observe(this);this.load()}
+ connectedCallback(){if(KINDS.includes(this.getAttribute('row')))this.kind=this.getAttribute('row');this.root.addEventListener('keydown',this.keydown);this.resize=new ResizeObserver(entries=>{const width=entries[0]?.contentRect.width||0;if(Math.abs(width-this.lastWidth)>3){this.lastWidth=width;if(!this.pending)this.gallery()}});this.resize.observe(this);this.requestLoad()}
  disconnectedCallback(){this.loadId++;this.controller?.abort();this.resize?.disconnect();this.root.removeEventListener('keydown',this.keydown)}
- attributeChangedCallback(){if(this.isConnected)this.load()}
+ attributeChangedCallback(name,old,value){if(old===value)return;if(name==='theme'){const t=this.root.querySelector('github-activity-timeline');if(t){if(value===null)t.removeAttribute('theme');else t.setAttribute('theme',value)}return}if(name==='row'||name==='compact'){if(name==='row'&&KINDS.includes(value))this.kind=value;if(this.isConnected&&!this.pending)this.render();return}if(this.isConnected)this.requestLoad()}
+ requestLoad(){queueLoad(this)}
  get username(){return(this.getAttribute('username')||'').trim()}
  get limit(){const n=Number(this.getAttribute('max-pages')||10);return Math.max(1,Math.min(30,Number.isFinite(n)?Math.floor(n):10))}
  get collection(){return sorted(this.items,this.kind)}
- keydown(e){if(e.target.closest('input,select,[role=dialog],.timeline-board'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();this.shift(e.key==='ArrowRight'?1:-1)}}
+ keydown(e){if(e.target.closest('input,select,textarea,[role=dialog],github-activity-timeline'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();this.shift(e.key==='ArrowRight'?1:-1)}}
  async load(){
   const current=++this.loadId;this.controller?.abort();this.controller=new AbortController();this.pending=true;this.message='';this.render();
-  if(!/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(this.username)){this.pending=false;this.message='Choose a valid GitHub username.';this.render();return}
+  const manifestOnly=!this.username&&!!this.getAttribute('manifest-url');
+  if(!manifestOnly&&!USERNAME.test(this.username)){this.pending=false;this.message='Set a valid GitHub username, or a manifest-url on its own.';this.render();return}
   const key='profile-atlas:v2:'+this.username+':'+this.limit;
   try{
-   let data=cacheRead(key)||cacheRead('profile-atlas:v1:'+this.username+':'+this.limit);
+   let data=manifestOnly?{repos:[],stars:[],pushes:[]}:(cacheRead(key)||cacheRead('profile-atlas:v1:'+this.username+':'+this.limit));
    if(!data){
     const path='/users/'+encodeURIComponent(this.username);
     const responses=await Promise.allSettled([pages(path+'/repos?type=owner&sort=created',{},this.controller.signal,this.limit),pages(path+'/starred',{'Accept':'application/vnd.github.star+json'},this.controller.signal,this.limit),pages(path+'/events/public',{},this.controller.signal,3)]);
@@ -227,7 +244,7 @@ class ProfileAtlas extends HTMLElement{
   if(this.pending)this.main.append(E('p','notice','Collecting public GitHub activity…'));
   else if(!this.items.length)this.main.append(E('p','notice',this.message||'No public items were found.'));
   else this.gallery();
-  const footer=E('footer','footer');const a=E('a','','Source: public GitHub activity');a.href='https://github.com/'+encodeURIComponent(this.username);a.target='_blank';a.rel='noopener noreferrer';footer.append(a,E('span','',' · Stars use starred-at dates; forks use creation dates.'));
+  const footer=E('footer','footer');if(this.username){const a=E('a','','Source: public GitHub activity');a.href='https://github.com/'+encodeURIComponent(this.username);a.target='_blank';a.rel='noopener noreferrer';footer.append(a,E('span','',' · Stars use starred-at dates; forks use creation dates.'))}else footer.append(E('span','','Source: the manifest only. Add a username to include public GitHub activity.'));
   if(compact){this.root.append(this.main)}else{this.root.append(bar,this.main);if(!this.pending&&this.items.length)this.root.append(this.timeline());if(this.message)this.root.append(E('p','note',this.message));this.root.append(footer)}
  }
  shift(d){const n=this.collection.length;if(!n)return;this.pos[this.kind]=((this.pos[this.kind]||0)+d%n+n)%n;this.gallery()}
@@ -250,10 +267,10 @@ class ProfileAtlas extends HTMLElement{
   const spacing=mobile?Math.max(27,Math.min(42,(width-plateWidth-38)/Math.max(1,visible-1))):Math.max(54,Math.min(97,(width-plateWidth-140)/Math.max(1,visible-1)));
   const cards=Array.from({length:visible},(_,index)=>({item:items[(start+index)%n],index}));
   const container=E('div','mellow-gallery splay-gallery'),stage=E('div','splay-stage'),rack=E('div','splay-rack');
-  stage.setAttribute('aria-label','Splay Cards gallery. Hover a card to open the stack; select to preview.');
+  stage.setAttribute('role','group');stage.setAttribute('aria-label','Splay Cards gallery. Hover a card to open the stack; select to preview.');
   rack.style.setProperty('--plate-width',plateWidth+'px');rack.style.setProperty('--plate-height',(mobile?268:330)+'px');rack.style.width=(plateWidth+(visible-1)*spacing)+'px';
   const controls=[],caption=E('div','splay-caption');let activeIndex=undefined;
-  const activate=index=>{if(activeIndex===index)return;activeIndex=index;for(const {card,i,video} of controls){card.classList.toggle('is-active',i===index);card.classList.toggle('is-behind',index!==null&&i>index);card.style.zIndex=String(index===i?visible+2:i+1);if(video){if(index===i&&!(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches))video.play().catch(()=>{});else video.pause()}}
+  const activate=index=>{if(activeIndex===index)return;activeIndex=index;for(const {card,i,video} of controls){card.classList.toggle('is-active',i===index);card.classList.toggle('is-behind',index!==null&&i>index);card.style.zIndex=String(index===i?visible+2:i+1);if(video){if(index===i&&!reducedMotion())video.play().catch(()=>{});else video.pause()}}
    caption.replaceChildren();if(index===null){caption.append(E('span','caption-idle',this.kind==='project'?'Things I’ve built':this.kind==='inspiration'?'Collected inspiration':'Curious discoveries'));return}
    const item=cards[index].item;caption.append(E('strong','',item.title),E('span','',item.summary));};
   for(const {item,index} of cards){
@@ -307,20 +324,20 @@ class ProfileAtlas extends HTMLElement{
  }
  openIndex(source=this.collection,title='Browse everything'){
   const overlay=E('div','overlay'),panel=E('section','index-panel');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label',title);const before=this.shadowRoot.activeElement;
-  const head=E('div','index-head'),heading=E('div');heading.append(E('small','eyebrow','THE COMPLETE INDEX'),E('h2','',title));const close=E('button','close','×'),exit=()=>{overlay.remove();before?.focus()};close.setAttribute('aria-label','Close index');close.onclick=exit;overlay.onclick=e=>{if(e.target===overlay)exit()};overlay.onkeydown=e=>{if(e.key==='Escape')exit()};head.append(heading,close);
+  const head=E('div','index-head'),heading=E('div');heading.append(E('small','eyebrow','THE COMPLETE INDEX'),E('h2','',title));const close=E('button','close','×'),exit=()=>{overlay.remove();before?.focus()};close.setAttribute('aria-label','Close index');close.onclick=exit;overlay.onclick=e=>{if(e.target===overlay)exit()};overlay.onkeydown=e=>{if(e.key==='Escape')exit();else trapFocus(e,panel,this.shadowRoot)};head.append(heading,close);
   const search=E('input','search');search.type='search';search.placeholder='Find by name, idea, language…';search.setAttribute('aria-label','Filter entries');const label=E('small','index-count'),list=E('div','index-list'),more=E('button','more','Show more ↓');let limit=30;
   const draw=()=>{const q=search.value.trim().toLowerCase(),matches=source.filter(x=>(x.title+' '+x.summary+' '+x.language+' '+x.type).toLowerCase().includes(q));list.replaceChildren();matches.slice(0,limit).forEach((x,i)=>{const row=E('button','index-row');row.append(E('small','index-number',String(i+1).padStart(3,'0')),E('strong','',x.title),E('span','',x.summary||'Open details'),E('small','',x.language||x.type));row.onclick=()=>{exit();this.detail(x)};list.append(row)});if(!matches.length)list.append(E('p','notice','Nothing matched. Try another search.'));more.hidden=limit>=matches.length;label.textContent=matches.length+' entries'};
   search.oninput=()=>{limit=30;draw()};more.onclick=()=>{limit+=40;draw()};panel.append(head,search,label,list,more);overlay.append(panel);this.root.append(overlay);draw();search.focus()
  }
  timeline(){
-  const component=E('github-activity-timeline');component.events=[...this.items,...this.hiddenMonthly];
+  const component=E('github-activity-timeline');const theme=this.getAttribute('theme');if(theme)component.setAttribute('theme',theme);component.events=[...this.items,...this.hiddenMonthly];
   return component
  }
  detail(item,demoFirst=false){
   const overlay=E('div','overlay'),panel=E('section','detail');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label',item.title);
-  const before=this.shadowRoot.activeElement,close=E('button','close','×'),exit=()=>{overlay.remove();before?.focus()};close.setAttribute('aria-label','Close detail');close.onclick=exit;overlay.onclick=e=>{if(e.target===overlay)exit()};overlay.onkeydown=e=>{if(e.key==='Escape')exit()};
+  const before=this.shadowRoot.activeElement,close=E('button','close','×'),exit=()=>{overlay.remove();before?.focus()};close.setAttribute('aria-label','Close detail');close.onclick=exit;overlay.onclick=e=>{if(e.target===overlay)exit()};overlay.onkeydown=e=>{if(e.key==='Escape')exit();else trapFocus(e,panel,this.shadowRoot)};
   const media=E('div','detail-media');
-   if(item.mediaType==='video'&&item.image){const v=E('video');v.src=item.image;if(item.poster)v.poster=item.poster;v.controls=true;v.playsInline=true;v.preload='metadata';v.autoplay=true;v.muted=true;v.loop=true;v.setAttribute('aria-label',item.title+' motion preview');media.append(v)}
+   if(item.mediaType==='video'&&item.image){const v=E('video');v.src=item.image;if(item.poster)v.poster=item.poster;v.controls=true;v.playsInline=true;v.preload='metadata';v.autoplay=!reducedMotion();v.muted=true;v.loop=true;v.setAttribute('aria-label',item.title+' motion preview');media.append(v)}
    else if(item.image){const img=E('img');img.src=item.image;img.alt=item.title+' project preview';if(item.demoUrl||item.url){const destination=E('a','detail-poster-link');destination.href=item.demoUrl||item.url;destination.target='_blank';destination.rel='noopener noreferrer';destination.setAttribute('aria-label','Open '+item.title+' in a new tab');destination.append(img,E('span','detail-open-site','Visit live ↗'));media.append(destination)}else media.append(img)}
    else if(item.demoUrl&&item.preview==='iframe'){const f=E('iframe');f.src=item.demoUrl;f.title='Preview '+item.title;f.sandbox='allow-scripts allow-forms allow-popups';f.referrerPolicy='no-referrer';f.loading='lazy';media.append(f,E('small','','If this website blocks embedding, open the live demo in a new tab.'))}
   else if((demoFirst||!item.image)&&item.demoUrl&&item.preview==='video'){const v=E('video');v.src=item.demoUrl;v.controls=true;v.playsInline=true;media.append(v)}
@@ -331,4 +348,4 @@ class ProfileAtlas extends HTMLElement{
  }
 }
 if(!customElements.get('profile-atlas'))customElements.define('profile-atlas',ProfileAtlas);
-export {ProfileAtlas};
+export {ProfileAtlas,GithubActivityTimeline};

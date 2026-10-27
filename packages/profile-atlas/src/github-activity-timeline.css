@@ -167,3 +167,30 @@
  .activity-monthly-analysis .monthly-metric strong{font-size:27px}
 }
 @media(prefers-reduced-motion:reduce){.activity-mark{transition:none}}
+
+/* Theme layer: the activity timeline reads the tokens in profile-atlas.css. */
+.graph-section{background:var(--pa-sunken);color:var(--pa-ink);border-top-color:var(--pa-line-soft)}
+.activity-heading h2,.activity-monthly-analysis h3{color:var(--pa-ink)}
+.activity-period{color:var(--pa-muted)}
+.activity-view-all{color:var(--pa-muted);border-bottom-color:var(--pa-line-strong)}.activity-view-all:not(:disabled):hover{color:var(--pa-ink)}
+.activity-range{color:var(--pa-faint)}.activity-range:hover{color:var(--pa-ink)}.activity-range.selected{color:var(--pa-ink);border-bottom-color:var(--pa-ink)}
+.activity-range:focus-visible,.activity-lane-label:focus-visible,.activity-mark:focus-visible,.monthly-metric:focus-visible,.activity-plot-viewport:focus-visible{outline:2px solid var(--pa-focus);outline-offset:3px}
+.activity-lane-label{color:var(--pa-muted)}
+.activity-lane-label.star svg,.monthly-metric.star svg{color:var(--pa-star)}.activity-lane-label.fork svg,.monthly-metric.fork svg{color:var(--pa-fork)}
+.activity-lane-label.project svg,.monthly-metric.project svg{color:var(--pa-project)}.activity-lane-label.commit svg,.monthly-metric.commit svg{color:var(--pa-commit)}
+.activity-lane{border-bottom-color:var(--pa-line);background-image:linear-gradient(to top,var(--pa-grid) 1px,transparent 1px)}
+.activity-cell{border-right-color:var(--pa-grid)}
+.activity-mark.star{--activity-color:var(--pa-star)}.activity-mark.fork{--activity-color:var(--pa-fork)}.activity-mark.project{--activity-color:var(--pa-project)}.activity-mark.commit{--activity-color:var(--pa-commit)}
+.activity-bin-label,.activity-under-chart,.activity-coverage{color:var(--pa-faint)}
+.activity-precision{color:var(--pa-accent)}
+.activity-plot-viewport{scrollbar-color:var(--pa-line-strong) transparent}
+.activity-monthly-analysis{background:var(--pa-surface);border-top-color:var(--pa-line)}
+.month-select{color:var(--pa-ink);border-bottom-color:var(--pa-line-strong);background:transparent}.month-select option{background:var(--pa-surface);color:var(--pa-ink)}
+.activity-monthly-analysis .monthly-metric{color:inherit;border-left-color:var(--pa-line)}
+.monthly-metric-label{color:var(--pa-muted)}.monthly-metric strong,.activity-monthly-analysis .monthly-metric strong{color:var(--pa-ink)}
+.activity-coverage summary{text-decoration-color:var(--pa-line-strong)}
+.activity-empty{color:var(--pa-muted)}
+.graph-drawer{background:var(--pa-surface);border-color:var(--pa-line)}
+.graph-drawer-head button{border-color:var(--pa-line);color:var(--pa-ink)}
+.graph-drawer-item{border-top-color:var(--pa-line-soft)}.graph-drawer-item a,.graph-drawer-item strong{color:var(--pa-ink)}.graph-drawer-item small{color:var(--pa-muted)}
+.activity-details-more{color:var(--pa-ink);border-bottom-color:var(--pa-line-strong)}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Annunciator, Caliper, Counter, Gauge, Gears, Presets, Selector, Tank, Tray } from "knurl-ui/react";
-import type { Finish } from "knurl-ui";
+import { Annunciator, Caliper, Counter, Gauge, Gears, Presets, Selector, Tank, Tray } from "@in-c0/knurl/react";
+import type { Finish } from "@in-c0/knurl";
 
 /**
  * A document intake desk. Drop PDFs in the tray; choose the page range,

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Annunciator, Caliper, Combo, Counter, Fader, Gauge, Gears, Joystick, Keycap, Knob, Presets, Rocker, Selector, Tank, Timer, Toggle, Track, Tray } from "knurl-ui/react";
+import { Annunciator, Caliper, Combo, Counter, Fader, Gauge, Gears, Joystick, Keycap, Knob, Presets, Rocker, Selector, Tank, Timer, Toggle, Track, Tray } from "@in-c0/knurl/react";
 import { newDocs } from "./data-new";
-import type { Finish } from "knurl-ui";
+import type { Finish } from "@in-c0/knurl";
 import { CONTROLS } from "../../registry/controls.mjs";
 
 export const SITE = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "https://in-c0.github.io/my-awesome-web-ui-libs/knurl";
 export const REPO = "https://github.com/in-c0/my-awesome-web-ui-libs/tree/main/packages/knurl";
-export const NPM = "https://www.npmjs.com/package/knurl-ui";
+export const NPM = "https://www.npmjs.com/package/@in-c0/knurl";
 
 export type Prop = { name: string; type: string; def?: string; desc: string };
 export type Example = { id: string; title: string; text: string; code: string; render: (f: Finish) => ReactNode };

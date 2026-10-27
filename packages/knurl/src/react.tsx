@@ -4,7 +4,7 @@ import {
   type ToggleOptions, type RockerOptions, type FaderOptions, type CaliperOptions, type KnobOptions, type JoystickOptions, type KeycapOptions, type CounterOptions, type ComboOptions, type TrayOptions, type PresetsOptions, type SelectorOptions, type GaugeOptions, type TankOptions, type TrackOptions, type TimerOptions, type AnnunciatorOptions, type GearsOptions,
 } from "./index";
 
-/** knurl-ui/react — the controls as React components. */
+/** @in-c0/knurl/react — the controls as React components. */
 export type { KnurlDivProps } from "./react/make";
 
 /** A switch, built as a bat-handle toggle on a panel, with a lamp that lights when it is on. */

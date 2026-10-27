@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { Finish } from "knurl-ui";
+import type { Finish } from "@in-c0/knurl";
 import { Deploy } from "./Deploy";
 import { Intake } from "./Intake";
 import { Synth } from "./Synth";

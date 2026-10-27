@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import type { Finish } from "knurl-ui";
-import { Fader, Gauge, Knob, Toggle } from "knurl-ui/react";
+import type { Finish } from "@in-c0/knurl";
+import { Fader, Gauge, Knob, Toggle } from "@in-c0/knurl/react";
 import { DOCS, Hero, NPM, REPO, SITE, useReplay, type Doc } from "./data";
 import { Code, Command, CopyButton, Icon, Mark, Seg, Tabs, copyText, useStored } from "./ui";
 import { CASES, type Case } from "./cases";
@@ -153,7 +153,7 @@ function Home({ go, finish, setFinish }: { go: (r: string) => void; finish: Fini
                 </p>
                 <div className="cta">
                   <a className="btn primary" href={href(DOCS[0].id)}>Browse controls</a>
-                  <span className="install-chip mono"><span className="dollar">$</span>npm i knurl-ui<CopyButton text="npm i knurl-ui" label="Copy install command" /></span>
+                  <span className="install-chip mono"><span className="dollar">$</span>npm i @in-c0/knurl<CopyButton text="npm i @in-c0/knurl" label="Copy install command" /></span>
                 </div>
               </div>
               <Specimen finish={finish} />
@@ -246,7 +246,7 @@ function CodeSheet({ doc, close }: { doc: Doc; close: () => void }) {
         <div className="sheet-head"><h3>{doc.name}</h3><button className="icon-btn" aria-label="Close" onClick={close} autoFocus><Icon.close /></button></div>
         <p style={{ color: "var(--muted-fg)", marginTop: 6, fontSize: 14 }}>{doc.summary}</p>
         <Command kind="run" arg={`shadcn@latest add ${SITE}/r/${doc.id}.json`} />
-        <Code code={`import { ${doc.name} } from "knurl-ui/react";\n\n${doc.examples[0].code}`} title="usage.tsx" />
+        <Code code={`import { ${doc.name} } from "@in-c0/knurl/react";\n\n${doc.examples[0].code}`} title="usage.tsx" />
         <Code code={source(doc.id)} title={`controls/${doc.id}.ts`} collapse />
         <div style={{ marginTop: 16 }}><a className="btn sm" href={href(doc.id)} onClick={close}>Open the {doc.name} page</a></div>
       </div>
@@ -310,7 +310,7 @@ function PageActions({ md, name }: { md: () => string; name: string }) {
     addEventListener("pointerdown", off);
     return () => removeEventListener("pointerdown", off);
   }, [open]);
-  const prompt = encodeURIComponent(`I'm using the ${name} control from Knurl (${SITE}, npm: knurl-ui). Read ${SITE}/llms.txt and help me with it.`);
+  const prompt = encodeURIComponent(`I'm using the ${name} control from Knurl (${SITE}, npm: @in-c0/knurl). Read ${SITE}/llms.txt and help me with it.`);
   return (
     <div className="split" ref={ref}>
       <button className="btn sm" onClick={() => copyText(md())}><Icon.copy />Copy page</button>
@@ -358,7 +358,7 @@ function Preview({ ex, finish, setFinish, small }: { ex: Doc["examples"][number]
 }
 
 function ControlPage({ doc, index, finish, setFinish }: { doc: Doc; index: number; finish: Finish; setFinish: (f: Finish) => void }) {
-  const usage = `import { ${doc.name} } from "knurl-ui/react";\n\nexport function Example() {\n  return ${doc.examples[0].code.includes("\n") ? "(\n    " + doc.examples[0].code.replace(/\n/g, "\n    ") + "\n  )" : doc.examples[0].code};\n}`;
+  const usage = `import { ${doc.name} } from "@in-c0/knurl/react";\n\nexport function Example() {\n  return ${doc.examples[0].code.includes("\n") ? "(\n    " + doc.examples[0].code.replace(/\n/g, "\n    ") + "\n  )" : doc.examples[0].code};\n}`;
   const md = () => toMarkdown(doc);
   const pageIndex = PAGES.findIndex((p) => p.id === doc.id);
   return (
@@ -382,7 +382,7 @@ function ControlPage({ doc, index, finish, setFinish }: { doc: Doc; index: numbe
       <h2 id="installation">Installation</h2>
       <Tabs id="install" tabs={[
         { id: "cli", label: "CLI", body: <><p style={{ marginTop: 14 }}>Adds the control and its shared core to <code>components/knurl</code>, as source you own.</p><Command kind="run" arg={`shadcn@latest add ${SITE}/r/${doc.id}.json`} /></> },
-        { id: "npm", label: "Package", body: <><p style={{ marginTop: 14 }}>Or install every control as one package and import what you use.</p><Command kind="add" arg="knurl-ui" /><Code code={`import { ${doc.name} } from "knurl-ui/react"; // React\nimport { ${doc.id} } from "knurl-ui";             // any DOM`} /></> },
+        { id: "npm", label: "Package", body: <><p style={{ marginTop: 14 }}>Or install every control as one package and import what you use.</p><Command kind="add" arg="@in-c0/knurl" /><Code code={`import { ${doc.name} } from "@in-c0/knurl/react"; // React\nimport { ${doc.id} } from "@in-c0/knurl";             // any DOM`} /></> },
         { id: "manual", label: "Manual", body: (
           <div className="steps" style={{ marginTop: 20 }}>
             <div><h4>Copy the core</h4><p>Six small files every control shares: projection, solids, the frame loop, the stylesheet, the value logic and the React wrapper. Take them from <a href={`${SITE}/r/knurl-core.json`} target="_blank" rel="noreferrer">knurl-core.json</a> or <a href={`${REPO}/src/core`} target="_blank" rel="noreferrer">src/core</a> into <code>components/knurl/core</code>.</p></div>
@@ -429,8 +429,8 @@ function ControlPage({ doc, index, finish, setFinish }: { doc: Doc; index: numbe
 function toMarkdown(d: Doc) {
   return [
     `# ${d.name}`, "", d.summary, "", d.object, "",
-    "## Installation", "", "```sh", `npx shadcn@latest add ${SITE}/r/${d.id}.json`, "# or", "npm i knurl-ui", "```", "",
-    "## Usage", "", "```tsx", `import { ${d.name} } from "knurl-ui/react";`, "", d.examples[0].code, "```", "",
+    "## Installation", "", "```sh", `npx shadcn@latest add ${SITE}/r/${d.id}.json`, "# or", "npm i @in-c0/knurl", "```", "",
+    "## Usage", "", "```tsx", `import { ${d.name} } from "@in-c0/knurl/react";`, "", d.examples[0].code, "```", "",
     ...d.examples.slice(1).flatMap((e) => [`### ${e.title}`, "", e.text, "", "```tsx", e.code, "```", ""]),
     "## API", "", "| Prop | Type | Default | Description |", "| --- | --- | --- | --- |",
     ...d.props.map((p) => `| \`${p.name}\` | \`${p.type.replace(/\|/g, "\\|")}\` | ${p.def ? "`" + p.def + "`" : ""} | ${p.desc} |`),
@@ -460,7 +460,7 @@ function CasePage({ c, finish, setFinish }: { c: Case; finish: Finish; setFinish
       <h2 id="how">How it works</h2>
       {c.body.map((b, i) => <p key={i} style={{ marginTop: i ? 12 : 8 }}>{b}</p>)}
       <h2 id="code">Code</h2>
-      <p>The whole example, as it runs on this page. Every control comes from <code>knurl-ui/react</code>.</p>
+      <p>The whole example, as it runs on this page. Every control comes from <code>@in-c0/knurl/react</code>.</p>
       <Code code={c.source} title={c.file} collapse />
       <Pager index={idx} />
     </article>
@@ -505,11 +505,11 @@ function Installation() {
   const idx = PAGES.findIndex((p) => p.id === "installation");
   return (
     <article className="article">
-      <GuideHead title="Installation" desc="As a package, as source through the shadcn CLI, or as a plain DOM call. React 18 or later is optional." md={() => "# Installation\n\n```sh\nnpm i knurl-ui\nnpx shadcn@latest add " + SITE + "/r/knurl.json\n```"} />
+      <GuideHead title="Installation" desc="As a package, as source through the shadcn CLI, or as a plain DOM call. React 18 or later is optional." md={() => "# Installation\n\n```sh\nnpm i @in-c0/knurl\nnpx shadcn@latest add " + SITE + "/r/knurl.json\n```"} />
       <h2 id="package">Package</h2>
-      <p>One dependency-free ESM package. Import a control from <code>knurl-ui/react</code>, or the mount function from <code>knurl-ui</code>.</p>
-      <Command kind="add" arg="knurl-ui" />
-      <Code title="app.tsx" code={`import { Toggle, Fader } from "knurl-ui/react";\n\nexport function Mixer() {\n  const [gain, setGain] = useState(60);\n  return (\n    <>\n      <Toggle label="Mute" />\n      <Fader label="Gain" value={gain} onValueChange={setGain} />\n    </>\n  );\n}`} />
+      <p>One dependency-free ESM package. Import a control from <code>@in-c0/knurl/react</code>, or the mount function from <code>@in-c0/knurl</code>.</p>
+      <Command kind="add" arg="@in-c0/knurl" />
+      <Code title="app.tsx" code={`import { Toggle, Fader } from "@in-c0/knurl/react";\n\nexport function Mixer() {\n  const [gain, setGain] = useState(60);\n  return (\n    <>\n      <Toggle label="Mute" />\n      <Fader label="Gain" value={gain} onValueChange={setGain} />\n    </>\n  );\n}`} />
       <p style={{ marginTop: 14 }}>Components render a sized empty box on the server and draw on mount, so nothing shifts. The entry is a client module, so a Server Component can render it without <code>"use client"</code> of its own.</p>
       <h2 id="shadcn">shadcn CLI</h2>
       <p>Each control is a registry item. Adding one writes its source and the shared core to <code>components/knurl</code>.</p>
@@ -521,7 +521,7 @@ function Installation() {
       <Command kind="run" arg="shadcn@latest add @knurl/fader" />
       <h2 id="dom">Any DOM</h2>
       <p>Each mount function takes an element and options, and returns <code>update</code> and <code>destroy</code>: the shape of a Svelte action, a Vue directive or a Web Component's lifecycle.</p>
-      <Code title="main.ts" code={`import { gauge } from "knurl-ui";\n\nconst g = gauge(document.querySelector("#upload")!, { label: "Uploading" });\n\nupload.on("progress", (p) => g.update({ value: p * 100 }));\nupload.on("done", () => g.destroy());`} />
+      <Code title="main.ts" code={`import { gauge } from "@in-c0/knurl";\n\nconst g = gauge(document.querySelector("#upload")!, { label: "Uploading" });\n\nupload.on("progress", (p) => g.update({ value: p * 100 }));\nupload.on("done", () => g.destroy());`} />
       <Pager index={idx} />
     </article>
   );
@@ -581,7 +581,7 @@ function Palette({ close, go, toggleTheme }: { close: () => void; go: (r: string
       ...ORDERED.map((d) => ({ group: "Controls", label: d.name, hint: d.role, run: () => go(d.id) })),
       ...CASES.map((c) => ({ group: "Examples", label: c.name, hint: `${c.uses.length} controls`, run: () => go(c.id) })),
       { group: "Actions", label: "Toggle theme", hint: "D", run: toggleTheme },
-      { group: "Actions", label: "Copy install command", hint: "npm i knurl-ui", run: () => copyText("npm i knurl-ui") },
+      { group: "Actions", label: "Copy install command", hint: "npm i @in-c0/knurl", run: () => copyText("npm i @in-c0/knurl") },
       { group: "Actions", label: "Open GitHub", hint: "", run: () => window.open(REPO, "_blank", "noopener") },
     ];
     const s = q.trim().toLowerCase();

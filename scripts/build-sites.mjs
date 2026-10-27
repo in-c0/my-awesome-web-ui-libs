@@ -10,7 +10,7 @@
 //     "copy": ["demo", "src"],                // or: these folders, copied as they are
 //     "index": "demo/index.html",             // with "copy": the page the folder's URL opens
 //     "preview": ".github/assets/x.png",      // an image for the hub card
-//     "npm": "knurl-ui"                       // the published package, if not this package.json's name
+//     "npm": "@in-c0/knurl"                       // the published package, if not this package.json's name
 //   }
 // Each build gets SITE_URL and VITE_SITE_URL set to its own public URL.
 //

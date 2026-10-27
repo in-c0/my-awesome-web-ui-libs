@@ -6,7 +6,7 @@ const shared = { format: ["esm"], target: "es2020", dts: true, sourcemap: true }
 const self: NonNullable<Options["esbuildPlugins"]>[number] = {
   name: "core-by-package-name",
   setup(build) {
-    build.onResolve({ filter: /^\.\/index$/ }, () => ({ path: "knurl-ui", external: true }));
+    build.onResolve({ filter: /^\.\/index$/ }, () => ({ path: "@in-c0/knurl", external: true }));
   },
 };
 

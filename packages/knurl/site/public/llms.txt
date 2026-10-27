@@ -1,10 +1,10 @@
 # Knurl
 
-> UI controls machined as isometric instruments, for React and any DOM. npm: knurl-ui. Each control is a working object drawn in SVG over a native input: Toggle (switch), Rocker (checkbox), Fader (slider), Caliper (range slider), Knob (rotary slider), Joystick (2D input), Keycap (button), Counter (number field), Combo (one-time code), Tray (file drop zone), Presets (radio group), Selector (select), Gauge (progress/meter), Tank (level meter), Track (step progress), Timer (countdown), Annunciator (status panel), Gears (loading status). Line or solid finish; light and dark; no dependencies; MIT.
+> UI controls machined as isometric instruments, for React and any DOM. npm: @in-c0/knurl. Each control is a working object drawn in SVG over a native input: Toggle (switch), Rocker (checkbox), Fader (slider), Caliper (range slider), Knob (rotary slider), Joystick (2D input), Keycap (button), Counter (number field), Combo (one-time code), Tray (file drop zone), Presets (radio group), Selector (select), Gauge (progress/meter), Tank (level meter), Track (step progress), Timer (countdown), Annunciator (status panel), Gears (loading status). Line or solid finish; light and dark; no dependencies; MIT.
 
 ## Install
 
-- Package: `npm i knurl-ui`, then `import { Toggle } from "knurl-ui/react"` or `import { toggle } from "knurl-ui"` (vanilla: `toggle(el, options)` returns `{ update, destroy }`).
+- Package: `npm i @in-c0/knurl`, then `import { Toggle } from "@in-c0/knurl/react"` or `import { toggle } from "@in-c0/knurl"` (vanilla: `toggle(el, options)` returns `{ update, destroy }`).
 - Source via shadcn: `npx shadcn@latest add https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/<id>.json` (ids: toggle, rocker, fader, caliper, knob, joystick, keycap, counter, combo, tray, presets, selector, gauge, tank, track, timer, annunciator, gears; `knurl` adds all).
 
 ## Shared options

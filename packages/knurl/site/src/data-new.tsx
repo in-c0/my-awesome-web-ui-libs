@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Annunciator, Caliper, Combo, Joystick, Rocker, Selector, Tank, Timer, Track, Tray } from "knurl-ui/react";
-import type { Finish } from "knurl-ui";
+import { Annunciator, Caliper, Combo, Joystick, Rocker, Selector, Tank, Timer, Track, Tray } from "@in-c0/knurl/react";
+import type { Finish } from "@in-c0/knurl";
 import type { Doc, Prop } from "./data";
 
 /** The v0.2 controls' pages: the same shape as the first eight, in data.tsx. */

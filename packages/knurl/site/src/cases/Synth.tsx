@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Fader, Gauge, Joystick, Keycap, Knob, Selector, Toggle } from "knurl-ui/react";
-import type { Finish } from "knurl-ui";
+import { Fader, Gauge, Joystick, Keycap, Knob, Selector, Toggle } from "@in-c0/knurl/react";
+import type { Finish } from "@in-c0/knurl";
 
 /**
  * A monophonic synth voice on Web Audio: the selector picks the oscillator,

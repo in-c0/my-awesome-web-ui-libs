@@ -4,7 +4,7 @@
     "allowJs": true,
     "types": ["vite/client"],
     "baseUrl": ".",
-    "paths": { "knurl-ui": ["../src/index.ts"], "knurl-ui/react": ["../src/react.tsx"] }
+    "paths": { "@in-c0/knurl": ["../src/index.ts"], "@in-c0/knurl/react": ["../src/react.tsx"] }
   },
   "include": ["src", "../src"]
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Annunciator, Combo, Gauge, Gears, Keycap, Rocker, Timer, Track } from "knurl-ui/react";
-import type { Finish } from "knurl-ui";
+import { Annunciator, Combo, Gauge, Gears, Keycap, Rocker, Timer, Track } from "@in-c0/knurl/react";
+import type { Finish } from "@in-c0/knurl";
 
 /**
  * A release console. Two flags set what the release does, a second

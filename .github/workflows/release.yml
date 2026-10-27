@@ -1,7 +1,7 @@
 # Publishes every package whose version in package.json is not on npm yet.
 # Releasing a library = bumping its version in a commit to main. Nothing else.
-# Needs one repository secret, NPM_TOKEN: a granular npm token with read and write
-# on all packages (it covers new packages too) and "bypass two-factor authentication".
+# Needs one repository secret, NPM_TOKEN. With a direct-capable token versions go live at
+# once; with a stage-only token they are staged and go live when approved on npmjs.com.
 name: Release
 on:
   push: { branches: [main] }
@@ -32,6 +32,9 @@ jobs:
       - if: steps.plan.outputs.count != '0' && env.HAS_TOKEN == 'true'
         run: pnpm build && pnpm test
       - if: steps.plan.outputs.count != '0' && env.HAS_TOKEN == 'true'
-        name: Publish new versions
-        run: pnpm -r --filter "${{ inputs.filter || './packages/**' }}" publish --access public --no-git-checks --provenance
+        name: A staging-capable npm
+        run: npm install --global 'npm@^11'
+      - if: steps.plan.outputs.count != '0' && env.HAS_TOKEN == 'true'
+        name: Publish new versions (live, or staged for approval)
+        run: node scripts/publish.mjs "${{ inputs.filter || './packages/**' }}"
         env: { NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}" }

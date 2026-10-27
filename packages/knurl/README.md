@@ -2,7 +2,7 @@
 
 Form controls, machined. A switch is a toggle on a panel, a slider is a fader on its strip, a progress bar is a dial gauge. Eighteen accessible controls for React and any DOM, drawn as working isometric objects over native inputs. No dependencies.
 
-[![npm](https://img.shields.io/npm/v/knurl-ui?style=flat-square&color=1b1b19)](https://www.npmjs.com/package/knurl-ui)
+[![npm](https://img.shields.io/npm/v/@in-c0/knurl?style=flat-square&color=1b1b19)](https://www.npmjs.com/package/@in-c0/knurl)
 [![CI](https://github.com/in-c0/my-awesome-web-ui-libs/actions/workflows/ci.yml/badge.svg)](https://github.com/in-c0/my-awesome-web-ui-libs/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-1b1b19?style=flat-square)](./LICENSE)
 
@@ -13,10 +13,10 @@ Every control live, with its code: **[in-c0.github.io/my-awesome-web-ui-libs/knu
 ## Install
 
 ```sh
-npm i knurl-ui
+npm i @in-c0/knurl
 ```
 
-ESM only. React 18 or later is an optional peer, needed only by `knurl-ui/react`.
+ESM only. React 18 or later is an optional peer, needed only by `@in-c0/knurl/react`.
 
 Or add a control's source to your project with the shadcn CLI. It writes the control and the shared core to `components/knurl`:
 
@@ -30,7 +30,7 @@ npx shadcn@latest add https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knu
 ### React
 
 ```tsx
-import { Fader, Toggle } from "knurl-ui/react";
+import { Fader, Toggle } from "@in-c0/knurl/react";
 
 export function Mixer() {
   const [gain, setGain] = useState(60);
@@ -48,7 +48,7 @@ A component renders one `<div>` at its own aspect ratio and draws on mount, so a
 ### Any DOM
 
 ```ts
-import { gauge } from "knurl-ui";
+import { gauge } from "@in-c0/knurl";
 
 const g = gauge(document.querySelector("#upload")!, { label: "Uploading" });
 g.update({ value: 42 });

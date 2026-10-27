@@ -13,8 +13,8 @@ export default defineConfig(({ mode }) => ({
   plugins: [react(), ...(mode === "single" ? [viteSingleFile()] : [])],
   resolve: {
     alias: [
-      { find: /^knurl-ui\/react$/, replacement: src + "/react.tsx" },
-      { find: /^knurl-ui$/, replacement: src + "/index.ts" },
+      { find: /^@in-c0\/knurl\/react$/, replacement: src + "/react.tsx" },
+      { find: /^@in-c0\/knurl$/, replacement: src + "/index.ts" },
       { find: /^@src\//, replacement: src + "/" },
     ],
   },

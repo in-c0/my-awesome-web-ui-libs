@@ -82,12 +82,13 @@ function frame() {
     try { b.awake = !!b.tick(dt, now); } catch (err) { b.awake = false; setTimeout(() => { throw err; }); }
     any = any || b.awake;
   }
-  raf = any ? requestAnimationFrame(frame) : 0;
+  // the environment can go away under a pending frame (a closed window, a torn-down test DOM)
+  raf = any && typeof requestAnimationFrame === "function" ? requestAnimationFrame(frame) : 0;
 }
 
 function wake(b: Board) {
   b.awake = true;
-  if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); }
+  if (!raf && typeof requestAnimationFrame === "function") { last = performance.now(); raf = requestAnimationFrame(frame); }
 }
 
 const onMotion = () => { setReducedMotion(!!rm?.matches); boards.forEach(wake); };
@@ -107,7 +108,7 @@ function start() {
 }
 
 function stop() {
-  if (raf) cancelAnimationFrame(raf);
+  if (raf && typeof cancelAnimationFrame === "function") cancelAnimationFrame(raf);
   raf = 0;
   io?.disconnect(); io = null;
   rm?.removeEventListener?.("change", onMotion); rm = null;

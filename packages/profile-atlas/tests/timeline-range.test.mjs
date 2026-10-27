@@ -43,3 +43,14 @@ test('snapshot reconciles against known dates without double counting',()=>{
  const added=reconcileMonthlySnapshots([['2024-09',5,0,1]],'2026-10-24',known);
  assert.equal(added.length,1);assert.equal(added[0].type,'star');assert.equal(added[0].activityCount,4);
 });
+
+test('month-only aggregates may carry a Date object',()=>{
+ const items=[{id:'a',type:'fork',date:new Date(2026,9,1,12),activityCount:3,aggregate:true}];
+ assert.equal(activityWindow('year',items,now).totals.fork,3);
+ assert.equal(activityWindow('month',items,now).monthOnlyOmitted,3);
+});
+
+test('an activityCount of 0 counts as zero, not one',()=>{
+ const w=activityWindow('year',[{id:'z',type:'star',date:new Date(2026,9,2).toISOString(),activityCount:0}],now);
+ assert.equal(w.totals.star,0);
+});

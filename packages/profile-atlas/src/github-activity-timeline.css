@@ -194,3 +194,4 @@
 .graph-drawer-head button{border-color:var(--pa-line);color:var(--pa-ink)}
 .graph-drawer-item{border-top-color:var(--pa-line-soft)}.graph-drawer-item a,.graph-drawer-item strong{color:var(--pa-ink)}.graph-drawer-item small{color:var(--pa-muted)}
 .activity-details-more{color:var(--pa-ink);border-bottom-color:var(--pa-line-strong)}
+.activity-bin-label{overflow:visible}

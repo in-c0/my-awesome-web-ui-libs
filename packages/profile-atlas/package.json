@@ -1,16 +1,28 @@
 {
   "name": "@in-c0/profile-atlas",
   "version": "0.1.0",
-  "description": "A framework-free GitHub profile gallery, index, and timeline Web Component.",
+  "description": "Two framework-free Web Components for a GitHub profile: a project gallery with a searchable index, and a four-lane public activity timeline. No build step, no dependencies, no token.",
   "type": "module",
   "main": "./src/profile-atlas.js",
   "module": "./src/profile-atlas.js",
   "exports": {
     ".": "./src/profile-atlas.js",
-    "./style.css": "./src/profile-atlas.css"
+    "./profile-atlas.js": "./src/profile-atlas.js",
+    "./timeline-math.js": "./src/timeline-math.js",
+    "./style.css": "./src/profile-atlas.css",
+    "./profile-atlas.css": "./src/profile-atlas.css",
+    "./github-activity-timeline.css": "./src/github-activity-timeline.css",
+    "./mellow-overrides.css": "./src/mellow-overrides.css",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
   },
   "files": [
-    "src"
+    "src/profile-atlas.js",
+    "src/timeline-math.js",
+    "src/profile-atlas.css",
+    "src/github-activity-timeline.css",
+    "src/mellow-overrides.css",
+    "CHANGELOG.md"
   ],
   "keywords": [
     "web-components",
@@ -19,12 +31,18 @@
     "profile",
     "gallery",
     "timeline",
-    "portfolio"
+    "portfolio",
+    "framework-free",
+    "buildless"
   ],
+  "homepage": "https://in-c0.github.io/my-awesome-web-ui-libs/profile-atlas/",
+  "bugs": {
+    "url": "https://github.com/in-c0/my-awesome-web-ui-libs/issues"
+  },
   "license": "MIT",
   "sideEffects": [
     "./src/profile-atlas.js",
-    "./src/profile-atlas.css"
+    "*.css"
   ],
   "scripts": {
     "test": "rm -rf dist && mkdir -p dist && cp -r src dist/src && node --test tests/*.test.mjs"
@@ -41,12 +59,13 @@
     "title": "Profile Atlas",
     "tagline": "Framework-free Web Components for a GitHub profile: project gallery, index and activity timeline.",
     "copy": [
+      "docs",
       "demo",
       "src",
       "data",
       "assets"
     ],
-    "index": "demo/index.html",
-    "preview": "assets/showcase-banner.svg"
+    "index": "docs/index.html",
+    "preview": "assets/docs-preview.png"
   }
 }

@@ -1,6 +1,7 @@
 /* Profile Atlas. MIT. Framework-free custom element; public data only. */
 import {ACTIVITY_TYPES,activityWindow,reconcileMonthlySnapshots} from './timeline-math.js';
 const E=(tag,cls='',label)=>{const n=document.createElement(tag);n.className=cls;if(label!==undefined)n.textContent=String(label);return n};
+const amount=x=>Number.isFinite(Number(x.activityCount))?Math.max(0,Number(x.activityCount)):1;
 const ACTIVITY_LABELS={star:'Star',fork:'Fork',project:'New repo',commit:'Push'};
 const RANGES=['week','month','year','five','all'],KINDS=['project','star','fork','story','inspiration'];
 const USERNAME=/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i;
@@ -154,11 +155,13 @@ class GithubActivityTimeline extends HTMLElement{
   labels.append(E('span','activity-axis-spacer',''));
   const axis=E('div','activity-bin-axis');axis.style.gridTemplateColumns='repeat('+columns+',minmax(0,1fr))';
   state.bins.forEach((bin,index)=>{
-   const d=bin.start,show=state.grain==='year'||(state.grain==='month'?(columns<=12||d.getMonth()===0||index%6===0):columns<=7||index===0||d.getDate()%5===0);
+   const d=bin.start,show=state.grain==='year'||(state.grain==='month'?(columns<=12||(columns<=24?d.getMonth()%3===0:d.getMonth()===0)):columns<=7||index===0||d.getDate()%5===0);
    const tick=E('span','activity-bin-label',show?(state.grain==='day'?String(d.getDate()):state.grain==='year'?String(d.getFullYear()):d.getMonth()===0?String(d.getFullYear()):d.toLocaleDateString('en',{month:'short'})):'');
    tick.title=bin.label;axis.append(tick);
   });
   plot.append(axis);viewport.append(plot);matrix.append(labels,viewport);this.surface.append(matrix);
+  // Open on the most recent period: on a narrow screen the plot scrolls, and the latest bars matter most.
+  viewport.scrollLeft=viewport.scrollWidth;
   const insight=E('div','activity-under-chart');
   insight.append(E('span','',state.grain==='day'?'Daily activity':state.grain==='year'?'Yearly activity':'Monthly activity'));
   if(state.monthOnlyOmitted)insight.append(E('span','activity-precision',state.monthOnlyOmitted+' month-only records are not shown on individual days. Choose This year.'));
@@ -180,7 +183,7 @@ class GithubActivityTimeline extends HTMLElement{
    const month=this.metricMonth;
    for(const type of ACTIVITY_TYPES){
     const items=events.filter(item=>item.type===type&&item.date.slice(0,7)===month);
-    const count=items.reduce((total,item)=>total+(Number(item.activityCount)||1),0);
+    const count=items.reduce((total,item)=>total+amount(item),0);
     const metric=E('button','monthly-metric '+type);metric.type='button';metric.title='Inspect '+ACTIVITY_LABELS[type]+' · '+month;
     const name=E('span','monthly-metric-label');name.append(activityIcon(type),E('span','',ACTIVITY_LABELS[type]));
     metric.append(name,E('strong','',String(count)));metric.onclick=()=>this.open(items,ACTIVITY_LABELS[type]+' · '+month);
@@ -237,7 +240,8 @@ class ProfileAtlas extends HTMLElement{
   this.root.replaceChildren();
   const compact=this.hasAttribute('compact');
   const bar=E('div','toolbar'),tabs=E('nav','tabs');tabs.setAttribute('aria-label','Choose a collection');
-  if(!compact)for(const [key,label] of [['project','Made'],['star','Saved'],['fork','Remixed']]){
+  const kinds=[['project','Made'],['star','Saved'],['fork','Remixed']].filter(([key])=>this.pending||key===this.kind||this.items.some(x=>x.type===key));
+  if(!compact&&kinds.length>1)for(const [key,label] of kinds){
    const b=E('button','tab'+(this.kind===key?' on':''));b.type='button';b.append(E('span','',label));b.setAttribute('aria-pressed',String(this.kind===key));b.onclick=()=>{this.kind=key;this.pos[key]=0;this.gallery();tabs.querySelectorAll('button').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false')});b.classList.add('on');b.setAttribute('aria-pressed','true')};tabs.append(b)
   }
   const browse=E('button','browse','Browse all ↗');browse.type='button';browse.onclick=()=>this.openIndex(this.collection,this.kind==='project'?'All projects':this.kind==='star'?'Starred discoveries':this.kind==='fork'?'Forked repositories':'All entries');bar.append(tabs,browse);this.main=E('main','main');

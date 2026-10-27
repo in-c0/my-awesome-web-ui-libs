@@ -1,0 +1,109 @@
+# Profile Atlas
+
+> Two framework-free Web Components for a personal site that shows more of a GitHub profile than six pinned repositories: `<profile-atlas>` (a gallery of made, starred and forked work with a searchable index, a details view and an activity timeline) and `<github-activity-timeline>` (stars, forks, new repositories and pushes in four lanes on one time scale). Plain ES modules and CSS in shadow roots: no build step, no runtime dependency, no API token. npm `@in-c0/profile-atlas` 0.1.0, MIT.
+
+Docs: https://in-c0.github.io/my-awesome-web-ui-libs/profile-atlas/docs/
+Source: https://github.com/in-c0/my-awesome-web-ui-libs/tree/main/packages/profile-atlas
+
+## Install
+
+- npm: `npm i @in-c0/profile-atlas`, then `import '@in-c0/profile-atlas';` once. Importing defines both elements.
+- CDN: `<script type="module" src="https://cdn.jsdelivr.net/npm/@in-c0/profile-atlas/src/profile-atlas.js"></script>`
+- Manual: copy `profile-atlas.js`, `timeline-math.js`, `profile-atlas.css`, `github-activity-timeline.css` and `mellow-overrides.css` from `src/` into one folder. They must stay next to each other: the module loads its stylesheets with `new URL('./x.css', import.meta.url)`.
+- Vite dev server: add `optimizeDeps: { exclude: ['@in-c0/profile-atlas'] }`, or pre-bundling moves the module away from its stylesheets.
+- Package exports: `.` and `./profile-atlas.js` (the elements), `./timeline-math.js`, `./profile-atlas.css` (alias `./style.css`), `./github-activity-timeline.css`, `./mellow-overrides.css`, `./src/*`. The elements link their stylesheets themselves; the CSS exports are for tooling that copies files.
+
+## <profile-atlas>
+
+```html
+<profile-atlas username="your-github-name" manifest-url="/atlas.json"></profile-atlas>
+```
+
+Attributes:
+- `username` — GitHub username. Optional when `manifest-url` is set; with a manifest and no username, no GitHub request is made.
+- `manifest-url` — URL of a manifest JSON (format below), resolved against the page. HTTP(S) only.
+- `max-pages` — pages of 100 per feed (repos, stars), 1–30, default 10.
+- `row` — `project` | `star` | `fork` | `story` | `inspiration`; the collection shown first (default `project`).
+- `compact` — boolean; gallery only, no tabs, timeline or footer. Use with `row` for a single horizontal row.
+- `theme` — `light` (default) | `dark` | `auto` (follows prefers-color-scheme). Passed to the nested timeline.
+
+Properties and methods: `items` (all entries after loading), `kind` (collection on show), `load()` (fetch again).
+Events: `atlas-ready` ({ count }, bubbles) after each load; `activity-open` bubbles out of the nested timeline (see below).
+Collections: Made (owned repos + manifest projects), Saved (stars), Remixed (forks); a tab only appears when its collection has entries. Stories render as a swipeable deck; other rows as fanned cards. Browse all opens a searchable index dialog; selecting an entry opens a details dialog.
+Keyboard: cards are buttons (Enter/Space opens details); ← → move the gallery when focus is in it; dialogs trap Tab and close on Escape, returning focus.
+
+## <github-activity-timeline>
+
+```html
+<github-activity-timeline username="your-github-name"></github-activity-timeline>
+<script type="module">
+  document.querySelector('github-activity-timeline').events = [
+    { id: 'a', type: 'star', title: 'lit/lit', date: '2026-10-04T09:30:00Z', url: 'https://github.com/lit/lit' },
+    { id: 'b', type: 'commit', title: 'Release', date: new Date(), activityCount: 4 },
+  ];
+</script>
+```
+
+Attributes:
+- `username` — read public repos, stars and the recent public event feed. Ignored once `events` is set.
+- `max-pages` — 1–30, default 10 (recent events always read up to 3 pages).
+- `range` — `week` | `month` | `year` (default) | `five` | `all`. Week/month: a bar per day. Year/five: a bar per month. All: per month, or per year past six years.
+- `theme` — `light` (default) | `dark` | `auto`.
+
+Properties and methods:
+- `events` — array of records; setting it stops any fetch. May be set before the element is defined.
+- `range` — the period on show; unknown values are ignored.
+- `load()` — refetch the username's activity (no-op once `events` was set).
+- `showDetails(items, label)` — open the built-in details panel.
+
+Event record fields: `id` (string), `type` (`star` | `fork` | `project` | `commit`; other types are ignored), `title`, `date` (ISO string, Date or timestamp; invalid/undated records are skipped), optional `summary`, `url`, `activityCount` (number, default 1), `aggregate` (true = a month-only total, counted in monthly/yearly views and never placed on a day).
+
+Event: `activity-open` — detail `{ items, label }`; fired when a bar, a monthly count or "Browse activity" is chosen. Bubbles, composed, cancellable: `preventDefault()` keeps the built-in panel closed.
+
+The element shows: period buttons, four lanes (Star, Fork, New repo, Push) with a highlight toggle per lane, a horizontally scrollable plot, a details panel, and a "Monthly analysis" with exact counts for a chosen month.
+
+## timeline-math.js
+
+Pure functions, no DOM; runs in Node and workers. Uses the local time zone.
+- `activityWindow(range, items, now = new Date())` → `{ range, grain: 'day'|'month'|'year', start, finish, bins: [{ key, label, start, end, future, items, counts: { star, fork, project, commit } }], totals, label, monthOnlyOmitted, dated }`. Items after `now` are excluded. Unknown ranges become `year`.
+- `reconcileMonthlySnapshots(rows, recordedAt, known)` → aggregate records for month-level totals `[month 'YYYY-MM', stars, forks, repos][]`, adding only what the dated `known` records do not already account for.
+- `ACTIVITY_TYPES` = `['star', 'fork', 'project', 'commit']`.
+
+## Manifest format
+
+All fields optional. Example: https://in-c0.github.io/my-awesome-web-ui-libs/profile-atlas/data/in-c0.json
+
+```json
+{
+  "version": 1,
+  "projectVisibility": "curated",
+  "excludeRepos": ["dotfiles"],
+  "projects": [{ "id": "vibo", "title": "ViBo", "summary": "One sentence.", "body": "Longer text.", "url": "https://…", "demoUrl": "https://…", "repo": "owner/name", "image": "../assets/vibo.webp", "preview": "image", "featured": true }],
+  "stories": [{ "id": "why", "title": "Why I build", "summary": "…", "body": "…" }],
+  "inspirations": [{ "id": "v1", "title": "…", "summary": "…", "mediaType": "video", "image": "https://…/clip.mp4", "poster": "../assets/frame.jpg" }],
+  "activitySnapshotRecordedAt": "2026-10-24",
+  "activitySnapshot": [["2024-09", 45, 4, 8]]
+}
+```
+
+- `projects` are shown first under Made, in order; one whose `repo` matches a fetched repository is merged with it. `featured: true` sorts first.
+- Item fields: `id`, `title`, `summary`, `body` (line breaks kept), `url`, `demoUrl` (adds LIVE + Live demo link), `repo` (`owner/name`), `image` (screenshot, or video URL with `mediaType: "video"`), `poster`, `preview` (`image` | `iframe` | `video` | `link`), `date`, `language`, `featured`.
+- `image` and `poster` resolve relative to the manifest file. Items without an image get a typographic cover with their title.
+- `excludeRepos`: repositories whose name contains any of these strings are left out.
+- `projectVisibility: "curated"`: unfeatured owned repositories are not named; their creation counts by month in the timeline. It does not make public repos private.
+- `activitySnapshot`: month-level `[month, stars, forks, repos]` totals for history the API no longer returns.
+
+## Theming
+
+17 CSS custom properties, inherited into the shadow roots; set them on the element or any ancestor: `--profile-atlas-paper`, `-surface`, `-sunken`, `-ink`, `-muted`, `-faint`, `-line`, `-line-soft`, `-line-strong`, `-grid`, `-accent`, `-focus`, `-scrim`, `-star`, `-fork`, `-project`, `-commit`. A value you set applies in both themes.
+
+## Data limits
+
+- Public, unauthenticated GitHub REST API (60 requests/hour per visitor), cached in localStorage for 6 hours.
+- Stars use starred-at timestamps; forks use the fork's creation date.
+- Push comes from the recent public event feed: not a commit history, and only ~30 days / 300 events.
+- When a feed fails, the atlas still renders the manifest and says a feed was unavailable.
+
+## Accessibility and motion
+
+Bars, cards, tabs and lane labels are buttons with names and `aria-pressed` where they toggle; the plot is a focusable scroll region; colour is always paired with an icon and label. `prefers-reduced-motion: reduce` stops card and bar transitions, keeps videos on their poster and disables smooth scrolling.

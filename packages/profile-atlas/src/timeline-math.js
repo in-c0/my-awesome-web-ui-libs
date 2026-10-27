@@ -67,12 +67,13 @@ export function activityWindow(range,items,now=new Date()){
  for(const item of items){
   if(!ACTIVITY_TYPES.includes(item.type)||!item.date)continue;
   const d=new Date(item.date);if(Number.isNaN(+d)||d>now)continue;
+  const month=typeof item.date==='string'&&/^\d{4}-\d{2}/.test(item.date)?item.date.slice(0,7):monthKey(d);
   if(item.aggregate&&grain==='day'){
-   const aggregateMonth=item.date.slice(0,7);
+   const aggregateMonth=month;
    if((range==='month'&&aggregateMonth===monthKey(today))||(range==='week'&&bins.some(b=>monthKey(b.start)===aggregateMonth)))monthOnlyOmitted+=amount(item);
    continue;
   }
-  const key=grain==='day'?dayKey(d):grain==='month'?(item.aggregate?item.date.slice(0,7):monthKey(d)):String(d.getFullYear());
+  const key=grain==='day'?dayKey(d):grain==='month'?(item.aggregate?month:monthKey(d)):String(d.getFullYear());
   const bin=byKey.get(key);if(!bin)continue;
   bin.items.push(item);bin.counts[item.type]+=amount(item);totals[item.type]+=amount(item);dated++;
  }

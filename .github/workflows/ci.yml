@@ -13,8 +13,8 @@ jobs:
         with: { node-version: 22, cache: pnpm }
       - uses: oven-sh/setup-bun@v2
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
       - name: What a release would publish
         run: node scripts/unpublished.mjs

@@ -12,6 +12,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env: { HAS_TOKEN: "${{ secrets.NPM_TOKEN != '' }}" }
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -21,9 +22,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - id: plan
         run: node scripts/unpublished.mjs --github-output
-      - if: steps.plan.outputs.count != '0'
-        run: pnpm test && pnpm build
-      - if: steps.plan.outputs.count != '0'
+      - if: steps.plan.outputs.count != '0' && env.HAS_TOKEN != 'true'
+        run: echo "::warning::Versions are waiting to be published, but the NPM_TOKEN secret is not set (Settings → Secrets and variables → Actions)."
+      - if: steps.plan.outputs.count != '0' && env.HAS_TOKEN == 'true'
+        run: pnpm build && pnpm test
+      - if: steps.plan.outputs.count != '0' && env.HAS_TOKEN == 'true'
         name: Publish new versions
         run: pnpm -r --filter "./packages/**" publish --access public --no-git-checks --provenance
         env: { NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}" }

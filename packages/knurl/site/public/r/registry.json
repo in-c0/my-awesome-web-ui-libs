@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "knurl",
-  "homepage": "https://in-c0.github.io/knurl",
+  "homepage": "https://in-c0.github.io/my-awesome-web-ui-libs/knurl",
   "items": [
     {
       "name": "knurl-core",
@@ -53,7 +53,7 @@
       "title": "Toggle",
       "description": "A switch, built as a bat-handle toggle on a panel, with a lamp that lights when it is on.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -74,7 +74,7 @@
       "title": "Fader",
       "description": "A slider, built as a mixing-desk fader whose cap rides a lit slot over a ruler of its steps.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -95,7 +95,7 @@
       "title": "Knob",
       "description": "A rotary value, built as a knurled knob over a 270° scale. Drag up or down, scroll, or use the arrow keys.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -116,7 +116,7 @@
       "title": "Keycap",
       "description": "A button, built as one mechanical key in a plate. It travels down when pressed and fires on release.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -137,7 +137,7 @@
       "title": "Presets",
       "description": "A radio group, built as a bank of latching preset keys: pressing one throws the last one back up.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -158,7 +158,7 @@
       "title": "Counter",
       "description": "A number field, built as a tally counter whose drums roll like an odometer.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -179,7 +179,7 @@
       "title": "Gauge",
       "description": "A progress bar or meter, built as a dial gauge with a damped needle and a tell-tale hand.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -200,7 +200,7 @@
       "title": "Gears",
       "description": "A loading indicator, built as a gear train that turns at its true ratios.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -221,7 +221,7 @@
       "title": "Rocker",
       "description": "A checkbox, built as a panel-mount rocker switch with a lit window and a centre-off position for mixed.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -242,7 +242,7 @@
       "title": "Caliper",
       "description": "A range slider, built as a vernier caliper whose two jaws mark the ends of the range.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -263,7 +263,7 @@
       "title": "Joystick",
       "description": "A 2D input, built as an arcade joystick that springs back to centre.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -284,7 +284,7 @@
       "title": "Combo",
       "description": "A one-time-code input, built as a combination padlock that opens on the right digits.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -305,7 +305,7 @@
       "title": "Tray",
       "description": "A file drop zone, built as a desk letter tray that stacks a sheet for every file.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -326,7 +326,7 @@
       "title": "Selector",
       "description": "A select, built as a rotary selector switch with a chicken-head knob and engraved positions.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -347,7 +347,7 @@
       "title": "Timer",
       "description": "A countdown, built as a wind-up kitchen timer whose bell shakes when time runs out.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -368,7 +368,7 @@
       "title": "Tank",
       "description": "A level meter, built as a storage tank whose sight glass shows the level.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -389,7 +389,7 @@
       "title": "Track",
       "description": "A step progress indicator, built as a rail line where a handcar rolls from station to station.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -410,7 +410,7 @@
       "title": "Annunciator",
       "description": "A status panel, built as an annunciator of labelled lamps that light, warn and blink.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/knurl-core.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -431,24 +431,24 @@
       "title": "Knurl (every control)",
       "description": "All 18 Knurl controls and their core.",
       "registryDependencies": [
-        "https://in-c0.github.io/knurl/r/toggle.json",
-        "https://in-c0.github.io/knurl/r/fader.json",
-        "https://in-c0.github.io/knurl/r/knob.json",
-        "https://in-c0.github.io/knurl/r/keycap.json",
-        "https://in-c0.github.io/knurl/r/presets.json",
-        "https://in-c0.github.io/knurl/r/counter.json",
-        "https://in-c0.github.io/knurl/r/gauge.json",
-        "https://in-c0.github.io/knurl/r/gears.json",
-        "https://in-c0.github.io/knurl/r/rocker.json",
-        "https://in-c0.github.io/knurl/r/caliper.json",
-        "https://in-c0.github.io/knurl/r/joystick.json",
-        "https://in-c0.github.io/knurl/r/combo.json",
-        "https://in-c0.github.io/knurl/r/tray.json",
-        "https://in-c0.github.io/knurl/r/selector.json",
-        "https://in-c0.github.io/knurl/r/timer.json",
-        "https://in-c0.github.io/knurl/r/tank.json",
-        "https://in-c0.github.io/knurl/r/track.json",
-        "https://in-c0.github.io/knurl/r/annunciator.json"
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/toggle.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/fader.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knob.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/keycap.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/presets.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/counter.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/gauge.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/gears.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/rocker.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/caliper.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/joystick.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/combo.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/tray.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/selector.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/timer.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/tank.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/track.json",
+        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/annunciator.json"
       ],
       "files": []
     }

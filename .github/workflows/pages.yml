@@ -1,4 +1,6 @@
-name: Site
+# Builds every library's site (the "webUiSite" field in packages/<folder>/package.json)
+# into one GitHub Pages deploy: /<folder>/ for each library and a hub at /.
+name: Sites
 on:
   push: { branches: [main] }
   workflow_dispatch:
@@ -12,13 +14,14 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
+      - uses: oven-sh/setup-bun@v2
       - run: pnpm install --frozen-lockfile
-      - run: node registry/build.mjs
-        env: { SITE_URL: "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}" }
-      - run: pnpm exec vite build site
-        env: { VITE_SITE_URL: "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}" }
+      - run: node scripts/build-sites.mjs
+        env:
+          BASE_URL: "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          REPO_URL: "https://github.com/${{ github.repository }}"
       - uses: actions/upload-pages-artifact@v3
-        with: { path: site/dist }
+        with: { path: _site }
   deploy:
     needs: build
     runs-on: ubuntu-latest

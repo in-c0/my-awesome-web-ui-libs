@@ -19,5 +19,14 @@
     "@playwright/test": "^1.63.0",
     "@types/bun": "^1.4.2",
     "@biomejs/biome": "^2.5.14"
+  },
+  "webUiSite": {
+    "title": "Paper UI",
+    "tagline": "Material-aware, quietly interactive React components: paper shaders and stroke-by-stroke handwriting.",
+    "build": "pnpm --filter @in-c0/paper-ui build && pnpm --filter @in-c0/paper-ui-studio exec vite build --base ./",
+    "dir": "apps/studio/dist",
+    "preview": "docs/preview.png",
+    "npm": "@in-c0/paper-ui",
+    "npmPackageJson": "packages/paper-ui/package.json"
   }
 }

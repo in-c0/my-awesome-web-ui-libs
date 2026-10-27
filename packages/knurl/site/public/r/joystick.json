@@ -5,7 +5,7 @@
   "title": "Joystick",
   "description": "A 2D input, built as an arcade joystick that springs back to centre.",
   "registryDependencies": [
-    "https://in-c0.github.io/knurl/r/knurl-core.json"
+    "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
   ],
   "files": [
     {

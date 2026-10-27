@@ -1,0 +1,29 @@
+# Publishes every package whose version in package.json is not on npm yet.
+# Releasing a library = bumping its version in a commit to main. Nothing else.
+# Needs one repository secret, NPM_TOKEN: a granular npm token with read and write
+# on all packages (it covers new packages too) and "bypass two-factor authentication".
+name: Release
+on:
+  push: { branches: [main] }
+  workflow_dispatch:
+permissions: { contents: read, id-token: write }
+concurrency: { group: release, cancel-in-progress: false }
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm, registry-url: "https://registry.npmjs.org" }
+      - uses: oven-sh/setup-bun@v2
+      - run: pnpm install --frozen-lockfile
+      - id: plan
+        run: node scripts/unpublished.mjs --github-output
+      - if: steps.plan.outputs.count != '0'
+        run: pnpm test && pnpm build
+      - if: steps.plan.outputs.count != '0'
+        name: Publish new versions
+        run: pnpm -r --filter "./packages/**" publish --access public --no-git-checks --provenance
+        env: { NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}" }

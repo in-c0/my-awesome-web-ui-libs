@@ -25,5 +25,28 @@
   "sideEffects": [
     "./src/profile-atlas.js",
     "./src/profile-atlas.css"
-  ]
+  ],
+  "scripts": {
+    "test": "rm -rf dist && mkdir -p dist && cp -r src dist/src && node --test tests/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/in-c0/my-awesome-web-ui-libs.git",
+    "directory": "packages/profile-atlas"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "webUiSite": {
+    "title": "Profile Atlas",
+    "tagline": "Framework-free Web Components for a GitHub profile: project gallery, index and activity timeline.",
+    "copy": [
+      "demo",
+      "src",
+      "data",
+      "assets"
+    ],
+    "index": "demo/index.html",
+    "preview": "assets/showcase-banner.svg"
+  }
 }

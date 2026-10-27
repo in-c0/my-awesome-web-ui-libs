@@ -5,7 +5,7 @@
   "title": "Tray",
   "description": "A file drop zone, built as a desk letter tray that stacks a sheet for every file.",
   "registryDependencies": [
-    "https://in-c0.github.io/knurl/r/knurl-core.json"
+    "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
   ],
   "files": [
     {

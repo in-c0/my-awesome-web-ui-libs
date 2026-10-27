@@ -38,7 +38,8 @@
     }
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "alpha"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && cp src/paper.css dist/paper.css && cp src/paper.css.d.ts dist/paper.css.d.ts",
@@ -61,8 +62,8 @@
   "homepage": "https://github.com/in-c0/paper-ui#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/in-c0/paper-ui.git",
-    "directory": "packages/paper-ui"
+    "url": "git+https://github.com/in-c0/my-awesome-web-ui-libs.git",
+    "directory": "packages/paper-ui/packages/paper-ui"
   },
   "bugs": {
     "url": "https://github.com/in-c0/paper-ui/issues"

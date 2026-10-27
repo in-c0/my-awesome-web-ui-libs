@@ -72,11 +72,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/in-c0/knurl.git"
+    "url": "git+https://github.com/in-c0/my-awesome-web-ui-libs.git",
+    "directory": "packages/knurl"
   },
-  "homepage": "https://in-c0.github.io/knurl",
+  "homepage": "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/",
   "bugs": {
-    "url": "https://github.com/in-c0/knurl/issues"
+    "url": "https://github.com/in-c0/my-awesome-web-ui-libs/issues"
   },
-  "packageManager": "pnpm@10.28.0"
+  "webUiSite": {
+    "title": "Knurl",
+    "tagline": "Form controls, machined: 18 accessible controls drawn as working isometric instruments.",
+    "build": "node registry/build.mjs && pnpm exec vite build site",
+    "dir": "site/dist",
+    "preview": ".github/assets/controls-line.png"
+  }
 }

@@ -3,12 +3,12 @@
 Form controls, machined. A switch is a toggle on a panel, a slider is a fader on its strip, a progress bar is a dial gauge. Eighteen accessible controls for React and any DOM, drawn as working isometric objects over native inputs. No dependencies.
 
 [![npm](https://img.shields.io/npm/v/knurl-ui?style=flat-square&color=1b1b19)](https://www.npmjs.com/package/knurl-ui)
-[![CI](https://github.com/in-c0/knurl/actions/workflows/ci.yml/badge.svg)](https://github.com/in-c0/knurl/actions/workflows/ci.yml)
+[![CI](https://github.com/in-c0/my-awesome-web-ui-libs/actions/workflows/ci.yml/badge.svg)](https://github.com/in-c0/my-awesome-web-ui-libs/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-1b1b19?style=flat-square)](./LICENSE)
 
 ![The eight controls in the line finish: a toggle, a fader, a knob, a keycap, preset keys, a tally counter, a dial gauge and a gear train](.github/assets/controls-line.png)
 
-Every control live, with its code: **[in-c0.github.io/knurl](https://in-c0.github.io/knurl)**
+Every control live, with its code: **[in-c0.github.io/my-awesome-web-ui-libs/knurl](https://in-c0.github.io/my-awesome-web-ui-libs/knurl)**
 
 ## Install
 
@@ -21,8 +21,8 @@ ESM only. React 18 or later is an optional peer, needed only by `knurl-ui/react`
 Or add a control's source to your project with the shadcn CLI. It writes the control and the shared core to `components/knurl`:
 
 ```sh
-npx shadcn@latest add https://in-c0.github.io/knurl/r/toggle.json
-npx shadcn@latest add https://in-c0.github.io/knurl/r/knurl.json   # all eighteen
+npx shadcn@latest add https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/toggle.json
+npx shadcn@latest add https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl.json   # all eighteen
 ```
 
 ## Use

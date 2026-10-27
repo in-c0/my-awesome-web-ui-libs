@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": { "knurl-ui": ["../src/index.ts"], "knurl-ui/react": ["../src/react.tsx"] }
+  },
+  "include": ["src", "../src"]
+}

@@ -1,0 +1,9 @@
+node_modules
+dist
+site/dist
+site/single
+bench/out.js
+bench/index.html
+shots
+*.tsbuildinfo
+.DS_Store

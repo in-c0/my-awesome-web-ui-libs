@@ -1,0 +1,456 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "knurl",
+  "homepage": "https://in-c0.github.io/knurl",
+  "items": [
+    {
+      "name": "knurl-core",
+      "type": "registry:lib",
+      "title": "Knurl core",
+      "description": "The drawing maths, frame loop, stylesheet and React wrapper every Knurl control shares.",
+      "dependencies": [],
+      "files": [
+        {
+          "path": "src/core/control.ts",
+          "type": "registry:lib",
+          "target": "components/knurl/core/control.ts"
+        },
+        {
+          "path": "src/core/iso.ts",
+          "type": "registry:lib",
+          "target": "components/knurl/core/iso.ts"
+        },
+        {
+          "path": "src/core/motion.ts",
+          "type": "registry:lib",
+          "target": "components/knurl/core/motion.ts"
+        },
+        {
+          "path": "src/core/range.ts",
+          "type": "registry:lib",
+          "target": "components/knurl/core/range.ts"
+        },
+        {
+          "path": "src/core/stage.ts",
+          "type": "registry:lib",
+          "target": "components/knurl/core/stage.ts"
+        },
+        {
+          "path": "src/core/styles.ts",
+          "type": "registry:lib",
+          "target": "components/knurl/core/styles.ts"
+        },
+        {
+          "path": "src/react/make.tsx",
+          "type": "registry:lib",
+          "target": "components/knurl/react/make.tsx"
+        }
+      ]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:component",
+      "title": "Toggle",
+      "description": "A switch, built as a bat-handle toggle on a panel, with a lamp that lights when it is on.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/toggle.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/toggle.ts"
+        },
+        {
+          "path": "components/knurl/toggle.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/toggle.tsx"
+        }
+      ]
+    },
+    {
+      "name": "fader",
+      "type": "registry:component",
+      "title": "Fader",
+      "description": "A slider, built as a mixing-desk fader whose cap rides a lit slot over a ruler of its steps.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/fader.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/fader.ts"
+        },
+        {
+          "path": "components/knurl/fader.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/fader.tsx"
+        }
+      ]
+    },
+    {
+      "name": "knob",
+      "type": "registry:component",
+      "title": "Knob",
+      "description": "A rotary value, built as a knurled knob over a 270° scale. Drag up or down, scroll, or use the arrow keys.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/knob.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/knob.ts"
+        },
+        {
+          "path": "components/knurl/knob.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/knob.tsx"
+        }
+      ]
+    },
+    {
+      "name": "keycap",
+      "type": "registry:component",
+      "title": "Keycap",
+      "description": "A button, built as one mechanical key in a plate. It travels down when pressed and fires on release.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/keycap.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/keycap.ts"
+        },
+        {
+          "path": "components/knurl/keycap.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/keycap.tsx"
+        }
+      ]
+    },
+    {
+      "name": "presets",
+      "type": "registry:component",
+      "title": "Presets",
+      "description": "A radio group, built as a bank of latching preset keys: pressing one throws the last one back up.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/presets.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/presets.ts"
+        },
+        {
+          "path": "components/knurl/presets.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/presets.tsx"
+        }
+      ]
+    },
+    {
+      "name": "counter",
+      "type": "registry:component",
+      "title": "Counter",
+      "description": "A number field, built as a tally counter whose drums roll like an odometer.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/counter.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/counter.ts"
+        },
+        {
+          "path": "components/knurl/counter.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/counter.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gauge",
+      "type": "registry:component",
+      "title": "Gauge",
+      "description": "A progress bar or meter, built as a dial gauge with a damped needle and a tell-tale hand.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/gauge.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/gauge.ts"
+        },
+        {
+          "path": "components/knurl/gauge.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/gauge.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gears",
+      "type": "registry:component",
+      "title": "Gears",
+      "description": "A loading indicator, built as a gear train that turns at its true ratios.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/gears.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/gears.ts"
+        },
+        {
+          "path": "components/knurl/gears.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/gears.tsx"
+        }
+      ]
+    },
+    {
+      "name": "rocker",
+      "type": "registry:component",
+      "title": "Rocker",
+      "description": "A checkbox, built as a panel-mount rocker switch with a lit window and a centre-off position for mixed.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/rocker.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/rocker.ts"
+        },
+        {
+          "path": "components/knurl/rocker.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/rocker.tsx"
+        }
+      ]
+    },
+    {
+      "name": "caliper",
+      "type": "registry:component",
+      "title": "Caliper",
+      "description": "A range slider, built as a vernier caliper whose two jaws mark the ends of the range.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/caliper.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/caliper.ts"
+        },
+        {
+          "path": "components/knurl/caliper.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/caliper.tsx"
+        }
+      ]
+    },
+    {
+      "name": "joystick",
+      "type": "registry:component",
+      "title": "Joystick",
+      "description": "A 2D input, built as an arcade joystick that springs back to centre.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/joystick.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/joystick.ts"
+        },
+        {
+          "path": "components/knurl/joystick.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/joystick.tsx"
+        }
+      ]
+    },
+    {
+      "name": "combo",
+      "type": "registry:component",
+      "title": "Combo",
+      "description": "A one-time-code input, built as a combination padlock that opens on the right digits.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/combo.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/combo.ts"
+        },
+        {
+          "path": "components/knurl/combo.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/combo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "tray",
+      "type": "registry:component",
+      "title": "Tray",
+      "description": "A file drop zone, built as a desk letter tray that stacks a sheet for every file.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/tray.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/tray.ts"
+        },
+        {
+          "path": "components/knurl/tray.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/tray.tsx"
+        }
+      ]
+    },
+    {
+      "name": "selector",
+      "type": "registry:component",
+      "title": "Selector",
+      "description": "A select, built as a rotary selector switch with a chicken-head knob and engraved positions.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/selector.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/selector.ts"
+        },
+        {
+          "path": "components/knurl/selector.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/selector.tsx"
+        }
+      ]
+    },
+    {
+      "name": "timer",
+      "type": "registry:component",
+      "title": "Timer",
+      "description": "A countdown, built as a wind-up kitchen timer whose bell shakes when time runs out.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/timer.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/timer.ts"
+        },
+        {
+          "path": "components/knurl/timer.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/timer.tsx"
+        }
+      ]
+    },
+    {
+      "name": "tank",
+      "type": "registry:component",
+      "title": "Tank",
+      "description": "A level meter, built as a storage tank whose sight glass shows the level.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/tank.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/tank.ts"
+        },
+        {
+          "path": "components/knurl/tank.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/tank.tsx"
+        }
+      ]
+    },
+    {
+      "name": "track",
+      "type": "registry:component",
+      "title": "Track",
+      "description": "A step progress indicator, built as a rail line where a handcar rolls from station to station.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/track.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/track.ts"
+        },
+        {
+          "path": "components/knurl/track.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/track.tsx"
+        }
+      ]
+    },
+    {
+      "name": "annunciator",
+      "type": "registry:component",
+      "title": "Annunciator",
+      "description": "A status panel, built as an annunciator of labelled lamps that light, warn and blink.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/annunciator.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/annunciator.ts"
+        },
+        {
+          "path": "components/knurl/annunciator.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/annunciator.tsx"
+        }
+      ]
+    },
+    {
+      "name": "knurl",
+      "type": "registry:component",
+      "title": "Knurl (every control)",
+      "description": "All 18 Knurl controls and their core.",
+      "registryDependencies": [
+        "https://in-c0.github.io/knurl/r/toggle.json",
+        "https://in-c0.github.io/knurl/r/fader.json",
+        "https://in-c0.github.io/knurl/r/knob.json",
+        "https://in-c0.github.io/knurl/r/keycap.json",
+        "https://in-c0.github.io/knurl/r/presets.json",
+        "https://in-c0.github.io/knurl/r/counter.json",
+        "https://in-c0.github.io/knurl/r/gauge.json",
+        "https://in-c0.github.io/knurl/r/gears.json",
+        "https://in-c0.github.io/knurl/r/rocker.json",
+        "https://in-c0.github.io/knurl/r/caliper.json",
+        "https://in-c0.github.io/knurl/r/joystick.json",
+        "https://in-c0.github.io/knurl/r/combo.json",
+        "https://in-c0.github.io/knurl/r/tray.json",
+        "https://in-c0.github.io/knurl/r/selector.json",
+        "https://in-c0.github.io/knurl/r/timer.json",
+        "https://in-c0.github.io/knurl/r/tank.json",
+        "https://in-c0.github.io/knurl/r/track.json",
+        "https://in-c0.github.io/knurl/r/annunciator.json"
+      ],
+      "files": []
+    }
+  ]
+}

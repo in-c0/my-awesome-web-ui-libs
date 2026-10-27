@@ -1,0 +1,46 @@
+# Knurl
+
+> UI controls machined as isometric instruments, for React and any DOM. npm: knurl-ui. Each control is a working object drawn in SVG over a native input: Toggle (switch), Rocker (checkbox), Fader (slider), Caliper (range slider), Knob (rotary slider), Joystick (2D input), Keycap (button), Counter (number field), Combo (one-time code), Tray (file drop zone), Presets (radio group), Selector (select), Gauge (progress/meter), Tank (level meter), Track (step progress), Timer (countdown), Annunciator (status panel), Gears (loading status). Line or solid finish; light and dark; no dependencies; MIT.
+
+## Install
+
+- Package: `npm i knurl-ui`, then `import { Toggle } from "knurl-ui/react"` or `import { toggle } from "knurl-ui"` (vanilla: `toggle(el, options)` returns `{ update, destroy }`).
+- Source via shadcn: `npx shadcn@latest add https://in-c0.github.io/knurl/r/<id>.json` (ids: toggle, rocker, fader, caliper, knob, joystick, keycap, counter, combo, tray, presets, selector, gauge, tank, track, timer, annunciator, gears; `knurl` adds all).
+
+## Shared options
+
+finish ("line" | "solid"), theme ("auto" | "light" | "dark"), label, disabled, name (form field).
+
+## Controls
+
+- Toggle: checked, defaultChecked, onCheckedChange(checked). Native <input type="checkbox" role="switch">.
+- Fader: value, defaultValue, min=0, max=100, step=1, onValueChange, onValueCommit, format. Native <input type="range">.
+- Knob: same as Fader. Drag up/down, wheel, arrows.
+- Keycap: legend, units (1–2.75), onPress. Native <button>.
+- Presets: options (string[]), value, defaultValue, onValueChange(value). Native radios.
+- Counter: same as Fader, max=999 (digits = drums), min ≥ 0. Native <input type="number">.
+- Gauge: value, min, max, role ("progressbar" | "meter"), peak (tell-tale), format. Not focusable.
+- Gears: spinning (default true), speed (driver rev/s, 0.25). role="status".
+- Rocker: checked, defaultChecked, indeterminate, onCheckedChange. Native checkbox.
+- Caliper: value [lo, hi], defaultValue [25, 75], min, max, step, minGap, onValueChange, onValueCommit, format. Two native ranges.
+- Joystick: value {x, y} in -1..1, defaultValue, returnToCenter (true), onValueChange, onValueCommit. Two native ranges.
+- Combo: length (4), value (digits), defaultValue, onValueChange, onComplete, code, unlocked. One numeric text input.
+- Tray: accept, multiple (true), count, onFiles(files), onReject(files), maxSize. Native file input.
+- Selector: options (string[]), value, defaultValue, onValueChange. Native radios.
+- Timer: value (seconds), defaultValue, max (3600), running (true), onValueChange (wound, and each second), onDone. role="timer".
+- Tank: value, min, max, low, high, role ("meter" | "progressbar"), format.
+- Track: steps (string[]), current (index), clickable, onStepChange. role="progressbar".
+- Annunciator: items [{id, label, state: off|ok|warn|alert}], columns, onTest.
+
+## Examples
+
+- Mono synth (#synth), Release console (#release), Intake desk (#intake): full TSX on each page.
+
+## Theme
+
+CSS custom properties on the control or any ancestor: --knurl-plate, --knurl-hi, --knurl-edge, --knurl-mid, --knurl-lo, --knurl-accent, --knurl-stroke; solid finish adds --knurl-top, --knurl-s0…s3, --knurl-shadow.
+
+## Docs
+
+- https://in-c0.github.io/knurl/
+- https://github.com/in-c0/knurl

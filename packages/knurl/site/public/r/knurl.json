@@ -1,0 +1,28 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "knurl",
+  "type": "registry:component",
+  "title": "Knurl (every control)",
+  "description": "All 18 Knurl controls and their core.",
+  "registryDependencies": [
+    "https://in-c0.github.io/knurl/r/toggle.json",
+    "https://in-c0.github.io/knurl/r/fader.json",
+    "https://in-c0.github.io/knurl/r/knob.json",
+    "https://in-c0.github.io/knurl/r/keycap.json",
+    "https://in-c0.github.io/knurl/r/presets.json",
+    "https://in-c0.github.io/knurl/r/counter.json",
+    "https://in-c0.github.io/knurl/r/gauge.json",
+    "https://in-c0.github.io/knurl/r/gears.json",
+    "https://in-c0.github.io/knurl/r/rocker.json",
+    "https://in-c0.github.io/knurl/r/caliper.json",
+    "https://in-c0.github.io/knurl/r/joystick.json",
+    "https://in-c0.github.io/knurl/r/combo.json",
+    "https://in-c0.github.io/knurl/r/tray.json",
+    "https://in-c0.github.io/knurl/r/selector.json",
+    "https://in-c0.github.io/knurl/r/timer.json",
+    "https://in-c0.github.io/knurl/r/tank.json",
+    "https://in-c0.github.io/knurl/r/track.json",
+    "https://in-c0.github.io/knurl/r/annunciator.json"
+  ],
+  "files": []
+}

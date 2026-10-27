@@ -1,6 +1,7 @@
 import { camera, cyl, depth, facing, fit, flat, lighting, poly, proj, rad, rrect, seg, slab, SHADES, type Camera, type Projector, type Vec2, type Vec3 } from "../core/iso";
 import { reducedMotion } from "../core/motion";
 import { define, keepAttrs, type BaseOptions } from "../core/control";
+import { knock } from "../core/knock";
 import { disposer, line, mk, register, shadow, solid } from "../core/stage";
 
 /**
@@ -175,11 +176,7 @@ export const gears = define<GearsOptions>({
     bag.add(B.unregister);
 
     // a flick of the driver: the train spins up and coasts back to its speed, or to a stop
-    bag.on(host, "pointerdown", (e) => {
-      if (e.button !== 0 || reducedMotion()) return;
-      vel += Math.PI * 0.9;
-      B.wake();
-    });
+    knock(host, g, bag, { onKnock: () => { if (!reducedMotion()) { vel += Math.PI * 3; B.wake(); } } });
 
     const restore = keepAttrs(host, ["role", "aria-label", "aria-busy"]);
     const sync = () => {

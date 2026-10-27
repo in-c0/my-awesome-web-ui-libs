@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.5
+
+- The readouts answer a finger as clearly as the inputs do: Gauge, Gears, Tank and Track sink into the page while pressed (their contact shadows stay on the bench), every outline brightens, and they bounce back up on release. A hovering mouse lifts them a hair.
+- Their own reactions are bigger: the Gauge's needle jumps about 40° and wobbles back, the Gears spin up hard and coast, the Tank's level jolts and sloshes, and a read-only Track's handcar is shoved well along the line before it rolls back.
+- A shared `knock()` in core gives any readout this press.
+
 ## 0.2.4
 
 The ten newer controls now have the same feel as the first eight: they lean toward what a click will do under a hovering mouse, give way the instant they are pressed, travel with a little overshoot, and something else answers.

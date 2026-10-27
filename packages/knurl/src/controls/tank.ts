@@ -1,6 +1,7 @@
 import { add3, camera, circle, cross3, cuboid, cyl, dot3, fit, flat, hull, lighting, loft, planeMatrix, poly, poly3, proj, rad, rot, rrect, scale3, seg, slab, sub3, toViewer, SHADES, type Camera, type Projector, type SolidPaths, type Vec2, type Vec3 } from "../core/iso";
 import { reducedMotion, spring, stepS } from "../core/motion";
 import { define, num, type BaseOptions } from "../core/control";
+import { knock } from "../core/knock";
 import { disposer, line, mk, register, shadow, solid } from "../core/stage";
 
 /**
@@ -385,14 +386,13 @@ export const tank = define<TankOptions>({
 
     // a knock on the shell sets the level bobbing and the surface rocking, away from the side that was knocked,
     // and runs a ripple across the meniscus; it never changes the value or takes focus
-    bag.on(host, "pointerdown", (e) => {
-      if (e.button !== 0) return;
+    knock(host, g, bag, { depth: 3.6, onKnock: (e) => {
       const r = host.getBoundingClientRect(), s = e.clientX < r.left + r.width / 2 ? 1 : -1;
-      sp.v += s * 0.16;
-      sl.v += s * 9;
-      rp.v += 14;
+      sp.v += s * 0.3;
+      sl.v += s * 18;
+      rp.v += 26;
       B.wake();
-    });
+    } });
     // a mouse over the tank: the glint on the glass widens as it catches the light, and the meniscus trembles a little
     const glint = (on: boolean) => {
       shine.style.transition = reducedMotion() ? "none" : "stroke-width 240ms cubic-bezier(0.32,0.72,0,1)";

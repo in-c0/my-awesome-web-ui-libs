@@ -1,6 +1,7 @@
 import { camera, circle, clamp, cuboid, fit, flat, loft, planeMatrix, poly3, proj, rot, rrect, seg, slab, turn, type Vec3 } from "../core/iso";
 import { spring, stepS, type Spring } from "../core/motion";
 import { define, emit, type BaseOptions } from "../core/control";
+import { knock } from "../core/knock";
 import { disposer, line, mk, register, shadow, solid, toView, type Solid } from "../core/stage";
 
 /**
@@ -310,15 +311,16 @@ export const track = define<TrackOptions>({
       if (h !== hover) { hover = h; paintStations(); B.wake(); }
     });
     bag.on(host, "pointerleave", () => { if (hover >= 0) { hover = -1; paintStations(); B.wake(); } });
+    // any press sinks the line into the page; on a read-only line it also shoves the handcar toward the press, and it rolls back
+    knock(host, g, bag, { depth: 3, enabled: () => !opts.disabled, onKnock: (e) => {
+      if (opts.clickable) return;
+      const [sx] = toView(svg, e, VW, VH);
+      sp.v += sx < P(sp.x, 0, 0)[0] ? -220 : 220;
+      B.wake();
+    } });
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0) return;
-      if (!opts.clickable) {
-        // read-only: a push sets the handcar rolling a little toward the press, and it rolls back to its station
-        const [sx] = toView(svg, e, VW, VH);
-        sp.v += sx < P(sp.x, 0, 0)[0] ? -60 : 60;
-        B.wake();
-        return;
-      }
+      if (!opts.clickable) return; // read-only: knock() below answers
       // a press on a reached station pushes its plate down; the car sets off on release, as a button fires
       const i = stationAt(e);
       if (i < 0) return;

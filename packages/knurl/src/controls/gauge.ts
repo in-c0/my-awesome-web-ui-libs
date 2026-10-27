@@ -1,6 +1,7 @@
 import { camera, circle, cyl, fit, flat, loft, poly, proj, rad, radialTicks, rrect, seg, slab, type Vec2, type Vec3 } from "../core/iso";
 import { spring, stepS } from "../core/motion";
 import { define, keepAttrs, num, type BaseOptions } from "../core/control";
+import { knock } from "../core/knock";
 import { disposer, line, mk, register, shadow, solid } from "../core/stage";
 
 /**
@@ -115,11 +116,7 @@ export const gauge = define<GaugeOptions>({
     bag.add(B.unregister);
 
     // a tap on the glass jogs the needle, as on a real gauge: it kicks up the scale and settles back
-    bag.on(host, "pointerdown", (e) => {
-      if (e.button !== 0) return;
-      sp.v += 2.4;
-      B.wake();
-    });
+    knock(host, g, bag, { onKnock: () => { sp.v += 7; B.wake(); } });
 
     const restore = keepAttrs(host, ["role", "aria-valuemin", "aria-valuemax", "aria-valuenow", "aria-label", "aria-valuetext"]);
     const sync = () => {

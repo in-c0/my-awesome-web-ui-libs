@@ -18,6 +18,8 @@ const mount = (o: Parameters<typeof combo>[1] = {}) => {
   return el;
 };
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** Waits until `ok` holds (springs run on the frame clock, which a busy machine slows), or gives up after 5 s. */
+const until = async (ok: () => boolean) => { for (let t = 0; t < 5000 && !ok(); t += 25) await wait(25); };
 const ptr = (el: Element, type: string, [x, y]: number[], pointerType = "mouse") =>
   el.dispatchEvent(new PointerEvent(type, { bubbles: true, button: 0, pointerType, pointerId: 1, clientX: x, clientY: y }));
 /** The first wheel's "0" (the reading at rest): where it is on screen, and its transform. */
@@ -50,7 +52,7 @@ describe("combo feel", () => {
     await wait(100);
     expect(zero(el).getAttribute("transform")).not.toBe(rest);
     ptr(el, "pointerleave", at);
-    await wait(1200);
+    await until(() => zero(el).getAttribute("transform") === rest);
     expect(zero(el).getAttribute("transform")).toBe(rest);
     expect(on).not.toHaveBeenCalled();
   });
@@ -64,7 +66,7 @@ describe("combo feel", () => {
     ptr(el, "pointerup", at);
     expect(on).toHaveBeenLastCalledWith("1");
     expect(el.querySelector("input")!.value).toBe("");
-    await wait(1200);
+    await until(() => zero(el).getAttribute("transform") === rest);
     expect(zero(el).getAttribute("transform")).toBe(rest);
   });
 

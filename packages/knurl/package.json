@@ -1,6 +1,6 @@
 {
   "name": "@in-c0/knurl",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "UI controls machined as isometric instruments: a switch is a toggle on a panel, a slider is a fader, a progress bar is a dial gauge. 18 controls, line or solid finish, React or plain DOM, no dependencies.",
   "license": "MIT",
   "type": "module",

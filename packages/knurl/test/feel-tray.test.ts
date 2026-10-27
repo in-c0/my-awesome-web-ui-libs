@@ -12,6 +12,8 @@ const live: { destroy(): void }[] = [];
 afterEach(() => { live.splice(0).forEach((c) => c.destroy()); setReducedMotion(false); });
 const mount = (o: Parameters<typeof tray>[1] = {}) => { const el = document.createElement("div"); document.body.appendChild(el); live.push(tray(el, o)); return el; };
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** Waits until `ok` holds (springs run on the frame clock, which a busy machine slows), or gives up after 5 s. */
+const until = async (ok: () => boolean) => { for (let t = 0; t < 5000 && !ok(); t += 25) await wait(25); };
 const ptr = (el: Element, type: string, pointerType = "mouse") => el.dispatchEvent(new PointerEvent(type, { bubbles: true, button: 0, pointerType, pointerId: 1 }));
 /** The tray above its feet: the group that sinks on a press. */
 const body = (el: Element) => el.querySelector("svg > g")!.children[1] as SVGGElement;
@@ -25,7 +27,7 @@ describe("tray feel", () => {
     await wait(50);
     expect(body(el).getAttribute("transform")).toMatch(/^translate\(/);
     ptr(el, "pointerup");
-    await wait(1600);
+    await until(() => body(el).getAttribute("transform") === null);
     expect(body(el).getAttribute("transform")).toBeNull();
   });
 
@@ -46,7 +48,7 @@ describe("tray feel", () => {
     await wait(120);
     expect(land(el).getAttribute("d")).toMatch(/^M/);
     ptr(el, "pointerleave");
-    await wait(900);
+    await until(() => (land(el).getAttribute("d") ?? "") === "");
     expect(land(el).getAttribute("d") ?? "").toBe("");
   });
 

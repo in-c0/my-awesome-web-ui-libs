@@ -19,6 +19,8 @@ const mount = (o: Parameters<typeof joystick>[1] = {}) => {
   return el;
 };
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** Waits until `ok` holds (springs run on the frame clock, which a busy machine slows), or gives up after 5 s. */
+const until = async (ok: () => boolean) => { for (let t = 0; t < 5000 && !ok(); t += 25) await wait(25); };
 const ptr = (el: Element, type: string, x: number, y: number, pointerType = "mouse") =>
   el.dispatchEvent(new PointerEvent(type, { bubbles: true, button: 0, pointerType, pointerId: 1, clientX: x, clientY: y }));
 const drawing = (el: Element) => el.querySelector("svg")!.innerHTML;
@@ -38,7 +40,7 @@ describe("joystick feel", () => {
     expect(on).not.toHaveBeenCalled();
     expect(el.querySelectorAll("input")[0].value).toBe("0");
     ptr(el, "pointerleave", VW - 10, VH / 2);
-    await wait(1500);
+    await until(() => drawing(el) === rest);
     expect(drawing(el)).toBe(rest);
   });
 
@@ -52,7 +54,7 @@ describe("joystick feel", () => {
     expect(drawing(el)).not.toBe(rest);
     ptr(el, "pointerup", VW / 2 + 12, VH / 2);
     expect(on).toHaveBeenLastCalledWith({ x: 0, y: 0 });
-    await wait(2000);
+    await until(() => drawing(el) === rest);
     expect(drawing(el)).toBe(rest);
   });
 
@@ -61,7 +63,7 @@ describe("joystick feel", () => {
     const el = mount({ onValueChange: on, returnToCenter: false });
     ptr(el, "pointerdown", VW / 2 + 12, VH / 2);
     ptr(el, "pointerup", VW / 2 + 12, VH / 2);
-    const last = on.mock.calls.at(-1)![0];
+    const last = on.mock.lastCall![0];
     expect(last.x).toBeGreaterThan(0);
     expect(Number(el.querySelectorAll("input")[0].value)).toBe(Math.round(last.x * 100));
   });

@@ -18,6 +18,8 @@ const mount = (o: Parameters<typeof caliper>[1] = {}) => {
   return el;
 };
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** Waits until `ok` holds (springs run on the frame clock, which a busy machine slows), or gives up after 5 s. */
+const until = async (ok: () => boolean) => { for (let t = 0; t < 5000 && !ok(); t += 25) await wait(25); };
 const ptr = (el: Element, type: string, [x, y]: number[], pointerType = "mouse") =>
   el.dispatchEvent(new PointerEvent(type, { bubbles: true, button: 0, pointerType, pointerId: 1, clientX: x, clientY: y }));
 /** The lit span's two ends on screen (it runs along the groove from the lo jaw to the hi jaw). */
@@ -42,7 +44,7 @@ describe("caliper feel", () => {
     expect(heads(el)).not.toBe(rest);
     expect(on).not.toHaveBeenCalled();
     ptr(el, "pointerleave", at);
-    await wait(1200);
+    await until(() => heads(el) === rest);
     expect(heads(el)).toBe(rest);
   });
 
@@ -59,7 +61,7 @@ describe("caliper feel", () => {
     expect(document.activeElement).toBe(el.querySelectorAll("input")[0]);
     ptr(el, "pointerup", at);
     expect(done).toHaveBeenCalledWith([25, 75]);
-    await wait(1200);
+    await until(() => heads(el) === rest);
     expect(heads(el)).toBe(rest);
     expect(el.querySelector(".k-solid.k-lit")).toBeNull();
   });
@@ -72,7 +74,7 @@ describe("caliper feel", () => {
     const at = [ax + (bx - ax) * 0.25, ay + (by - ay) * 0.25];
     ptr(el, "pointerdown", at);
     ptr(el, "pointerup", at);
-    const [lo, hi] = on.mock.calls.at(-1)![0];
+    const [lo, hi] = on.mock.lastCall![0];
     expect(lo).toBeGreaterThan(30);
     expect(lo).toBeLessThan(45);
     expect(hi).toBe(75);

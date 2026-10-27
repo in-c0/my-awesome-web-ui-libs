@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.4
+
+The ten newer controls now have the same feel as the first eight: they lean toward what a click will do under a hovering mouse, give way the instant they are pressed, travel with a little overshoot, and something else answers.
+
+- **Rocker**: hover tips the paddle toward its next throw; a press pushes it two-thirds of the way; release throws it 15° (was 12°) and it rebounds off the stop. Space shows the press too.
+- **Selector**: detents snap with overshoot (k260 c13, was k420 c25); hover turns the knob toward the next position and brightens its tick; a press sinks the knob and pre-turns it.
+- **Timer**: winding ratchets onto each minute with a small overshoot and flicks the bell striker; a press sinks the dial; outside jumps glide.
+- **Caliper**: jaws land on their detents with overshoot (k340 c16, was k260 c30); a hovered head lifts, a grabbed one dips and turns its roller and locking screw.
+- **Combo**: a hovered wheel turns a little, a press rolls it partway and release snaps it on; every detent knocks the shackle; the shackle pops open and swings past open before it settles.
+- **Joystick**: the stick leans toward a hovering mouse, the ball sinks on a press, and the return to centre wobbles.
+- **Tray**: a press sinks the tray on its feet and the top sheets hop; hover lifts the top sheet or shows where a sheet would land.
+- **Annunciator**: lamps warm up and cool down like filaments; the lamp test cascades in reading order; a pressed lamp dips; alert blinks ease.
+- **Track**: the handcar overshoots its station and its pump beam swings and settles; hovered and pressed stations answer; a step is chosen on release.
+- **Tank**: the level sloshes and settles; a knock tilts the surface and ripples the meniscus; hover catches light on the sight glass.
+- Reduced motion lands every one of these in one step. 46 new tests.
+
 ## 0.2.3
 
 - No dead spots left: a click anywhere on a control does something. The Knob rocks in its play when its cap's centre is clicked, a Combo rattles its shackle when the lock body is tugged, the Tray dips on its feet as it opens the picker, a press on the Presets housing presses the key in that column, and a click anywhere on the Selector's plate turns it toward that side.

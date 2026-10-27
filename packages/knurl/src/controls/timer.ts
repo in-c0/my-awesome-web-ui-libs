@@ -353,8 +353,8 @@ export const timer = define<TimerOptions>({
       return Math.hypot(x, y) > RB + 6 ? null : Math.atan2(y, x);
     };
     let drag: { a: number; turn: number; v: number } | null = null;
-    /** How far the dial is eased round the way it winds: a little under a hovering mouse, more under a press; none at the full-turn stop. */
-    function slack() { return cur >= Math.floor(max / 60) * 60 ? 0 : pressed ? 2 * SLACK : hover ? SLACK : 0; }
+    /** How far the dial is eased round the way it winds: a little under a hovering mouse (once it has time on it), more under a press; none at the full-turn stop. */
+    function slack() { return cur >= Math.floor(max / 60) * 60 ? 0 : pressed ? 2 * SLACK : hover && cur > 0 ? SLACK : 0; }
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0) return;
       const a = angleAt(e);

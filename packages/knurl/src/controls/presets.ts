@@ -1,4 +1,4 @@
-import { camera, cyl, fit, flat, planeMatrix, proj, rrect, seg, slab, type Vec3 } from "../core/iso";
+import { camera, cyl, fit, flat, planeMatrix, proj, rrect, seg, slab, unproj, type Vec3 } from "../core/iso";
 import { spring, stepS, type Spring } from "../core/motion";
 import { define, emit, type BaseOptions } from "../core/control";
 import { disposer, line, mk, register, shadow, solid, type Solid } from "../core/stage";
@@ -173,8 +173,15 @@ export const presets = define<PresetsOptions>({
     bag.on(host, "pointerleave", () => { hover = -1; B.wake(); });
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0) return;
-      const i = keyAt(e);
-      if (i < 0) return;
+      let i = keyAt(e);
+      if (i < 0) {
+        // the housing: the key in that column
+        const r = svg.getBoundingClientRect();
+        const [x] = unproj(C, ((e.clientX - r.left) / r.width) * VW, ((e.clientY - r.top) / r.height) * VH, BZ + KH);
+        let d = 1e9;
+        keys.forEach((k, j) => { const dj = x < k.x0 ? k.x0 - x : x > k.x1 ? x - k.x1 : 0; if (dj < d) { d = dj; i = j; } });
+        if (i < 0) return;
+      }
       keys[i].input.focus({ preventScroll: true });
       ask(keys[i].v);
       e.preventDefault();

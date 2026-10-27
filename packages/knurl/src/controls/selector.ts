@@ -223,9 +223,9 @@ export const selector = define<SelectorOptions>({
         e.preventDefault();
         return;
       }
-      if (r > DR + 6) return;
+      // anywhere else on the plate: the position in that direction
       const hit = nearest(Math.atan2(y, x));
-      if (hit.i >= 0 && hit.d <= Math.max(STEP * 0.5, rad(18))) { choose(hit.i); e.preventDefault(); }
+      if (hit.i >= 0) { choose(hit.i); e.preventDefault(); }
     });
     bag.on(host, "pointermove", (e) => {
       if (!drag || !STEP) return;

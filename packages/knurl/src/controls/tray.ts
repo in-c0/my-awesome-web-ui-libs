@@ -253,6 +253,7 @@ export const tray = define<TrayOptions>({
     let depthN = 0, over = false;
     const hov = spring(0, { k: 200, c: 26, eps: 0.004 });
     const wob = spring(0, { k: 700, c: 9, eps: 0.004 });
+    const thump = spring(0, { k: 600, c: 16, eps: 0.004 }); // a press: the tray dips on its feet and bounces
 
     const restOf = (i: number) => FZ + i * TH;
     /** Brings the sheets in line with the count: new ones fall in from above, staggered; gone ones lift off the top. */
@@ -319,10 +320,11 @@ export const tray = define<TrayOptions>({
       if (lit !== over) { lit = over; for (const s of [backPanel, leftPanel, rightPanel, front]) s.lit(over); }
       // a head-shake along the tray's width
       if (stepS(wob, dt)) moving = true;
-      if (wob.x !== lastWob) {
-        lastWob = wob.x;
+      if (stepS(thump, dt)) moving = true;
+      if (wob.x + thump.x * 7 !== lastWob) {
+        lastWob = wob.x + thump.x * 7;
         // slides along its width and rocks a little on its feet
-        root.setAttribute("transform", wob.x === 0 ? "" : `translate(${(WX[0] * wob.x).toFixed(2)} ${(WX[1] * wob.x).toFixed(2)}) rotate(${(wob.x * 0.9).toFixed(2)} ${foot[0].toFixed(2)} ${foot[1].toFixed(2)})`);
+        root.setAttribute("transform", wob.x === 0 && thump.x === 0 ? "" : `translate(${(WX[0] * wob.x).toFixed(2)} ${(WX[1] * wob.x + thump.x).toFixed(2)}) rotate(${(wob.x * 0.9).toFixed(2)} ${foot[0].toFixed(2)} ${foot[1].toFixed(2)})`);
       }
       return moving;
     });
@@ -380,7 +382,11 @@ export const tray = define<TrayOptions>({
     });
     const pick = () => { if (!opts.disabled) input.click(); };
     bag.on(button, "click", pick);
-    bag.on(host, "pointerdown", (e) => { if (opts.disabled || e.button !== 0) return; button.focus({ preventScroll: true }); });
+    bag.on(host, "pointerdown", (e) => {
+      if (opts.disabled || e.button !== 0) return;
+      button.focus({ preventScroll: true });
+      if (!reducedMotion()) { thump.v += 30; B.wake(); }
+    });
     bag.on(host, "click", (e) => { if (e.target === input || e.target === button) return; pick(); });
 
     bag.add(() => {

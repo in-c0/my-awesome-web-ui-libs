@@ -129,7 +129,11 @@ export const knob = define<KnobOptions>({
     });
     const end = () => { if (drag) { drag = null; r.commit(); } };
     bag.on(host, "pointerup", (e) => {
-      if (drag && !drag.moved) { const v = valueAt(e); if (v !== null) r.ask(v); }
+      if (drag && !drag.moved) {
+        const v = valueAt(e);
+        if (v !== null) r.ask(v);
+        else { sp.v += 4; B.wake(); } // the cap's centre or the gap: the knob rocks in its play and settles
+      }
       end();
     });
     bag.on(host, "pointercancel", end);

@@ -357,7 +357,12 @@ export const combo = define<ComboOptions>({
       if (opts.disabled || e.button !== 0) return;
       input.focus({ preventScroll: true });
       const i = wheelAt(e);
-      if (i < 0) return;
+      if (i < 0) {
+        // off the wheels: a tug on the lock. Locked, the shackle rattles in its hole; open, it swings a little
+        if (opened) sw.v -= 1.6; else lift.v += 40;
+        B.wake();
+        return;
+      }
       drag = { y: e.clientY, i, acc: 0, moved: false };
       host.setPointerCapture?.(e.pointerId);
       e.preventDefault();

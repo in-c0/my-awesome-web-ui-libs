@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.3
+
+- No dead spots left: a click anywhere on a control does something. The Knob rocks in its play when its cap's centre is clicked, a Combo rattles its shackle when the lock body is tugged, the Tray dips on its feet as it opens the picker, a press on the Presets housing presses the key in that column, and a click anywhere on the Selector's plate turns it toward that side.
+
 ## 0.2.2
 
 - The readouts answer a tap: the Gauge's needle jogs and settles back, the Tank's level sloshes away from the knock, a read-only Track's handcar rocks and rolls back to its station, and the Gears spin up and coast. None of them takes focus or changes its value.

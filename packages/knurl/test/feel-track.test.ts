@@ -103,14 +103,14 @@ describe("track feel", () => {
     expect(document.activeElement?.textContent).toBe("Ship");
   });
 
-  it("only rocks a read-only line on a tap: no focus, no step change", async () => {
+  it("does nothing of its own on a read-only tap: no motion, no focus, no step change", async () => {
     const on = vi.fn();
     const { el } = mount({ current: 1, onStepChange: on });
     const x0 = carX(el), s = stations(el)[0];
     el.dispatchEvent(ev("pointerdown", s.x, s.y));
     el.dispatchEvent(ev("pointerup", s.x, s.y));
     await wait(80);
-    expect(carX(el)).not.toBe(x0);
+    expect(carX(el)).toBe(x0);
     expect(on).not.toHaveBeenCalled();
     expect(el.contains(document.activeElement)).toBe(false);
     expect(el.getAttribute("aria-valuenow")).toBe("2");

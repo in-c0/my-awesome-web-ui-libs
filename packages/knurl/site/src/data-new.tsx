@@ -86,7 +86,7 @@ function TimerPaused({ finish }: { finish: Finish }) {
   return <Auto init={false} next={flip} ms={2600}>{(run, setRun) => <div className="demo-col"><Timer finish={finish} label="Exposure" defaultValue={90} running={run} /><button className="btn sm" onClick={() => setRun(!run)}>{run ? "Pause" : "Start"}</button></div>}</Auto>;
 }
 function TankFill({ finish }: { finish: Finish }) {
-  return <Auto init={10} next={(x: number) => (x >= 95 ? 10 : x + 17)} ms={1600}>{(v) => <div className="demo-row"><Tank finish={finish} label="Upload" role="progressbar" value={v} format={(x) => `${x}% uploaded`} /><Readout>{v}%</Readout></div>}</Auto>;
+  return <Auto init={10} next={(x: number) => (x >= 95 ? 10 : x + 17)} ms={1600} tap="[data-knurl=tank]">{(v) => <div className="demo-row"><Tank finish={finish} label="Upload" role="progressbar" value={v} format={(x) => `${x}% uploaded`} /><Readout>{v}%</Readout></div>}</Auto>;
 }
 function TrackOnboarding({ finish }: { finish: Finish }) {
   return <Auto init={3} next={(c: number) => (c + 1) % 5} ms={1800}>{(step, setStep) => <div className="demo-col"><Track finish={finish} label="Setup" steps={["Account", "Team", "Repo", "Deploy", "Invite"]} current={step} clickable onStepChange={setStep} /><div className="demo-row tight"><button className="btn sm" onClick={() => setStep(Math.max(0, step - 1))}>Back</button><button className="btn sm" onClick={() => setStep(Math.min(4, step + 1))}>Next</button></div></div>}</Auto>;
@@ -240,9 +240,9 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       ...meta("tank"),
       object: "An upright storage tank on a bolted plinth: banded shell, dome lid with a bolt ring, manway and vent, an inlet through a valve with a handwheel, and a drain. The level rises in the sight glass on a slow, slightly sloshing spring; the meniscus is lit.",
       native: 'role="meter" or role="progressbar"',
-      keys: [["Tap", "Sets the level sloshing, away from the side you knock"]],
+      keys: [],
       examples: [
-        { id: "default", title: "Default", text: "A level within a range, with alarm marks.", code: `<Tank label="Rainwater tank" value={3400} max={5000}\n  low={800} high={4600} format={(v) => \`\${v} litres\`} />`, render: (f) => <Auto init={3400} next={wander(300, 4900, 100)} ms={2800}>{(v) => <Tank finish={f} label="Rainwater tank" value={v} max={5000} low={800} high={4600} format={(x) => `${x} litres`} />}</Auto> },
+        { id: "default", title: "Default", text: "A level within a range, with alarm marks.", code: `<Tank label="Rainwater tank" value={3400} max={5000}\n  low={800} high={4600} format={(v) => \`\${v} litres\`} />`, render: (f) => <Auto init={3400} next={wander(300, 4900, 100)} ms={2800} tap="[data-knurl=tank]">{(v) => <Tank finish={f} label="Rainwater tank" value={v} max={5000} low={800} high={4600} format={(x) => `${x} litres`} />}</Auto> },
         { id: "progress", title: "Progress", text: "Filling as work goes up.", code: `<Tank role="progressbar" label="Upload" value={percent} />`, render: (f) => <TankFill finish={f} /> },
       ],
       props: [
@@ -260,9 +260,9 @@ export function newDocs(meta: (id: string) => Pick<Doc, "id" | "name" | "role" |
       ...meta("track"),
       object: "A narrow-gauge rail line: rails spiked to sleepers on a ballast bed, station posts with hooded signal lamps and name plates, and a buffer stop. A pump handcar rolls to the current station, its wheels turning and its beam rocking; passed lamps are lit, the current one with the accent.",
       native: 'role="progressbar" + a hidden <ol>',
-      keys: [["Tap", "Rocks the handcar; it rolls back to its station"], ["Tab", "Each reached step (when clickable)"], ["Enter / Space", "Go back to that step"], ["Click a reached station", "The same, when clickable"]],
+      keys: [["Tab", "Each reached step (when clickable)"], ["Enter / Space", "Go back to that step"], ["Click a reached station", "The same, when clickable"]],
       examples: [
-        { id: "default", title: "Default", text: "Checkout, at the third step.", code: `<Track label="Checkout" steps={["Cart", "Ship", "Pay", "Done"]} current={2} />`, render: (f) => <Auto init={2} next={(c: number) => (c + 1) % 4} ms={1800}>{(c) => <Track finish={f} label="Checkout" steps={["Cart", "Ship", "Pay", "Done"]} current={c} />}</Auto> },
+        { id: "default", title: "Default", text: "Checkout, at the third step.", code: `<Track label="Checkout" steps={["Cart", "Ship", "Pay", "Done"]} current={2} />`, render: (f) => <Auto init={2} next={(c: number) => (c + 1) % 4} ms={1800} tap="[data-knurl=track]">{(c) => <Track finish={f} label="Checkout" steps={["Cart", "Ship", "Pay", "Done"]} current={c} />}</Auto> },
         { id: "clickable", title: "Going back", text: "With clickable, reached stations are buttons.", code: `const [step, setStep] = useState(3);\n\n<Track label="Setup" current={step} clickable onStepChange={setStep}\n  steps={["Account", "Team", "Repo", "Deploy", "Invite"]} />`, render: (f) => <TrackOnboarding finish={f} /> },
       ],
       props: [

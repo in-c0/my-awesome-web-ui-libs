@@ -84,10 +84,10 @@ function CounterOdo({ finish }: { finish: Finish }) {
 // an upload that runs, holds at 100% and starts over
 const upload = (_: number, i: number) => { const p = (i + 1) % 22; return p === 0 ? 0 : Math.min(100, p * 6.5 + Math.random() * 4); };
 function GaugeUpload({ finish }: { finish: Finish }) {
-  return <Auto init={0} next={upload} ms={280}>{(v) => <div className="demo-row"><Gauge finish={finish} label="Uploading report.pdf" value={v} peak={false} /><Readout>{Math.round(v)}% of 4.2 MB</Readout></div>}</Auto>;
+  return <Auto init={0} next={upload} ms={280} tap="[data-knurl=gauge]">{(v) => <div className="demo-row"><Gauge finish={finish} label="Uploading report.pdf" value={v} peak={false} /><Readout>{Math.round(v)}% of 4.2 MB</Readout></div>}</Auto>;
 }
 function GaugeMeter({ finish }: { finish: Finish }) {
-  return <Auto init={62} next={wander(10, 95)} ms={2000}>{(v, setV) => <div className="demo-row"><Gauge finish={finish} role="meter" label="CPU load" value={v} format={(x) => `${x}%`} /><Fader finish={finish} label="Load" value={v} onValueChange={setV} style={{ width: 200 }} /></div>}</Auto>;
+  return <Auto init={62} next={wander(10, 95)} ms={2000} tap="[data-knurl=gauge]">{(v, setV) => <div className="demo-row"><Gauge finish={finish} role="meter" label="CPU load" value={v} format={(x) => `${x}%`} /><Fader finish={finish} label="Load" value={v} onValueChange={setV} style={{ width: 200 }} /></div>}</Auto>;
 }
 function GearsSwitch({ finish }: { finish: Finish }) {
   return <Auto init={true} next={flip} ms={3200}>{(on, setOn) => <div className="demo-row"><Gears finish={finish} spinning={on} label={on ? "Syncing" : "Idle"} /><Toggle finish={finish} label="Sync" checked={on} onCheckedChange={setOn} /></div>}</Auto>;
@@ -189,7 +189,7 @@ export const DOCS: Doc[] = [
     ...meta("gauge"),
     object: "A dial gauge on a bench block: a knurled bezel, a 270° scale with a red zone, and a needle on an underdamped spring that overshoots a little and settles. A tell-tale hand keeps the peak.",
     native: 'role="progressbar" or role="meter"',
-    keys: [["Tap", "Jogs the needle; it settles back to the reading"]],
+    keys: [],
     examples: [
       { id: "progress", title: "Progress", text: "Bound to an upload: it runs, holds at 100% and starts over.", code: `<Gauge label="Uploading report.pdf" value={percent} peak={false} />`, render: (f) => <GaugeUpload finish={f} /> },
       { id: "meter", title: "Meter", text: "A level within a range. The tell-tale stays at the highest value seen.", code: `const [load, setLoad] = useState(62);\n\n<Gauge role="meter" label="CPU load" value={load} />\n<Fader label="Load" value={load} onValueChange={setLoad} />`, render: (f) => <GaugeMeter finish={f} /> },
@@ -208,7 +208,7 @@ export const DOCS: Doc[] = [
     ...meta("gears"),
     object: "A gear train on a plate: a 24-tooth driver and 16- and 12-tooth followers, so the small gear turns twice as fast as the big one. It eases up to speed and coasts down when it stops.",
     native: 'role="status" aria-busy',
-    keys: [["Tap", "Flicks the train: it spins up and coasts back"]],
+    keys: [["Tap", "A gentle push: the train speeds up a little and eases back"]],
     examples: [
       { id: "default", title: "Default", text: "A quarter turn of the driver per second.", code: `<Gears label="Loading" />`, render: (f) => <Gears finish={f} /> },
       { id: "switch", title: "Start and stop", text: "Turning it off lets the train coast to a stop.", code: `const [on, setOn] = useState(true);\n\n<Gears spinning={on} label={on ? "Syncing" : "Idle"} />\n<Toggle label="Sync" checked={on} onCheckedChange={setOn} />`, render: (f) => <GearsSwitch finish={f} /> },
@@ -231,7 +231,7 @@ export function Hero({ id, finish }: { id: string; finish: Finish }) {
     case "keycap": return <AutoAct act={press()} ms={1600}><Keycap finish={finish} legend="Esc" style={{ width: 150 }} /></AutoAct>;
     case "presets": return <AutoPresets finish={finish} init="3" style={{ width: 240 }} />;
     case "counter": return <AutoCounter finish={finish} label="Count" init={42} style={{ width: 210 }} />;
-    case "gauge": return <Auto init={38} next={wander(20, 88)} ms={2400}>{(v) => <Gauge finish={finish} role="meter" label="Pressure" value={v} style={{ width: 176 }} />}</Auto>;
+    case "gauge": return <Auto init={38} next={wander(20, 88)} ms={2400} tap="[data-knurl=gauge]">{(v) => <Gauge finish={finish} role="meter" label="Pressure" value={v} style={{ width: 176 }} />}</Auto>;
     case "gears": return <Gears finish={finish} style={{ width: 170 }} />;
     case "rocker": return <Auto init={true} next={flip} ms={2400}>{(on, set) => <Rocker finish={finish} label="Mains" checked={on} onCheckedChange={set} style={{ width: 160 }} />}</Auto>;
     case "caliper": return <Auto init={[30, 65] as [number, number]} next={wanderPair(0, 100)} ms={2200}>{(v, set) => <Caliper finish={finish} label="Range" value={v} onValueChange={set} style={{ width: 270 }} />}</Auto>;
@@ -240,8 +240,8 @@ export function Hero({ id, finish }: { id: string; finish: Finish }) {
     case "tray": return <Auto init={2} next={(n: number) => (n >= 6 ? 0 : n + 1)} ms={1300}>{(n) => <Tray finish={finish} label="Drop files" count={n} style={{ width: 200 }} />}</Auto>;
     case "selector": return <Auto init="MED" next={cycle(["OFF", "LOW", "MED", "HIGH"], true)} ms={1700}>{(v, set) => <Selector finish={finish} label="Mode" value={v} onValueChange={set} style={{ width: 180 }} />}</Auto>;
     case "timer": return <Auto init={7 * 60} next={wind} ms={500}>{(v, set) => <Timer finish={finish} label="Timer" value={v} onValueChange={set} style={{ width: 170 }} />}</Auto>;
-    case "tank": return <Auto init={62} next={wander(18, 92)} ms={2600}>{(v) => <Tank finish={finish} label="Level" value={v} low={15} high={85} style={{ width: 130 }} />}</Auto>;
-    case "track": return <Auto init={1} next={(c: number) => (c + 1) % 4} ms={1800}>{(c) => <Track finish={finish} label="Checkout" current={c} style={{ width: 270 }} />}</Auto>;
+    case "tank": return <Auto init={62} next={wander(18, 92)} ms={2600} tap="[data-knurl=tank]">{(v) => <Tank finish={finish} label="Level" value={v} low={15} high={85} style={{ width: 130 }} />}</Auto>;
+    case "track": return <Auto init={1} next={(c: number) => (c + 1) % 4} ms={1800} tap="[data-knurl=track]">{(c) => <Track finish={finish} label="Checkout" current={c} style={{ width: 270 }} />}</Auto>;
     case "annunciator": return <Auto init={LAMPS} next={blink} ms={1500}>{(items) => <Annunciator finish={finish} label="Services" items={items} style={{ width: 260 }} />}</Auto>;
   }
   return null;

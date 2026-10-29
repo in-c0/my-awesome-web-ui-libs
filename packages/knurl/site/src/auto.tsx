@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from "rea
  * The site's previews play themselves while nobody is using them.
  *
  * A pointer over a preview, focus in it, a press, a key, a wheel or a drag pauses it at once.
+ * A readout (a gauge, a tank, a track) has nothing of its own to click, so with `tap` a click
+ * on it plays the demo's next step instead.
  * It picks up again 3 seconds after the pointer leaves and focus goes. It never plays offscreen,
  * in a background tab or under prefers-reduced-motion. This is only the site's demo:
  * the controls themselves never move without a prop change or a user.
@@ -12,17 +14,21 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from "rea
 const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const IDLE = 3000;
 
-function useIdlePlay(ref: RefObject<HTMLElement | null>, ms: number, tick: (i: number, root: HTMLElement) => void) {
+function useIdlePlay(ref: RefObject<HTMLElement | null>, ms: number, tick: (i: number, root: HTMLElement) => void, tap?: string) {
   const fn = useRef(tick);
   fn.current = tick;
+  const step = useRef(0);
   useEffect(() => {
     const el = ref.current;
     if (!el || reduced()) return;
-    let busy = false, last = 0, seen = true, i = 0;
+    let busy = false, last = 0, seen = true;
     const touch = () => { last = performance.now(); };
     const hold = () => { busy = true; touch(); };
     const settle = () => setTimeout(() => { busy = el.matches(":hover") || el.contains(document.activeElement); touch(); }, 0);
-    const evs: [string, () => void][] = [
+    // a click on the readout named by `tap` plays the next step at once
+    const onClick = (e: Event) => { if (tap && (e.target as Element | null)?.closest?.(tap)) fn.current(step.current++, el); };
+    const evs: [string, (e: Event) => void][] = [
+      ["click", onClick],
       ["pointerenter", hold], ["pointerleave", settle], ["focusin", hold], ["focusout", settle],
       ["pointerdown", hold], ["keydown", touch], ["wheel", touch], ["dragenter", hold], ["dragleave", settle], ["drop", settle],
     ];
@@ -32,27 +38,29 @@ function useIdlePlay(ref: RefObject<HTMLElement | null>, ms: number, tick: (i: n
     io?.observe(target);
     const t = setInterval(() => {
       if (busy || !seen || document.hidden || performance.now() - last < IDLE) return;
-      fn.current(i++, el);
+      fn.current(step.current++, el);
     }, ms);
     return () => {
       clearInterval(t);
       io?.disconnect();
       for (const [k, f] of evs) el.removeEventListener(k, f);
     };
-  }, [ref, ms]);
+  }, [ref, ms, tap]);
 }
 
 /** A controlled value that moves by itself: `next` gives the value after `v` every `ms`. */
-export function Auto<T>({ init, next, ms = 1800, children }: {
+export function Auto<T>({ init, next, ms = 1800, tap, children }: {
   init: T;
   next: (v: T, i: number) => T;
   ms?: number;
+  /** A selector for the readout inside whose click plays the next step, e.g. "[data-knurl=gauge]". */
+  tap?: string;
   children: (v: T, set: (v: T) => void) => ReactNode;
 }) {
   const [v, setV] = useState(init);
   const ref = useRef<HTMLDivElement>(null);
-  useIdlePlay(ref, ms, (i) => setV((x) => next(x, i)));
-  return <div className="auto" ref={ref}>{children(v, setV)}</div>;
+  useIdlePlay(ref, ms, (i) => setV((x) => next(x, i)), tap);
+  return <div className={tap ? "auto tap" : "auto"} ref={ref}>{children(v, setV)}</div>;
 }
 
 /** Something to do every `ms`, for controls without a value to drive, like a key to press. */

@@ -1,7 +1,6 @@
 import { camera, circle, clamp, cuboid, fit, flat, loft, planeMatrix, poly3, proj, rot, rrect, seg, slab, turn, type Vec3 } from "../core/iso";
 import { spring, stepS, type Spring } from "../core/motion";
 import { define, emit, type BaseOptions } from "../core/control";
-import { knock } from "../core/knock";
 import { disposer, line, mk, register, shadow, solid, toView, type Solid } from "../core/stage";
 
 /**
@@ -13,8 +12,7 @@ import { disposer, line, mk, register, shadow, solid, toView, type Solid } from 
  * station, its wheels turning as it goes; it runs a little past on arrival
  * and rolls back, and its pump beam rocks with the ride and swings level
  * after it stops. Stations it has passed have their lamp on, the current one
- * is lit with the accent, the rest are dark. When the line is read-only, a
- * tap rocks the handcar. When clickable, hovering a reached station with a
+ * is lit with the accent, the rest are dark. When clickable, hovering a reached station with a
  * mouse lifts and lights its name plate, and pressing it pushes the plate
  * down; the car sets off when the press is released.
  *
@@ -311,16 +309,9 @@ export const track = define<TrackOptions>({
       if (h !== hover) { hover = h; paintStations(); B.wake(); }
     });
     bag.on(host, "pointerleave", () => { if (hover >= 0) { hover = -1; paintStations(); B.wake(); } });
-    // any press sinks the line into the page; on a read-only line it also shoves the handcar toward the press, and it rolls back
-    knock(host, g, bag, { depth: 3, enabled: () => !opts.disabled, onKnock: (e) => {
-      if (opts.clickable) return;
-      const [sx] = toView(svg, e, VW, VH);
-      sp.v += sx < P(sp.x, 0, 0)[0] ? -220 : 220;
-      B.wake();
-    } });
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0) return;
-      if (!opts.clickable) return; // read-only: knock() below answers
+      if (!opts.clickable) return;
       // a press on a reached station pushes its plate down; the car sets off on release, as a button fires
       const i = stationAt(e);
       if (i < 0) return;

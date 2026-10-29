@@ -1,7 +1,6 @@
 import { camera, cyl, depth, facing, fit, flat, lighting, poly, proj, rad, rrect, seg, slab, SHADES, type Camera, type Projector, type Vec2, type Vec3 } from "../core/iso";
 import { reducedMotion } from "../core/motion";
 import { define, keepAttrs, type BaseOptions } from "../core/control";
-import { knock } from "../core/knock";
 import { disposer, line, mk, register, shadow, solid } from "../core/stage";
 
 /**
@@ -10,7 +9,7 @@ import { disposer, line, mk, register, shadow, solid } from "../core/stage";
  * A driver and two followers mesh at their true ratios (24 : 16 : 12 teeth),
  * so the small one turns twice as fast as the big one and every pair turns
  * opposite ways. Spinning eases up to speed and coasts down when it stops;
- * a tap flicks the train.
+ * a tap gives the driver a gentle push.
  * Under reduced motion it holds still and only the lamp blinks.
  *
  * The host carries role="status" and its label.
@@ -176,7 +175,11 @@ export const gears = define<GearsOptions>({
     bag.add(B.unregister);
 
     // a flick of the driver: the train spins up and coasts back to its speed, or to a stop
-    knock(host, g, bag, { onKnock: () => { if (!reducedMotion()) { vel += Math.PI * 3; B.wake(); } } });
+    bag.on(host, "pointerdown", (e) => {
+      if (e.button !== 0 || reducedMotion()) return;
+      vel += Math.PI * 0.5; // about twice its running speed for a moment, easing back
+      B.wake();
+    });
 
     const restore = keepAttrs(host, ["role", "aria-label", "aria-busy"]);
     const sync = () => {

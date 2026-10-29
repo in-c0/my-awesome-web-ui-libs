@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.6
+
+- Readouts add no click animation of their own: the press-and-sink from 0.2.5, the Gauge's needle jog, the Tank's knock slosh and the read-only Track's handcar shove are gone. On the site, a click on a Gauge, Tank or Track plays its demo's next step, so it moves the way it normally does, to another value.
+- Gears: a tap is a gentle push (about twice its running speed for a moment), not a hard spin.
+- Caliper is back to its 0.2.3 behaviour.
+
 ## 0.2.5
 
 - The readouts answer a finger as clearly as the inputs do: Gauge, Gears, Tank and Track sink into the page while pressed (their contact shadows stay on the bench), every outline brightens, and they bounce back up on release. A hovering mouse lifts them a hair.

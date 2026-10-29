@@ -11,12 +11,8 @@ import { disposer, line, mk, register, shadow, solid, toView, type Solid } from 
  * locking screw and a knurled thumb roller, and hangs its jaw over the beam's
  * near edge; the jaws face each other and the gap between them is lit with
  * the accent along the beam's groove. The heads follow their values on
- * springs, so a jump from the keyboard travels, lands on its detent with a
- * little overshoot, and the rollers turn as they go; a jaw never passes the
- * other. Hovering a head lifts it a hair off the beam; hovering the beam leans
- * the nearer head toward the pointer, where a press would send it. A press
- * takes hold at once: the head dips onto the beam, its roller turns a notch
- * and its locking screw a few degrees, before anything moves.
+ * springs, so a jump from the keyboard travels and the rollers turn as they
+ * go; a jaw never passes the other.
  *
  * Semantics come from two visually hidden `<input type="range">`, one per
  * jaw, inside a labelled group.
@@ -219,7 +215,7 @@ export const caliper = define<CaliperOptions>({
       const [rollG, jawG] = dir < 0 ? [nearA, nearB] : [nearB, nearA];
       const jaw = solid(jawG), jawLine = line(jawG, "lo");
       const lug = solid(rollG), lugScrew = line(rollG, "edge"), wheel = solid(rollG), knurl = line(rollG, "lo"), wheelCap = solid(rollG), axle = line(rollG, "edge");
-      return { dir, hg, near, knife, body, seam, plate, vern, zero, plateScrews, washer, screw, screwKnurl, slot, jaw, jawLine, lug, lugScrew, wheel, knurl, wheelCap, axle };
+      return { dir, near, knife, body, seam, plate, vern, zero, plateScrews, washer, screw, screwKnurl, slot, jaw, jawLine, lug, lugScrew, wheel, knurl, wheelCap, axle };
     };
     type Head = ReturnType<typeof head>;
 
@@ -241,8 +237,7 @@ export const caliper = define<CaliperOptions>({
     const shape = (p: { verts: Vec3[]; faces: number[][] }) => poly3(C, P, p.verts, p.faces);
     const IZ = (Z0 + ZT) / 2;
 
-    // a press turns the thumb roller a notch and the locking screw a little: `turn` is 0…1
-    function drawHead(h: Head, m: number, turn = 0) {
+    function drawHead(h: Head, m: number) {
       const d = h.dir, xo = m + d * HL, x0 = Math.min(m, xo), x1 = Math.max(m, xo);
       const at = (a: number) => m + d * a; // a distance from the measuring face into the head
       h.knife.put(shape(prism3([m, HY0, IZ], d < 0 ? KNIFE : mirror(KNIFE), 0.7)));
@@ -262,13 +257,13 @@ export const caliper = define<CaliperOptions>({
       h.washer.put(cyl(C, P, sx, sy, 2.7, HZ, HZ + 0.4, 28));
       h.screw.put(cyl(C, P, sx, sy, 2, HZ + 0.4, HZ + 2.2, 28));
       h.screwKnurl.setAttribute("d", knurlOf(sx, sy, 2, HZ + 0.7, HZ + 1.9, 22, 0.1));
-      const sl = rad(-25 + turn * 28);
+      const sl = rad(-25);
       h.slot.setAttribute("d", seg(P(sx - Math.cos(sl) * 1.3, sy - Math.sin(sl) * 1.3, HZ + 2.2), P(sx + Math.cos(sl) * 1.3, sy + Math.sin(sl) * 1.3, HZ + 2.2)));
       // the outer jaw hangs over the near edge, its measuring face flush with the head's end
       h.jaw.put(shape(prism3([m, HY1, IZ], d < 0 ? JAW : mirror(JAW), (ZT - Z0) / 2)));
       h.jawLine.setAttribute("d", seg(P(at(1.4), HY1 + 0.8, ZT), P(at(7), HY1 + 0.8, ZT)));
       // the lug at the tail and its thumb roller, which turns as the head travels along the beam
-      const l0 = Math.min(xo, xo - d * 5.8), l1 = Math.max(xo, xo - d * 5.8), wx = xo - d * 2.9, wy = HY1 + 3.2, ph = -m / 2.6 - turn * 0.42;
+      const l0 = Math.min(xo, xo - d * 5.8), l1 = Math.max(xo, xo - d * 5.8), wx = xo - d * 2.9, wy = HY1 + 3.2, ph = -m / 2.6;
       h.lug.put(slab(C, P, l0, HY1, l1, HY1 + 6.4, 1.4, 0.8, 2.8));
       h.lugScrew.setAttribute("d", seg(P(l0 + 0.9, HY1 + 0.9, 2.8), P(l1 - 0.9, HY1 + 0.9, 2.8)));
       h.wheel.put(cyl(C, P, wx, wy, 2.5, 2.8, 5, 36));
@@ -294,53 +289,25 @@ export const caliper = define<CaliperOptions>({
       pc.clip.setAttribute("d", flat(P, rring(x0, -BW, x1, BW, rl, rr), ZT));
     };
 
-    // the heads travel on a lively spring (ζ ≈ 0.43): a jump lands on its detent with a small overshoot
-    const REST = { k: 340, c: 16 }, HAND = { k: 1000, c: 32 }; // HAND: close behind a drag, still snapping onto each step (ζ ≈ 0.5)
-    const spL = spring(xOf(lo), { ...REST, eps: 0.02 }), spH = spring(xOf(hi), { ...REST, eps: 0.02 });
-    // per head: `lift` raises it off the beam (hover +, a press dips it −), `turn` works the roller and screw, `lean` lends it toward the pointer
-    const feel = () => ({ lift: spring(0, { k: 480, c: 20, eps: 0.004 }), turn: spring(0, { k: 480, c: 20, eps: 0.004 }), lean: spring(0, { ...REST, eps: 0.01 }) });
-    const fL = feel(), fH = feel();
-    const z0 = P(0, 0, 0), z1 = P(0, 0, 1), UP: Vec2 = [z1[0] - z0[0], z1[1] - z0[1]];
-    const raise = (h: Head, dz: number) => {
-      const t = Math.abs(dz) < 1e-3 ? "" : `translate(${(UP[0] * dz).toFixed(2)} ${(UP[1] * dz).toFixed(2)})`;
-      for (const el of [h.hg, h.near]) if ((el.getAttribute("transform") ?? "") !== t) { if (t) el.setAttribute("transform", t); else el.removeAttribute("transform"); }
-    };
+    const spL = spring(xOf(lo), { k: 260, c: 30, eps: 0.02 }), spH = spring(xOf(hi), { k: 260, c: 30, eps: 0.02 });
     function draw(xl: number, xh: number) {
       xh = Math.max(xh, xl);
       piece(pieces[0], -BL, xl - HL + 0.5, 1.6, 0);
       piece(pieces[1], xl, xh, 0, 0);
       piece(pieces[2], xh + HL, BL, 0, 1.6);
-      drawHead(lowHead, xl, fL.turn.x);
-      drawHead(highHead, xh, fH.turn.x);
-      raise(lowHead, fL.lift.x);
-      raise(highHead, fH.lift.x);
+      drawHead(lowHead, xl);
+      drawHead(highHead, xh);
       for (const ov of overs) ov.lit.setAttribute("d", xh - xl > 0.2 ? seg(P(xl, -2.6, ZT), P(xh, -2.6, ZT)) : "");
       shades[0].setAttribute("d", flat(P, rrect(xl - HL, HY0 - 3, xl, HY1 + 6, 3), 0));
       shades[1].setAttribute("d", flat(P, rrect(xh, HY0 - 3, xh + HL, HY1 + 6, 3), 0));
     }
 
-    // what the pointer is over, for the anticipation: a head (it lifts), or a spot on the beam (the nearer head leans toward it)
-    let hover: { which: "lo" | "hi"; over: boolean; v: number } | null = null;
-    let held: "lo" | "hi" | "span" | null = null;
-    const LIFT = 1.6, DIP = -0.9, LEAN = 1.8; // world units
     const B = register(host, (dt) => {
-      let m = false;
-      for (const [which, f] of [["lo", fL], ["hi", fH]] as const) {
-        const grabbed = held === which || held === "span";
-        const hv = !held && hover && hover.which === which ? hover : null;
-        f.lift.t = grabbed ? DIP : hv ? (hv.over ? LIFT : LIFT * 0.45) : 0;
-        f.turn.t = grabbed ? 1 : hv && hv.over ? 0.25 : 0;
-        const cur = which === "lo" ? lo : hi;
-        f.lean.t = hv && !hv.over && max > min ? Math.sign(hv.v - cur) * Math.min(LEAN, (Math.abs(hv.v - cur) / (max - min)) * 2 * S * 0.2) : 0;
-        for (const sp of [f.lift, f.turn, f.lean]) if (stepS(sp, dt)) m = true;
-      }
       spL.t = xOf(lo); spH.t = xOf(hi);
-      if (stepS(spL, dt)) m = true;
-      if (stepS(spH, dt)) m = true;
-      const lit = (h: Head, on: boolean) => h.body.lit(on);
-      lit(lowHead, held === "lo" || held === "span"); lit(highHead, held === "hi" || held === "span");
-      draw(spL.x + fL.lean.x, spH.x + fH.lean.x);
-      return m;
+      const m = stepS(spL, dt) || false;
+      const n = stepS(spH, dt);
+      draw(spL.x, spH.x);
+      return m || n;
     });
     bag.add(B.unregister);
 
@@ -350,7 +317,7 @@ export const caliper = define<CaliperOptions>({
     type Drag = { mode: "lo" | "hi" | "span" | "pending"; off: number; v0: number; a0: number; b0: number; x0: number };
     let drag: Drag | null = null;
     const at = (e: PointerEvent) => { const [sx, sy] = toView(svg, e, VW, VH); return unproj(C, sx, sy, ZT); };
-    const follow = (on: boolean) => { for (const s of [spL, spH]) { s.k = on ? HAND.k : REST.k; s.c = on ? HAND.c : REST.c; } };
+    const follow = (on: boolean) => { for (const s of [spL, spH]) { s.k = on ? 900 : 260; s.c = on ? 60 : 30; } };
     const move = (which: "lo" | "hi", v: number) => set(which === "lo" ? fix(Math.min(v, hi), hi, "lo") : fix(lo, Math.max(v, lo), "hi"));
     const nearer = (v: number): "lo" | "hi" => (v < lo ? "lo" : v > hi ? "hi" : v - lo <= hi - v ? "lo" : "hi");
     const shiftBy = (dv: number) => {
@@ -370,22 +337,12 @@ export const caliper = define<CaliperOptions>({
       else if (x > xl + 1 && x < xh - 1) drag = { ...base, mode: "pending" };
       else { const w = nearer(v); drag = { ...base, mode: w }; move(w, v); }
       (drag.mode === "hi" ? inHi : inLo).focus({ preventScroll: true });
-      // the grabbed head takes hold at once; a press inside the span holds both until it is clearly a click or a drag
-      held = drag.mode === "pending" ? "span" : drag.mode;
-      hover = null;
-      B.wake();
       e.preventDefault();
     });
-    const hoverAt = (e: PointerEvent) => {
-      const [x] = at(e), v = vOf(x), xl = xOf(lo), xh = xOf(hi);
-      const next = x <= xl && x >= xl - HL ? { which: "lo" as const, over: true, v } : x >= xh && x <= xh + HL ? { which: "hi" as const, over: true, v } : Math.abs(x) <= BL ? { which: nearer(v), over: false, v } : null;
-      if (JSON.stringify(next) !== JSON.stringify(hover)) { hover = next; B.wake(); }
-    };
-    bag.on(host, "pointerleave", () => { if (hover) { hover = null; B.wake(); } });
     bag.on(host, "pointermove", (e) => {
-      if (!drag) { if (e.pointerType === "mouse" && !opts.disabled) hoverAt(e); return; }
+      if (!drag) return;
       const [x] = at(e), v = vOf(x);
-      if (drag.mode === "pending" && Math.abs(x - drag.x0) > 1) { drag.mode = "span"; held = "span"; }
+      if (drag.mode === "pending" && Math.abs(x - drag.x0) > 1) drag.mode = "span";
       if (drag.mode === "span") shiftBy(v - drag.v0);
       else if (drag.mode !== "pending") move(drag.mode, v + drag.off);
     });
@@ -393,10 +350,8 @@ export const caliper = define<CaliperOptions>({
       if (!drag) return;
       const d = drag;
       drag = null;
-      held = null;
       if (d.mode === "pending" && e.type === "pointerup") { const w = nearer(d.v0); (w === "hi" ? inHi : inLo).focus({ preventScroll: true }); move(w, d.v0); }
       follow(false);
-      B.wake();
       commit();
     };
     bag.on(host, "pointerup", end);

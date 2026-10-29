@@ -219,7 +219,7 @@ const rig = (r: Rig, i: number): Rig => {
 
 /** Three controls on one bench, wired: the fader sets the knob's limit, the switch powers the gauge. */
 function Specimen({ finish }: { finish: Finish }) {
-  return <Auto init={{ on: true, load: 68, trim: 40 } as Rig} next={rig} ms={1700}>{(r, set) => {
+  return <Auto init={{ on: true, load: 68, trim: 40 } as Rig} next={rig} ms={1700} tap="[data-knurl=gauge]">{(r, set) => {
     const reading = r.on ? Math.round(r.load * (0.5 + r.trim / 200)) : 0;
     return (
       <div className="bench" aria-label="Three controls wired together">

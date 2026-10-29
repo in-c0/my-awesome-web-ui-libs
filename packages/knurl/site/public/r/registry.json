@@ -21,11 +21,6 @@
           "target": "components/knurl/core/iso.ts"
         },
         {
-          "path": "src/core/knock.ts",
-          "type": "registry:lib",
-          "target": "components/knurl/core/knock.ts"
-        },
-        {
           "path": "src/core/motion.ts",
           "type": "registry:lib",
           "target": "components/knurl/core/motion.ts"

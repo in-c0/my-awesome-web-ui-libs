@@ -332,3 +332,4 @@ td.desc-cell { color: var(--muted-fg); min-width: 240px; }
 
 /* a preview that plays itself (auto.tsx): no box of its own */
 .auto { display: contents; }
+.auto.tap [data-knurl] { cursor: pointer; }

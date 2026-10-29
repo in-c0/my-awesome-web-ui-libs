@@ -33,7 +33,7 @@ const surface = (el: HTMLElement) => {
 };
 
 describe("tank feel", () => {
-  it("rocks the surface and runs a ripple on a knock, without changing the value or taking focus", async () => {
+  it("does nothing of its own on a tap: no motion, no value change, no focus", async () => {
     const { el } = mount(50);
     await wait(40);
     const s0 = surface(el);
@@ -41,9 +41,9 @@ describe("tank feel", () => {
     el.dispatchEvent(ev("pointerdown", 20, 100));
     let tilt = 0, rip = 0;
     for (let k = 0; k < 20; k++) { await wait(16); const s = surface(el); tilt = Math.max(tilt, Math.abs(s.yl - s.yr)); rip = Math.max(rip, Math.abs(s.rip)); }
-    // a clear tilt (glass units: the glass is 3.2 wide) and a ripple
-    expect(tilt).toBeGreaterThan(0.8);
-    expect(rip).toBeGreaterThan(0.2);
+    // a tap adds no animation of its own: the app moves the level
+    expect(tilt).toBeLessThan(0.01);
+    expect(rip).toBeLessThan(0.01);
     expect(el.getAttribute("aria-valuenow")).toBe("50");
     expect(el.contains(document.activeElement)).toBe(false);
     expect(el.hasAttribute("tabindex")).toBe(false);

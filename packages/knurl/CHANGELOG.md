@@ -2,6 +2,7 @@
 
 ## 0.3.1
 
+- Site: opens in light mode unless the visitor has picked dark with the toggle.
 - Hourglass: a click on a running, indeterminate glass plays its next step at once: the rest of the sand rushes through and the glass turns over.
 
 ## 0.3.0

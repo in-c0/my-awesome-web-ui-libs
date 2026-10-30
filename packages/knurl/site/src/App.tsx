@@ -38,10 +38,9 @@ const href = (id: string) => (id ? `#${id}` : "#");
 
 /* ───── theme ───── */
 function useTheme() {
-  const sys = () => matchMedia("(prefers-color-scheme: dark)").matches;
   const [dark, setDark] = useState(() => {
     const a = document.documentElement.getAttribute("data-theme");
-    return a ? a === "dark" : sys();
+    return a ? a === "dark" : false; // light unless the visitor chose dark
   });
   const toggle = useCallback(() => {
     setDark((d) => {

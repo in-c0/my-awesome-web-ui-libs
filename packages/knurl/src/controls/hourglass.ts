@@ -14,10 +14,12 @@ import { disposer, line, mk, register, shadow, solid, type Solid } from "../core
  * the whole glass is lifted and turned end over end, slow to start, with a
  * small overshoot as it comes down, and the sand slides to the other end as
  * it passes level. Under reduced motion the sand holds still and the glass
- * is not turned; it still shows the value.
+ * is not turned; it still shows the value. A click on a running,
+ * indeterminate glass plays its next step at once: the rest of the sand
+ * rushes through and the glass turns over.
  *
  * The host is role="progressbar": aria-valuenow when determinate,
- * aria-busy while indeterminate. It has no pointer behaviour of its own.
+ * aria-busy while indeterminate. A determinate glass has no pointer behaviour.
  */
 
 export type HourglassOptions = BaseOptions & {
@@ -38,7 +40,7 @@ const NECK = 0.75, RB = 10.4, DM = 13.2; // glass: neck radius, bulb radius, whe
 const CUPR = 8.2, CUPH = 1.7; // the cups the domes sit in
 const GT = 0.5; // glass wall
 const RP = 14.4; // spindles' radius from the axis
-const RUN = 4.2, TURN = 0.62; // seconds for the top to empty; seconds for the turn's push
+const RUN = 4.2, TURN = 0.62, RUSH = 0.45; // seconds for the top to empty; for the turn's push; for a click to run the rest through
 const N = 64;
 
 /** The glass's outer radius at distance d from the neck. */
@@ -393,6 +395,7 @@ export const hourglass = define<HourglassOptions>({
       } else { stream.setAttribute("d", ""); drip.setAttribute("d", ""); }
     }
 
+    let rush = false; // a click: the rest of the top runs through in RUSH seconds, then it turns
     const B = register(host, (dt) => {
       const still = reducedMotion();
       let moving = false;
@@ -415,9 +418,10 @@ export const hourglass = define<HourglassOptions>({
       }
       if (!runs() && turning < 0) { drawFrame(0, REST); drawSand(0, REST, qTop, false, 1); return false; }
       if (turning < 0) {
-        qTop -= dt / RUN;
-        flow += dt * 26;
-        if (qTop <= 0) { qTop = 0; turning = 0; turnSp.x = 0; turnSp.v = 0; }
+        // a click runs the rest of the sand through in a rush, so the turn comes next
+        qTop -= dt / (rush ? RUSH : RUN);
+        flow += dt * (rush ? 90 : 26);
+        if (qTop <= 0) { qTop = 0; rush = false; turning = 0; turnSp.x = 0; turnSp.v = 0; }
         drawFrame(0, REST);
         drawSand(0, REST, qTop, true, 1);
         return true;
@@ -469,6 +473,11 @@ export const hourglass = define<HourglassOptions>({
     };
     sync();
 
+    bag.on(host, "pointerdown", (e) => {
+      if (e.button !== 0 || det() || !runs() || reducedMotion() || turning >= 0 || qTop <= 0) return;
+      rush = true;
+      B.wake();
+    });
     bag.add(() => { restore(); host.removeAttribute("data-state"); svg.replaceChildren(); });
     return {
       update(next) {

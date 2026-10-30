@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Hourglass: a click on a running, indeterminate glass plays its next step at once: the rest of the sand rushes through and the glass turns over.
+
 ## 0.3.0
 
 Ten new controls, 28 in all. Each is a real machine on native semantics, with the same feel as the rest: it leans toward what a click will do under a hovering mouse, gives way the moment it is pressed, travels with a little overshoot, and something else answers.

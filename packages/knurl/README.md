@@ -1,6 +1,6 @@
 # Knurl
 
-Form controls, machined. A switch is a toggle on a panel, a slider is a fader on its strip, a progress bar is a dial gauge. Eighteen accessible controls for React and any DOM, drawn as working isometric objects over native inputs. No dependencies.
+Form controls, machined. A switch is a toggle on a panel, a slider is a fader on its strip, a progress bar is a dial gauge. Twenty-eight accessible controls for React and any DOM, drawn as working isometric objects over native inputs. No dependencies.
 
 [![npm](https://img.shields.io/npm/v/@in-c0/knurl?style=flat-square&color=1b1b19)](https://www.npmjs.com/package/@in-c0/knurl)
 [![CI](https://github.com/in-c0/my-awesome-web-ui-libs/actions/workflows/ci.yml/badge.svg)](https://github.com/in-c0/my-awesome-web-ui-libs/actions/workflows/ci.yml)
@@ -22,7 +22,7 @@ Or add a control's source to your project with the shadcn CLI. It writes the con
 
 ```sh
 npx shadcn@latest add https://ui.ava.kim/knurl/r/toggle.json
-npx shadcn@latest add https://ui.ava.kim/knurl/r/knurl.json   # all eighteen
+npx shadcn@latest add https://ui.ava.kim/knurl/r/knurl.json   # all twenty-eight
 ```
 
 ## Use
@@ -79,6 +79,16 @@ g.destroy();
 | `Timer` | Countdown | A wind-up kitchen timer whose bell shakes at zero. | `role="timer"` + range |
 | `Annunciator` | Status panel | A panel of labelled lamps that light, warn and blink. | `role="group"` + list + live region |
 | `Gears` | Loading status | A 24 : 16 : 12 gear train that eases up to speed. | `role="status"` |
+| `Breakers` | Checkbox group | A circuit-breaker panel; each handle throws up and lights its flag. | native checkboxes |
+| `Dip` | Bit field | A DIP switch on a board, an LED per bit that is on. | native checkboxes |
+| `Throttle` | Vertical slider | A throttle quadrant whose lever clicks into notches. | `<input type="range">` |
+| `Flap` | Select | A split-flap module whose flaps fall forward to the option. | `<select>` |
+| `Embosser` | Text input | A handheld label maker that embosses each letter on its tape. | `<input type="text">` |
+| `Stamper` | Date input | A self-inking date stamp that prints the date when pressed. | `<input type="date">` |
+| `Fan` | Colour choice | A paint fan deck whose chosen strip swings out. | native radios |
+| `Tabs` | Tabs | A card-index drawer whose selected card rises. | `role="tablist"` |
+| `Printer` | Notification log | A receipt printer that prints each message on a ticket. | `role="log"` + list |
+| `Hourglass` | Progress | An hourglass that splits its sand by value, or turns itself over. | `role="progressbar"` |
 
 ## Examples
 

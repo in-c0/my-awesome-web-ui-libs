@@ -14,7 +14,7 @@ const host = () => { const el = document.createElement("div"); document.body.app
 
 describe("every control", () => {
   const all = Object.fromEntries(Object.entries(K).filter(([, v]) => typeof v === "function" && "keys" in v)) as Record<string, (el: HTMLElement, o?: any) => { update(o: any): void; destroy(): void }>;
-  it("exports all eighteen", () => expect(Object.keys(all).length).toBe(18));
+  it("exports all twenty-eight", () => expect(Object.keys(all).length).toBe(28));
   for (const [id, mount] of Object.entries(all)) {
     it(`${id} mounts, draws and removes only what it added`, () => {
       const el = host();

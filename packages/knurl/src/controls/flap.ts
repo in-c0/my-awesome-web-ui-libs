@@ -355,7 +355,7 @@ export const flap = define<FlapOptions>({
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0 || !opt.length) return;
       select.focus({ preventScroll: true });
-      host.setPointerCapture?.(e.pointerId);
+      try { host.setPointerCapture?.(e.pointerId); } catch { /* a scripted pointer has nothing to capture */ }
       e.preventDefault();
       if (onWheel(e)) {
         // the thumb takes up the wheel's slack against the pawl

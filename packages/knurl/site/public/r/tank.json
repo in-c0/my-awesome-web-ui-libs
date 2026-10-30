@@ -5,7 +5,7 @@
   "title": "Tank",
   "description": "A level meter, built as a storage tank whose sight glass shows the level.",
   "registryDependencies": [
-    "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+    "https://ui.ava.kim/knurl/r/knurl-core.json"
   ],
   "files": [
     {

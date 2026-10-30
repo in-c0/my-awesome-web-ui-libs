@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0
+
+Ten new controls, 28 in all. Each is a real machine on native semantics, with the same feel as the rest: it leans toward what a click will do under a hovering mouse, gives way the moment it is pressed, travels with a little overshoot, and something else answers.
+
+- **Breakers** (checkbox group): a circuit-breaker panel; each handle throws up and lights its flag.
+- **Dip** (bit field): a DIP switch on a board, an LED for each bit that is on; the value is a bitmask.
+- **Throttle** (vertical slider): a throttle quadrant whose lever clicks into the notches cut in its gate (`notches`).
+- **Flap** (select): a split-flap module; flaps fall forward one after another to the option, on a native `<select>`.
+- **Embosser** (text input): a handheld label maker; each typed letter turns the dial, squeezes the lever and feeds out embossed on the tape.
+- **Stamper** (date input): a self-inking date stamp; the bands roll to the date and pressing the knob prints it (`onStamp`).
+- **Fan** (colour choice): a paint fan deck; the chosen strip swings clear and lifts.
+- **Tabs** (tablist): a card-index drawer; the selected guide card rises with a signal clip on its tab.
+- **Printer** (notification log, readout): a receipt printer that prints each message on a ticket and tears off the oldest.
+- **Hourglass** (progress, readout): sand split by value, or running and turning the glass over when indeterminate.
+- A focused `<select>` now shows the focus ring too.
+- Site: served at ui.ava.kim/knurl.
+
 ## 0.2.6
 
 - Readouts add no click animation of their own: the press-and-sink from 0.2.5, the Gauge's needle jog, the Tank's knock slosh and the read-only Track's handcar shove are gone. On the site, a click on a Gauge, Tank or Track plays its demo's next step, so it moves the way it normally does, to another value.

@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "knurl",
-  "homepage": "https://in-c0.github.io/my-awesome-web-ui-libs/knurl",
+  "homepage": "https://ui.ava.kim/knurl",
   "items": [
     {
       "name": "knurl-core",
@@ -53,7 +53,7 @@
       "title": "Toggle",
       "description": "A switch, built as a bat-handle toggle on a panel, with a lamp that lights when it is on.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -74,7 +74,7 @@
       "title": "Fader",
       "description": "A slider, built as a mixing-desk fader whose cap rides a lit slot over a ruler of its steps.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -95,7 +95,7 @@
       "title": "Knob",
       "description": "A rotary value, built as a knurled knob over a 270° scale. Drag up or down, scroll, or use the arrow keys.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -116,7 +116,7 @@
       "title": "Keycap",
       "description": "A button, built as one mechanical key in a plate. It travels down when pressed and fires on release.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -137,7 +137,7 @@
       "title": "Presets",
       "description": "A radio group, built as a bank of latching preset keys: pressing one throws the last one back up.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -158,7 +158,7 @@
       "title": "Counter",
       "description": "A number field, built as a tally counter whose drums roll like an odometer.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -179,7 +179,7 @@
       "title": "Gauge",
       "description": "A progress bar or meter, built as a dial gauge with a damped needle and a tell-tale hand.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -200,7 +200,7 @@
       "title": "Gears",
       "description": "A loading indicator, built as a gear train that turns at its true ratios.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -221,7 +221,7 @@
       "title": "Rocker",
       "description": "A checkbox, built as a panel-mount rocker switch with a lit window and a centre-off position for mixed.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -242,7 +242,7 @@
       "title": "Caliper",
       "description": "A range slider, built as a vernier caliper whose two jaws mark the ends of the range.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -263,7 +263,7 @@
       "title": "Joystick",
       "description": "A 2D input, built as an arcade joystick that springs back to centre.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -284,7 +284,7 @@
       "title": "Combo",
       "description": "A one-time-code input, built as a combination padlock that opens on the right digits.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -305,7 +305,7 @@
       "title": "Tray",
       "description": "A file drop zone, built as a desk letter tray that stacks a sheet for every file.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -326,7 +326,7 @@
       "title": "Selector",
       "description": "A select, built as a rotary selector switch with a chicken-head knob and engraved positions.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -347,7 +347,7 @@
       "title": "Timer",
       "description": "A countdown, built as a wind-up kitchen timer whose bell shakes when time runs out.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -368,7 +368,7 @@
       "title": "Tank",
       "description": "A level meter, built as a storage tank whose sight glass shows the level.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -389,7 +389,7 @@
       "title": "Track",
       "description": "A step progress indicator, built as a rail line where a handcar rolls from station to station.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -410,7 +410,7 @@
       "title": "Annunciator",
       "description": "A status panel, built as an annunciator of labelled lamps that light, warn and blink.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
       ],
       "files": [
         {
@@ -426,29 +426,249 @@
       ]
     },
     {
+      "name": "breakers",
+      "type": "registry:component",
+      "title": "Breakers",
+      "description": "A checkbox group, built as a circuit-breaker panel whose toggle handles throw up to switch each circuit on and light its flag.",
+      "registryDependencies": [
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/breakers.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/breakers.ts"
+        },
+        {
+          "path": "components/knurl/breakers.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/breakers.tsx"
+        }
+      ]
+    },
+    {
+      "name": "dip",
+      "type": "registry:component",
+      "title": "Dip",
+      "description": "A bit field, built as a DIP switch on a circuit board whose sliders set the bits and light an LED for each one that is on.",
+      "registryDependencies": [
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/dip.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/dip.ts"
+        },
+        {
+          "path": "components/knurl/dip.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/dip.tsx"
+        }
+      ]
+    },
+    {
+      "name": "throttle",
+      "type": "registry:component",
+      "title": "Throttle",
+      "description": "A vertical slider with detents, built as a throttle quadrant whose lever clicks into the notches cut in its gate.",
+      "registryDependencies": [
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/throttle.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/throttle.ts"
+        },
+        {
+          "path": "components/knurl/throttle.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/throttle.tsx"
+        }
+      ]
+    },
+    {
+      "name": "printer",
+      "type": "registry:component",
+      "title": "Printer",
+      "description": "A notification log, built as a receipt printer that prints each message on a ticket and tears off the oldest.",
+      "registryDependencies": [
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/printer.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/printer.ts"
+        },
+        {
+          "path": "components/knurl/printer.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/printer.tsx"
+        }
+      ]
+    },
+    {
+      "name": "flap",
+      "type": "registry:component",
+      "title": "Flap",
+      "description": "A select, built as a split-flap display module whose flaps fall forward, one after another, to the chosen option.",
+      "registryDependencies": [
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/flap.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/flap.ts"
+        },
+        {
+          "path": "components/knurl/flap.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/flap.tsx"
+        }
+      ]
+    },
+    {
+      "name": "embosser",
+      "type": "registry:component",
+      "title": "Embosser",
+      "description": "A text input, built as a handheld label maker that embosses each typed letter onto its tape.",
+      "registryDependencies": [
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/embosser.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/embosser.ts"
+        },
+        {
+          "path": "components/knurl/embosser.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/embosser.tsx"
+        }
+      ]
+    },
+    {
+      "name": "stamper",
+      "type": "registry:component",
+      "title": "Stamper",
+      "description": "A date input, built as a self-inking date stamp whose bands roll to the date and print it on the paper when pressed.",
+      "registryDependencies": [
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/stamper.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/stamper.ts"
+        },
+        {
+          "path": "components/knurl/stamper.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/stamper.tsx"
+        }
+      ]
+    },
+    {
+      "name": "fan",
+      "type": "registry:component",
+      "title": "Fan",
+      "description": "A colour choice, built as a paint fan deck whose chosen strip swings out and lifts with its chip lit.",
+      "registryDependencies": [
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/fan.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/fan.ts"
+        },
+        {
+          "path": "components/knurl/fan.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/fan.tsx"
+        }
+      ]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:component",
+      "title": "Tabs",
+      "description": "A tablist, built as a card-index drawer whose selected card rises out of the drawer.",
+      "registryDependencies": [
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/tabs.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/tabs.ts"
+        },
+        {
+          "path": "components/knurl/tabs.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/tabs.tsx"
+        }
+      ]
+    },
+    {
+      "name": "hourglass",
+      "type": "registry:component",
+      "title": "Hourglass",
+      "description": "A progress indicator, built as an hourglass whose sand runs through the neck and that turns itself over when it runs empty.",
+      "registryDependencies": [
+        "https://ui.ava.kim/knurl/r/knurl-core.json"
+      ],
+      "files": [
+        {
+          "path": "src/controls/hourglass.ts",
+          "type": "registry:component",
+          "target": "components/knurl/controls/hourglass.ts"
+        },
+        {
+          "path": "components/knurl/hourglass.tsx",
+          "type": "registry:component",
+          "target": "components/knurl/hourglass.tsx"
+        }
+      ]
+    },
+    {
       "name": "knurl",
       "type": "registry:component",
       "title": "Knurl (every control)",
-      "description": "All 18 Knurl controls and their core.",
+      "description": "All 28 Knurl controls and their core.",
       "registryDependencies": [
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/toggle.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/fader.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knob.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/keycap.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/presets.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/counter.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/gauge.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/gears.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/rocker.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/caliper.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/joystick.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/combo.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/tray.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/selector.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/timer.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/tank.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/track.json",
-        "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/annunciator.json"
+        "https://ui.ava.kim/knurl/r/toggle.json",
+        "https://ui.ava.kim/knurl/r/fader.json",
+        "https://ui.ava.kim/knurl/r/knob.json",
+        "https://ui.ava.kim/knurl/r/keycap.json",
+        "https://ui.ava.kim/knurl/r/presets.json",
+        "https://ui.ava.kim/knurl/r/counter.json",
+        "https://ui.ava.kim/knurl/r/gauge.json",
+        "https://ui.ava.kim/knurl/r/gears.json",
+        "https://ui.ava.kim/knurl/r/rocker.json",
+        "https://ui.ava.kim/knurl/r/caliper.json",
+        "https://ui.ava.kim/knurl/r/joystick.json",
+        "https://ui.ava.kim/knurl/r/combo.json",
+        "https://ui.ava.kim/knurl/r/tray.json",
+        "https://ui.ava.kim/knurl/r/selector.json",
+        "https://ui.ava.kim/knurl/r/timer.json",
+        "https://ui.ava.kim/knurl/r/tank.json",
+        "https://ui.ava.kim/knurl/r/track.json",
+        "https://ui.ava.kim/knurl/r/annunciator.json",
+        "https://ui.ava.kim/knurl/r/breakers.json",
+        "https://ui.ava.kim/knurl/r/dip.json",
+        "https://ui.ava.kim/knurl/r/throttle.json",
+        "https://ui.ava.kim/knurl/r/printer.json",
+        "https://ui.ava.kim/knurl/r/flap.json",
+        "https://ui.ava.kim/knurl/r/embosser.json",
+        "https://ui.ava.kim/knurl/r/stamper.json",
+        "https://ui.ava.kim/knurl/r/fan.json",
+        "https://ui.ava.kim/knurl/r/tabs.json",
+        "https://ui.ava.kim/knurl/r/hourglass.json"
       ],
       "files": []
     }

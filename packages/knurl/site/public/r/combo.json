@@ -5,7 +5,7 @@
   "title": "Combo",
   "description": "A one-time-code input, built as a combination padlock that opens on the right digits.",
   "registryDependencies": [
-    "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+    "https://ui.ava.kim/knurl/r/knurl-core.json"
   ],
   "files": [
     {

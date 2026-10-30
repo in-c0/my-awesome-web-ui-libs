@@ -374,7 +374,7 @@ export const stamper = define<StamperOptions>({
     bag.on(host, "pointerdown", (e) => {
       if (opts.disabled || e.button !== 0) return;
       input.focus({ preventScroll: true });
-      host.setPointerCapture?.(e.pointerId);
+      try { host.setPointerCapture?.(e.pointerId); } catch { /* a scripted pointer has nothing to capture */ }
       e.preventDefault();
       const i = bandAt(e);
       if (i >= 0) drag = { i, y: e.clientY, acc: 0, moved: false, frac: 0 };

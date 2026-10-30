@@ -1,7 +1,7 @@
 {
   "name": "@in-c0/knurl",
-  "version": "0.2.6",
-  "description": "UI controls machined as isometric instruments: a switch is a toggle on a panel, a slider is a fader, a progress bar is a dial gauge. 18 controls, line or solid finish, React or plain DOM, no dependencies.",
+  "version": "0.3.0",
+  "description": "UI controls machined as isometric instruments: a switch is a toggle on a panel, a slider is a fader, a progress bar is a dial gauge. 28 controls, line or solid finish, React or plain DOM, no dependencies.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -81,7 +81,7 @@
   },
   "webUiSite": {
     "title": "Knurl",
-    "tagline": "Form controls, machined: 18 accessible controls drawn as working isometric instruments.",
+    "tagline": "Form controls, machined: 28 accessible controls drawn as working isometric instruments.",
     "build": "node registry/build.mjs && pnpm exec vite build site",
     "dir": "site/dist",
     "preview": ".github/assets/controls-line.png"

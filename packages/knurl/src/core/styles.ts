@@ -39,7 +39,7 @@ export function css(lightDark: boolean): string {
     `:where([data-knurl][data-knurl-theme="light"]){${vars(LIGHT)}}`,
     `:where([data-knurl][data-knurl-theme="dark"]){${vars(DARK)}}`,
     `${S}{display:block;width:100%;height:auto;overflow:visible}`,
-    `:where([data-knurl]:has(input:focus-visible),[data-knurl]:has(button:focus-visible)){outline:1.5px solid var(--k-hi);outline-offset:4px;border-radius:6px}`,
+    `:where([data-knurl]:has(input:focus-visible),[data-knurl]:has(button:focus-visible),[data-knurl]:has(select:focus-visible)){outline:1.5px solid var(--k-hi);outline-offset:4px;border-radius:6px}`,
     `:where([data-knurl][data-disabled]){opacity:.45;pointer-events:none}`,
     `:where([data-knurl] [data-knurl-sr]){position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;opacity:0}`,
     `:where([data-knurl][data-knurl-hit]){cursor:pointer}`,

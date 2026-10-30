@@ -5,7 +5,7 @@
   "title": "Gears",
   "description": "A loading indicator, built as a gear train that turns at its true ratios.",
   "registryDependencies": [
-    "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+    "https://ui.ava.kim/knurl/r/knurl-core.json"
   ],
   "files": [
     {

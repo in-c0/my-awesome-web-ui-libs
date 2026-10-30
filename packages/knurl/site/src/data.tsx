@@ -2,6 +2,17 @@ import { useState, type CSSProperties, type ReactNode } from "react";
 import { Auto, AutoAct, blink, circle, cycle, flip, press, typing, wander, wanderPair, wind, type Lamp } from "./auto";
 import { Annunciator, Caliper, Combo, Counter, Fader, Gauge, Gears, Joystick, Keycap, Knob, Presets, Rocker, Selector, Tank, Timer, Toggle, Track, Tray } from "@in-c0/knurl/react";
 import { newDocs } from "./data-new";
+import * as D_breakers from "./docs3/breakers";
+import * as D_dip from "./docs3/dip";
+import * as D_throttle from "./docs3/throttle";
+import * as D_printer from "./docs3/printer";
+import * as D_flap from "./docs3/flap";
+import * as D_embosser from "./docs3/embosser";
+import * as D_stamper from "./docs3/stamper";
+import * as D_fan from "./docs3/fan";
+import * as D_tabs from "./docs3/tabs";
+import * as D_hourglass from "./docs3/hourglass";
+
 import type { Finish } from "@in-c0/knurl";
 import { CONTROLS } from "../../registry/controls.mjs";
 
@@ -220,6 +231,7 @@ export const DOCS: Doc[] = [
     ],
   },
   ...newDocs(meta, base),
+  D_breakers.doc(meta, base), D_dip.doc(meta, base), D_throttle.doc(meta, base), D_printer.doc(meta, base), D_flap.doc(meta, base), D_embosser.doc(meta, base), D_stamper.doc(meta, base), D_fan.doc(meta, base), D_tabs.doc(meta, base), D_hourglass.doc(meta, base),
 ];
 
 /** The live control a gallery cell shows. */
@@ -242,6 +254,16 @@ export function Hero({ id, finish }: { id: string; finish: Finish }) {
     case "timer": return <Auto init={7 * 60} next={wind} ms={500}>{(v, set) => <Timer finish={finish} label="Timer" value={v} onValueChange={set} style={{ width: 170 }} />}</Auto>;
     case "tank": return <Auto init={62} next={wander(18, 92)} ms={2600} tap="[data-knurl=tank]">{(v) => <Tank finish={finish} label="Level" value={v} low={15} high={85} style={{ width: 130 }} />}</Auto>;
     case "track": return <Auto init={1} next={(c: number) => (c + 1) % 4} ms={1800} tap="[data-knurl=track]">{(c) => <Track finish={finish} label="Checkout" current={c} style={{ width: 270 }} />}</Auto>;
+    case "breakers": return <D_breakers.Hero finish={finish} />;
+    case "dip": return <D_dip.Hero finish={finish} />;
+    case "throttle": return <D_throttle.Hero finish={finish} />;
+    case "printer": return <D_printer.Hero finish={finish} />;
+    case "flap": return <D_flap.Hero finish={finish} />;
+    case "embosser": return <D_embosser.Hero finish={finish} />;
+    case "stamper": return <D_stamper.Hero finish={finish} />;
+    case "fan": return <D_fan.Hero finish={finish} />;
+    case "tabs": return <D_tabs.Hero finish={finish} />;
+    case "hourglass": return <D_hourglass.Hero finish={finish} />;
     case "annunciator": return <Auto init={LAMPS} next={blink} ms={1500}>{(items) => <Annunciator finish={finish} label="Services" items={items} style={{ width: 260 }} />}</Auto>;
   }
   return null;

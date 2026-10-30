@@ -1,7 +1,9 @@
 import { make } from "./react/make";
 import {
   toggle, rocker, fader, caliper, knob, joystick, keycap, counter, combo, tray, presets, selector, gauge, tank, track, timer, annunciator, gears,
+  breakers, dip, throttle, printer, flap, embosser, stamper, fan, tabs, hourglass,
   type ToggleOptions, type RockerOptions, type FaderOptions, type CaliperOptions, type KnobOptions, type JoystickOptions, type KeycapOptions, type CounterOptions, type ComboOptions, type TrayOptions, type PresetsOptions, type SelectorOptions, type GaugeOptions, type TankOptions, type TrackOptions, type TimerOptions, type AnnunciatorOptions, type GearsOptions,
+  type BreakersOptions, type DipOptions, type ThrottleOptions, type PrinterOptions, type FlapOptions, type EmbosserOptions, type StamperOptions, type FanOptions, type TabsOptions, type HourglassOptions,
 } from "./index";
 
 /** @in-c0/knurl/react — the controls as React components. */
@@ -43,7 +45,28 @@ export const Timer = make<TimerOptions>("Timer", timer);
 export const Annunciator = make<AnnunciatorOptions>("Annunciator", annunciator);
 /** A loading indicator, built as a gear train that turns at its true ratios. */
 export const Gears = make<GearsOptions>("Gears", gears);
+/** A checkbox group, built as a circuit-breaker panel whose toggle handles throw up to switch each circuit on and light its flag. */
+export const Breakers = make<BreakersOptions>("Breakers", breakers);
+/** A bit field, built as a DIP switch on a circuit board whose sliders set the bits and light an LED for each one that is on. */
+export const Dip = make<DipOptions>("Dip", dip);
+/** A vertical slider with detents, built as a throttle quadrant whose lever clicks into the notches cut in its gate. */
+export const Throttle = make<ThrottleOptions>("Throttle", throttle);
+/** A notification log, built as a receipt printer that prints each message on a ticket and tears off the oldest. */
+export const Printer = make<PrinterOptions>("Printer", printer);
+/** A select, built as a split-flap module: flaps fall forward one after another to the option, and the drum only turns forward. */
+export const Flap = make<FlapOptions>("Flap", flap);
+/** A text input, built as a handheld label maker: each typed letter turns the dial, squeezes the lever and feeds out on the tape. */
+export const Embosser = make<EmbosserOptions>("Embosser", embosser);
+/** A date input, built as a self-inking date stamp: the bands roll to the date, and pressing the knob prints it on the paper. */
+export const Stamper = make<StamperOptions>("Stamper", stamper);
+/** A colour choice, built as a paint fan deck: the chosen strip swings clear of the fan and lifts, its chip outlined. */
+export const Fan = make<FanOptions>("Fan", fan);
+/** Tabs, built as a card-index drawer: the selected guide card rises out of the drawer with a signal clip on its tab. */
+export const Tabs = make<TabsOptions>("Tabs", tabs);
+/** Progress, built as an hourglass in a turned frame: sand splits by value, or runs and turns the glass over when indeterminate. */
+export const Hourglass = make<HourglassOptions>("Hourglass", hourglass);
 
 export type {
   ToggleOptions, RockerOptions, FaderOptions, CaliperOptions, KnobOptions, JoystickOptions, KeycapOptions, CounterOptions, ComboOptions, TrayOptions, PresetsOptions, SelectorOptions, GaugeOptions, TankOptions, TrackOptions, TimerOptions, AnnunciatorOptions, GearsOptions,
+  BreakersOptions, DipOptions, ThrottleOptions, PrinterOptions, FlapOptions, EmbosserOptions, StamperOptions, FanOptions, TabsOptions, HourglassOptions,
 };

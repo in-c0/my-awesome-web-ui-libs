@@ -5,7 +5,7 @@
   "title": "Selector",
   "description": "A select, built as a rotary selector switch with a chicken-head knob and engraved positions.",
   "registryDependencies": [
-    "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+    "https://ui.ava.kim/knurl/r/knurl-core.json"
   ],
   "files": [
     {

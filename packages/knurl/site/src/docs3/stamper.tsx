@@ -56,9 +56,9 @@ function StampRow({ v, set, user, finish, label, style, rest, children }: { v: s
 }
 
 /** A stamper whose date moves on every ~2 s and which stamps each new one. */
-function AutoStamper({ finish, label, style, children, ...rest }: { finish: Finish; label: string; style?: CSSProperties; children?: (v: string) => ReactNode } & Rest) {
+function AutoStamper({ finish, label, style, children, next = another, ...rest }: { finish: Finish; label: string; style?: CSSProperties; children?: (v: string) => ReactNode; next?: (v: string) => string } & Rest) {
   const user = useRef<string | null>(null);
-  return <Auto init={TODAY} next={another} ms={2200}>{(v, set) => <StampRow v={v} set={set} user={user} finish={finish} label={label} style={style} rest={rest}>{children}</StampRow>}</Auto>;
+  return <Auto init={TODAY} next={next} ms={2200}>{(v, set) => <StampRow v={v} set={set} user={user} finish={finish} label={label} style={style} rest={rest}>{children}</StampRow>}</Auto>;
 }
 
 function StamperReceived({ finish }: { finish: Finish }) {
@@ -73,7 +73,9 @@ function StamperReceived({ finish }: { finish: Finish }) {
 
 function StamperWindow({ finish }: { finish: Finish }) {
   const min = shift(TODAY, -7), max = shift(TODAY, 30);
-  return <AutoStamper finish={finish} label="Delivery date" min={min} max={max}>{(v) => <Readout>Between {min} and {max}: {v}</Readout>}</AutoStamper>;
+  // a day somewhere inside the window, not the one set
+  const inside = (v: string) => { let n = v; while (n === v) n = shift(min, Math.floor(Math.random() * 38)); return n; };
+  return <AutoStamper finish={finish} label="Delivery date" min={min} max={max} next={inside}>{(v) => <Readout>Between {min} and {max}: {v}</Readout>}</AutoStamper>;
 }
 
 export function doc(meta: (id: string) => Pick<Doc, "id" | "name" | "role" | "summary" | "group">, base: (exclude?: string[]) => Prop[]): Doc {

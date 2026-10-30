@@ -5,7 +5,7 @@
   "title": "Presets",
   "description": "A radio group, built as a bank of latching preset keys: pressing one throws the last one back up.",
   "registryDependencies": [
-    "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl-core.json"
+    "https://ui.ava.kim/knurl/r/knurl-core.json"
   ],
   "files": [
     {

@@ -1,6 +1,8 @@
 // Publishes every workspace package whose version is not on npm yet.
 //
-// npm accepts two kinds of publishing token:
+// A package with an npm trusted publisher for this repository's release.yml publishes through
+// OIDC: npm uses it before any token, and the version goes live at once.
+// Otherwise npm accepts two kinds of publishing token:
 //  - direct-capable: the version goes live at once;
 //  - stage-only: the version is uploaded to npm's staging area and goes live when the
 //    owner approves it on npmjs.com (Staged Packages, with 2FA).

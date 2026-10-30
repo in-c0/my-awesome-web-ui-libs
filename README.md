@@ -16,7 +16,8 @@ Each library came in with its full history from its original repository (`in-c0/
 
 Bump a package's `version` and push to `main`. The **Release** workflow publishes every package whose version is not on npm yet, each on its own, with provenance. Nothing is published when no version changed.
 
-- With a stage-only `NPM_TOKEN`, each new version is staged instead: it goes live once approved on npmjs.com → **Staged Packages** (with 2FA). A direct-capable token publishes at once.
+- **Trusted publishing (recommended):** on npmjs.com, each package's **Settings → Trusted Publisher → GitHub Actions** names `in-c0/my-awesome-web-ui-libs` and `release.yml`. Its versions then go live at once, with no token and no 2FA per release.
+- Without it, the `NPM_TOKEN` secret is used: a stage-only token stages each version, which goes live once approved on npmjs.com → **Staged Packages** (with 2FA); a direct-capable token publishes at once.
 - A prerelease goes out under the tag in its `publishConfig.tag` (Paper UI uses `alpha`).
 - `node scripts/unpublished.mjs` shows what a release would publish.
 - Paper UI keeps its own release rules: a version bump there follows [its release checklist](packages/paper-ui/docs/RELEASE_CHECKLIST.md).
@@ -40,7 +41,7 @@ A static library can use `"copy": ["demo", "src"]` and `"index": "demo/index.htm
 ## One-time setup (already done once for all libraries)
 
 1. **Settings → Pages → Source: GitHub Actions.**
-2. **Settings → Secrets and variables → Actions → `NPM_TOKEN`**: an npm granular token for the `@in-c0` scope, stage-only (approve each version on npmjs.com) or direct-capable (bypass 2FA, live at once).
+2. **npm:** a trusted publisher for each package (above), or a repository secret `NPM_TOKEN` (an npm granular token for the `@in-c0` scope).
 
 ## Adding a library
 

@@ -1,7 +1,10 @@
 # Publishes every package whose version in package.json is not on npm yet.
 # Releasing a library = bumping its version in a commit to main. Nothing else.
-# Needs one repository secret, NPM_TOKEN. With a direct-capable token versions go live at
-# once; with a stage-only token they are staged and go live when approved on npmjs.com.
+# Authentication, first that works:
+#  - npm trusted publishing (OIDC): a package whose npmjs.com settings name this repository
+#    and release.yml as its trusted publisher goes live at once, with no token and no 2FA.
+#  - the NPM_TOKEN secret: direct-capable tokens publish at once; stage-only tokens stage the
+#    version, which goes live when it is approved on npmjs.com (with 2FA).
 name: Release
 on:
   push: { branches: [main] }
@@ -17,7 +20,6 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env: { HAS_TOKEN: "${{ secrets.NPM_TOKEN != '' }}" }
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -27,14 +29,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - id: plan
         run: node scripts/unpublished.mjs --github-output
-      - if: steps.plan.outputs.count != '0' && env.HAS_TOKEN != 'true'
-        run: echo "::warning::Versions are waiting to be published, but the NPM_TOKEN secret is not set (Settings → Secrets and variables → Actions)."
-      - if: steps.plan.outputs.count != '0' && env.HAS_TOKEN == 'true'
+      - if: steps.plan.outputs.count != '0'
         run: pnpm build && pnpm test
-      - if: steps.plan.outputs.count != '0' && env.HAS_TOKEN == 'true'
-        name: A staging-capable npm
-        run: npm install --global 'npm@^11'
-      - if: steps.plan.outputs.count != '0' && env.HAS_TOKEN == 'true'
-        name: Publish new versions (live, or staged for approval)
+      - if: steps.plan.outputs.count != '0'
+        name: An npm with trusted publishing and staging
+        run: npm install --global 'npm@^11.5.1'
+      - if: steps.plan.outputs.count != '0'
+        name: Publish new versions (live through trusted publishing, or staged for approval)
         run: node scripts/publish.mjs "${{ inputs.filter || './packages/**' }}"
         env: { NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}" }

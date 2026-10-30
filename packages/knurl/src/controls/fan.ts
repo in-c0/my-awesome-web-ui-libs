@@ -161,12 +161,11 @@ export const fan = define<FanOptions>({
         solid(el).put(poly3(C, P, ...spread(prism3(f.o, COVER, CT / 2, f.R))));
         const inner = stripRing(W2 - 0.9, L - 1.4).map(([l, c]) => f.pt(l + 0.2, c));
         line(el, "lo").setAttribute("d", poly(inner));
-        if (top) {
-          // an embossed title plate near the far end, and the printed lines on it
-          mk("path", { class: "k-face", d: poly([f.pt(37, -3.2), f.pt(50, -3.2), f.pt(50, 3.2), f.pt(37, 3.2)]) }, el);
-          line(el, "lo").setAttribute("d", seg(f.pt(39, -1.2), f.pt(48, -1.2)) + seg(f.pt(39, 1), f.pt(45, 1)));
-          line(el, "mid").setAttribute("d", seg(f.pt(14, -2.6), f.pt(28, -2.6)));
-        }
+        // an embossed title plate near the far end and the printed lines on it, on the side the strips leave showing
+        const c0 = top ? -3.2 : -4.3, c1 = top ? 3.2 : -0.4;
+        mk("path", { class: "k-face", d: poly([f.pt(37, c0), f.pt(50, c0), f.pt(50, c1), f.pt(37, c1)]) }, el);
+        line(el, "lo").setAttribute("d", seg(f.pt(39, c0 + 1.2), f.pt(48, c0 + 1.2)) + seg(f.pt(39, c0 + 2.6), f.pt(45, c0 + 2.6)));
+        line(el, "mid").setAttribute("d", seg(f.pt(14, -2.8), f.pt(28, -2.8)) + seg(f.pt(14, -1.4), f.pt(22, -1.4)));
         covers.push({ el, z });
       });
 
@@ -181,7 +180,7 @@ export const fan = define<FanOptions>({
         const chip = mk("path", { class: "k-face" }, sg);
         chip.style.fill = c.value;
         const ring = mk("path", { class: "k-line hi" }, sg);
-        const tip = line(sg, "accent");
+        const tip = mk("path", { class: "k-led on" }, sg);
         const input = doc.createElement("input");
         input.type = "radio"; input.value = c.value;
         input.setAttribute("aria-label", c.label);
@@ -233,7 +232,8 @@ export const fan = define<FanOptions>({
       const chip = poly([f.pt(CH0, -CW2), f.pt(CH1, -CW2), f.pt(CH1, CW2), f.pt(CH0, CW2)]);
       s.chip.setAttribute("d", chip);
       s.ring.setAttribute("d", lit ? chip : "");
-      s.tip.setAttribute("d", lit ? seg(f.pt(L - 0.9, -3.6), f.pt(L - 0.9, 3.6)) : "");
+      // the chosen strip's end is ticked with the accent, like a marked page
+      s.tip.setAttribute("d", lit ? poly([f.pt(L - 1.7, -3.4), f.pt(L - 0.5, -3.4), f.pt(L - 0.5, 3.4), f.pt(L - 1.7, 3.4)]) : "");
       s.num.setAttribute("class", lit ? "k-text hi" : "k-text");
     }
 

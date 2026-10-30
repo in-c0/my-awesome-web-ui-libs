@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { beforeAll, describe, expect, it } from "vitest";
 import { hourglass } from "../src/controls/hourglass";
+import { setReducedMotion } from "../src/core/motion";
 
 beforeAll(() => {
   // jsdom has no layout or animation frames: enough of both for a mount
@@ -90,6 +91,22 @@ describe("hourglass", () => {
     c.update({ value: 100 });
     await new Promise((r) => setTimeout(r, 1500));
     expect(el.querySelector("path.k-line.accent.dash")!.getAttribute("d")).toBe("");
+    c.destroy();
+  });
+
+  it("holds still under reduced motion, indeterminate, but still shows sand and stays busy", async () => {
+    const el = host();
+    const c = hourglass(el);
+    setReducedMotion(true);
+    c.update({});
+    await frame();
+    const sand = () => [...el.querySelectorAll("path.k-dot.lo")].map((p) => p.getAttribute("d")).join("|");
+    const a = sand();
+    await new Promise((r) => setTimeout(r, 300));
+    expect(sand()).toBe(a);
+    expect(a.replace(/\|/g, "").length).toBeGreaterThan(0);
+    expect(el.getAttribute("aria-busy")).toBe("true");
+    setReducedMotion(false);
     c.destroy();
   });
 

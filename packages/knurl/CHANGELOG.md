@@ -2,6 +2,7 @@
 
 ## 0.3.1
 
+- Site: a click on the Embosser embosses the demo's next letter, and a click on the Printer prints the next ticket; the Printer's docs read the newest message out beside it, as an app's toast would. A click always shows a change, never a held step.
 - Site: opens in light mode unless the visitor has picked dark with the toggle.
 - Hourglass: a click on a running, indeterminate glass plays its next step at once: the rest of the sand rushes through and the glass turns over.
 

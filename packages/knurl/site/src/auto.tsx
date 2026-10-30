@@ -14,7 +14,7 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from "rea
 const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const IDLE = 3000;
 
-function useIdlePlay(ref: RefObject<HTMLElement | null>, ms: number, tick: (i: number, root: HTMLElement) => void, tap?: string) {
+function useIdlePlay(ref: RefObject<HTMLElement | null>, ms: number, tick: (i: number, root: HTMLElement, tapped?: boolean) => void, tap?: string) {
   const fn = useRef(tick);
   fn.current = tick;
   const step = useRef(0);
@@ -26,7 +26,7 @@ function useIdlePlay(ref: RefObject<HTMLElement | null>, ms: number, tick: (i: n
     const hold = () => { busy = true; touch(); };
     const settle = () => setTimeout(() => { busy = el.matches(":hover") || el.contains(document.activeElement); touch(); }, 0);
     // a click on the readout named by `tap` plays the next step at once
-    const onClick = (e: Event) => { if (tap && (e.target as Element | null)?.closest?.(tap)) fn.current(step.current++, el); };
+    const onClick = (e: Event) => { if (tap && (e.target as Element | null)?.closest?.(tap)) fn.current(step.current++, el, true); };
     const evs: [string, (e: Event) => void][] = [
       ["click", onClick],
       ["pointerenter", hold], ["pointerleave", settle], ["focusin", hold], ["focusout", settle],
@@ -59,7 +59,12 @@ export function Auto<T>({ init, next, ms = 1800, tap, children }: {
 }) {
   const [v, setV] = useState(init);
   const ref = useRef<HTMLDivElement>(null);
-  useIdlePlay(ref, ms, (i) => setV((x) => next(x, i)), tap);
+  // a click always shows a change: past any steps that only hold the value
+  useIdlePlay(ref, ms, (i, _root, tapped) => setV((x) => {
+    let y = next(x, i);
+    for (let k = 1; tapped && k < 24 && JSON.stringify(y) === JSON.stringify(x); k++) y = next(y, i + k);
+    return y;
+  }), tap);
   return <div className={tap ? "auto tap" : "auto"} ref={ref}>{children(v, setV)}</div>;
 }
 

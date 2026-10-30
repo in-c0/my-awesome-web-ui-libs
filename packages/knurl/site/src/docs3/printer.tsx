@@ -27,8 +27,15 @@ const ORDERS: Line[] = [
 const feed = (script: Line[]) => (log: PrinterMessage[], i: number) => [...log, { id: "m" + (i + 100), ...script[i % script.length] }].slice(-8);
 const seed = (script: Line[], n: number): PrinterMessage[] => script.slice(0, n).map((m, i) => ({ id: "s" + i, ...m }));
 
-const AutoPrinter = ({ finish, label, script, max, n = 2, style }: { finish: Finish; label: string; script: Line[]; max?: number; n?: number; style?: CSSProperties }) =>
-  <Auto init={seed(script, n)} next={feed(script.slice(n).concat(script.slice(0, n)))} ms={1800} tap="[data-knurl=printer]">{(log) => <Printer finish={finish} label={label} messages={log} max={max} style={style} />}</Auto>;
+const TONE: Record<string, string> = { ok: "✓", info: "i", warn: "!", alert: "✕" };
+const AutoPrinter = ({ finish, label, script, max, n = 2, style, readout = false }: { finish: Finish; label: string; script: Line[]; max?: number; n?: number; style?: CSSProperties; readout?: boolean }) =>
+  <Auto init={seed(script, n)} next={feed(script.slice(n).concat(script.slice(0, n)))} ms={1800} tap="[data-knurl=printer]">{(log) => {
+    const p = <Printer finish={finish} label={label} messages={log} max={max} style={style} />;
+    if (!readout) return p;
+    const last = log[log.length - 1];
+    // what the app shows: the newest notification in full, with the ticket printing beside it
+    return <div className="demo-row">{p}<output className="readout">{last ? `${TONE[last.tone ?? "info"]}  ${last.text}` : "No notifications"}</output></div>;
+  }}</Auto>;
 
 export function doc(meta: (id: string) => Pick<Doc, "id" | "name" | "role" | "summary" | "group">, base: (exclude?: string[]) => Prop[]): Doc {
   return {
@@ -37,7 +44,7 @@ export function doc(meta: (id: string) => Pick<Doc, "id" | "name" | "role" | "su
     native: 'role="log" aria-live="polite" + a hidden <ul>',
     keys: [],
     examples: [
-      { id: "default", title: "Default", text: "A deploy log: each new id prints a ticket. Click it to print the next.", code: `const [log, setLog] = useState<PrinterMessage[]>([]);\nconst notify = (text: string, tone?: "info" | "ok" | "warn" | "alert") =>\n  setLog((l) => [...l, { id: crypto.randomUUID(), text, tone }]);\n\n<Printer label="Deploys" messages={log} />`, render: (f) => <AutoPrinter finish={f} label="Deploys" script={BUILD} /> },
+      { id: "default", title: "Default", text: "A notification log, like a toast stack: each new message prints a ticket, and the newest is read out beside it. Click the printer to print the next.", code: `const [log, setLog] = useState<PrinterMessage[]>([]);\nconst notify = (text: string, tone?: "info" | "ok" | "warn" | "alert") =>\n  setLog((l) => [...l, { id: crypto.randomUUID(), text, tone }]);\n\n<Printer label="Deploys" messages={log} />`, render: (f) => <AutoPrinter finish={f} label="Deploys" script={BUILD} style={{ width: 220 }} readout /> },
       { id: "orders", title: "A longer roll", text: "max keeps five tickets on the paper before the oldest is torn off.", code: `<Printer label="Kitchen orders" messages={orders} max={5} />`, render: (f) => <AutoPrinter finish={f} label="Kitchen orders" script={ORDERS} max={5} n={4} style={{ width: 190 }} /> },
     ],
     props: [
@@ -49,5 +56,5 @@ export function doc(meta: (id: string) => Pick<Doc, "id" | "name" | "role" | "su
 }
 
 export function Hero({ finish }: { finish: Finish }) {
-  return <AutoPrinter finish={finish} label="Notifications" script={BUILD} style={{ width: 150 }} />;
+  return <AutoPrinter finish={finish} label="Notifications" script={BUILD} style={{ width: 200 }} />;
 }

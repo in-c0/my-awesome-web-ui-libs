@@ -7,10 +7,10 @@ import type { Doc, Prop } from "../data";
 const Readout = ({ children }: { children: ReactNode }) => <output className="readout">{children}</output>;
 
 const AutoEmbosser = ({ finish, label, words, ms = 420, style, ...rest }: { finish: Finish; label: string; words: string[]; ms?: number; style?: CSSProperties; maxLength?: number; uppercase?: boolean }) =>
-  <Auto init="" next={typing(words, 4)} ms={ms}>{(v, set) => <Embosser finish={finish} label={label} value={v} onValueChange={set} style={style} {...rest} />}</Auto>;
+  <Auto init="" next={typing(words, 4)} ms={ms} tap="[data-knurl=embosser]">{(v, set) => <Embosser finish={finish} label={label} value={v} onValueChange={set} style={style} {...rest} />}</Auto>;
 
 function EmbosserShelf({ finish }: { finish: Finish }) {
-  return <Auto init="" next={typing(["SPICES", "FLOUR"], 4)} ms={420}>{(text, setText) => (
+  return <Auto init="" next={typing(["SPICES", "FLOUR"], 4)} ms={420} tap="[data-knurl=embosser]">{(text, setText) => (
     <div className="demo-col">
       <Embosser finish={finish} label="Shelf label" maxLength={8} value={text} onValueChange={setText} />
       <Readout>{text ? `${text.length} of 8 · ${text}` : "Type a label"}</Readout>
@@ -23,7 +23,7 @@ export function doc(meta: (id: string) => Pick<Doc, "id" | "name" | "role" | "su
     ...meta("embosser"),
     object: "A handheld label maker: a head with a character dial under a lit index shoe and a knurled hub, a nose with the cutter where the tape comes out, a grip with a window onto the tape reel, and a squeeze lever on a pivot pin held open by its spring. Each typed character turns the dial to it, squeezes the lever and feeds the tape out with the letter raised on it; Backspace draws the tape back in a letter.",
     native: '<input type="text">',
-    keys: [["Type", "Emboss the character and feed the tape"], ["Backspace", "Draw the tape back in by one letter"], ["← → Home End", "Move the caret, as in any text field"], ["Click the label maker", "Focus the field; the lever gives under the hand"]],
+    keys: [["Type", "Emboss the character and feed the tape"], ["Backspace", "Draw the tape back in by one letter"], ["← → Home End", "Move the caret, as in any text field"], ["Click the label maker", "Focus the field (on this site, a click also embosses the demo's next letter)"]],
     examples: [
       { id: "default", title: "Default", text: "Up to 16 characters, embossed in capitals.", code: `<Embosser label="Label" />`, render: (f) => <AutoEmbosser finish={f} label="Label" words={["HELLO", "KNURL"]} /> },
       { id: "controlled", title: "Controlled, with a limit", text: "maxLength sets how much tape there is: the letters close up to fit it.", code: `const [text, setText] = useState("");\n\n<Embosser label="Shelf label" maxLength={8} value={text} onValueChange={setText} />`, render: (f) => <EmbosserShelf finish={f} /> },

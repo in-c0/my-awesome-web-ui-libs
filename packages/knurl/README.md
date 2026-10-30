@@ -8,7 +8,7 @@ Form controls, machined. A switch is a toggle on a panel, a slider is a fader on
 
 ![The eight controls in the line finish: a toggle, a fader, a knob, a keycap, preset keys, a tally counter, a dial gauge and a gear train](.github/assets/controls-line.png)
 
-Every control live, with its code: **[in-c0.github.io/my-awesome-web-ui-libs/knurl](https://in-c0.github.io/my-awesome-web-ui-libs/knurl)**
+Every control live, with its code: **[ui.ava.kim/knurl](https://ui.ava.kim/knurl)**
 
 ## Install
 
@@ -21,8 +21,8 @@ ESM only. React 18 or later is an optional peer, needed only by `@in-c0/knurl/re
 Or add a control's source to your project with the shadcn CLI. It writes the control and the shared core to `components/knurl`:
 
 ```sh
-npx shadcn@latest add https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/toggle.json
-npx shadcn@latest add https://in-c0.github.io/my-awesome-web-ui-libs/knurl/r/knurl.json   # all eighteen
+npx shadcn@latest add https://ui.ava.kim/knurl/r/toggle.json
+npx shadcn@latest add https://ui.ava.kim/knurl/r/knurl.json   # all eighteen
 ```
 
 ## Use

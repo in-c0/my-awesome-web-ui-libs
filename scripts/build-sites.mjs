@@ -21,7 +21,7 @@ import { execSync } from "node:child_process";
 import { join, resolve, basename, extname } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
-const BASE = (process.env.BASE_URL || "https://in-c0.github.io/my-awesome-web-ui-libs").replace(/\/$/, "");
+const BASE = (process.env.BASE_URL || "https://ui.ava.kim").replace(/\/$/, "");
 const REPO = process.env.REPO_URL || "https://github.com/in-c0/my-awesome-web-ui-libs";
 const out = join(root, "_site");
 rmSync(out, { recursive: true, force: true });
@@ -65,6 +65,8 @@ for (const folder of readdirSync(join(root, "packages")).sort()) {
 
 writeFileSync(join(out, "index.html"), hub(libs));
 writeFileSync(join(out, ".nojekyll"), "");
+// the custom domain, when the site has one (Settings → Pages → Custom domain must match)
+if (/^https:\/\/[^/]+$/.test(BASE) && !BASE.endsWith("github.io")) writeFileSync(join(out, "CNAME"), BASE.replace("https://", "") + "\n");
 writeFileSync(join(out, "libraries.json"), JSON.stringify(libs, null, 2));
 console.log(`✓ ${libs.length} sites and the hub → ${out}`);
 

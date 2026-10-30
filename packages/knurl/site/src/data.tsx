@@ -5,7 +5,7 @@ import { newDocs } from "./data-new";
 import type { Finish } from "@in-c0/knurl";
 import { CONTROLS } from "../../registry/controls.mjs";
 
-export const SITE = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "https://in-c0.github.io/my-awesome-web-ui-libs/knurl";
+export const SITE = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "https://ui.ava.kim/knurl";
 export const REPO = "https://github.com/in-c0/my-awesome-web-ui-libs/tree/main/packages/knurl";
 export const NPM = "https://www.npmjs.com/package/@in-c0/knurl";
 

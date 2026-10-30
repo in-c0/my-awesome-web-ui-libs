@@ -18,7 +18,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: node scripts/build-sites.mjs
         env:
-          BASE_URL: "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          # the public address; a repository variable SITE_URL overrides it
+          BASE_URL: ${{ vars.SITE_URL || 'https://ui.ava.kim' }}
           REPO_URL: "https://github.com/${{ github.repository }}"
       - uses: actions/upload-pages-artifact@v3
         with: { path: _site }

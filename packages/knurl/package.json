@@ -75,7 +75,7 @@
     "url": "git+https://github.com/in-c0/my-awesome-web-ui-libs.git",
     "directory": "packages/knurl"
   },
-  "homepage": "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/",
+  "homepage": "https://ui.ava.kim/knurl/",
   "bugs": {
     "url": "https://github.com/in-c0/my-awesome-web-ui-libs/issues"
   },

@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { CONTROLS } from "./controls.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SITE = (process.env.SITE_URL || "https://in-c0.github.io/my-awesome-web-ui-libs/knurl").replace(/\/$/, "");
+const SITE = (process.env.SITE_URL || "https://ui.ava.kim/knurl").replace(/\/$/, "");
 const out = join(root, "site/public/r");
 mkdirSync(out, { recursive: true });
 const SCHEMA = "https://ui.shadcn.com/schema/registry-item.json";

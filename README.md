@@ -2,7 +2,7 @@
 
 Web UI libraries in one workspace. Each folder in `packages/` is its own library: it has its own npm package and version, its own site, and its own rules. They share one CI, one release workflow and one GitHub Pages deploy, so a new library needs no new repository, token or settings.
 
-**Sites:** [in-c0.github.io/my-awesome-web-ui-libs](https://in-c0.github.io/my-awesome-web-ui-libs/)
+**Sites:** [ui.ava.kim](https://ui.ava.kim/)
 
 | Library | npm | What it is |
 | --- | --- | --- |
@@ -41,6 +41,7 @@ A static library can use `"copy": ["demo", "src"]` and `"index": "demo/index.htm
 ## One-time setup (already done once for all libraries)
 
 1. **Settings → Pages → Source: GitHub Actions.**
+   **Custom domain: `ui.ava.kim`**, with a DNS `CNAME ui → in-c0.github.io` (DNS only, not proxied). The Sites build writes the matching `CNAME` file; set a repository variable `SITE_URL` to move it elsewhere.
 2. **npm:** a trusted publisher for each package (above), or a repository secret `NPM_TOKEN` (an npm granular token for the `@in-c0` scope).
 
 ## Adding a library

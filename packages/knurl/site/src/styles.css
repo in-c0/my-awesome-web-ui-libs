@@ -333,3 +333,8 @@ td.desc-cell { color: var(--muted-fg); min-width: 240px; }
 /* a preview that plays itself (auto.tsx): no box of its own */
 .auto { display: contents; }
 .auto.tap [data-knurl] { cursor: pointer; }
+
+/* #embed: a row of controls for recording README previews (embed.tsx) */
+.embed-strip { display: flex; align-items: center; justify-content: space-around; gap: 8px; padding: 18px 20px; min-height: 100vh; box-sizing: border-box; background: var(--bg); }
+.embed-cell { flex: 1; display: grid; place-items: center; min-width: 0; }
+.embed-cell > [data-knurl], .embed-cell > .auto > [data-knurl] { max-width: 100%; }

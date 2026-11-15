@@ -1,8 +1,0 @@
-node_modules
-dist
-_site
-**/site/dist
-**/site/single
-**/shots
-.DS_Store
-*.tsbuildinfo

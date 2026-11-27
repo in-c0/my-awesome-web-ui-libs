@@ -1,0 +1,15 @@
+{
+  "name": "my-awesome-web-ui-libs",
+  "private": true,
+  "description": "A workspace of web UI libraries. Each folder in packages/ publishes on its own to npm, and each has its own site.",
+  "packageManager": "pnpm@10.28.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/**\" --filter \"!paper-ui-workspace\" run build",
+    "test": "pnpm -r --filter \"./packages/**\" --filter \"!paper-ui-workspace\" run test",
+    "typecheck": "pnpm -r --filter \"./packages/**\" --filter \"!paper-ui-workspace\" run typecheck",
+    "sites": "node scripts/build-sites.mjs",
+    "release:check": "node scripts/unpublished.mjs",
+    "new": "node scripts/new-lib.mjs"
+  }
+}

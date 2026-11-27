@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "profile-atlas",
+      "title": "Profile Atlas",
+      "summary": "A gallery, an index and an activity timeline for a GitHub profile, as two custom elements.",
+      "body": "Framework-free Web Components with no build step. This page is its documentation.",
+      "url": "https://github.com/in-c0/my-awesome-web-ui-libs/tree/main/packages/profile-atlas",
+      "demoUrl": "https://in-c0.github.io/my-awesome-web-ui-libs/profile-atlas/docs/",
+      "language": "JavaScript",
+      "featured": true
+    },
+    {
+      "id": "knurl",
+      "title": "Knurl",
+      "summary": "Form controls drawn as working isometric instruments: a switch is a toggle, a slider is a fader.",
+      "url": "https://github.com/in-c0/my-awesome-web-ui-libs/tree/main/packages/knurl",
+      "demoUrl": "https://in-c0.github.io/my-awesome-web-ui-libs/knurl/",
+      "language": "TypeScript"
+    },
+    {
+      "id": "paper-ui",
+      "title": "Paper UI",
+      "summary": "Material-aware React components: paper shaders and stroke-by-stroke handwriting.",
+      "url": "https://github.com/in-c0/paper-ui",
+      "demoUrl": "https://in-c0.github.io/my-awesome-web-ui-libs/paper-ui/",
+      "image": "../../assets/project-previews/paper-ui.webp",
+      "language": "TypeScript"
+    }
+  ]
+}
